@@ -1,4 +1,3 @@
-
 'use client'
 
 import { User, CreditCard, Shield } from 'lucide-react'
@@ -12,6 +11,7 @@ interface DashboardHeaderProps {
       plan: string
       status: string
     } | null
+    credits?: number | null
   }
 }
 
@@ -40,8 +40,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <User className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Account Status</p>
-                <p className="font-semibold">Active</p>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-semibold">{user.email}</p>
               </div>
             </div>
           </CardContent>
@@ -57,11 +57,6 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <p className="text-sm text-muted-foreground">Current Plan</p>
                 <div className="flex items-center space-x-2">
                   <p className="font-semibold">{user.subscription?.plan || 'FREE'}</p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    planColors[user.subscription?.plan as keyof typeof planColors] || planColors.FREE
-                  }`}>
-                    {user.subscription?.status || 'Active'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -75,8 +70,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <Shield className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Security Score</p>
-                <p className="font-semibold text-green-600">Excellent</p>
+                <p className="text-sm text-muted-foreground">Credits</p>
+                <p className="font-semibold text-green-600">{user.credits ?? 0}</p>
               </div>
             </div>
           </CardContent>

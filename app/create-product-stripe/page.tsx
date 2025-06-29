@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -40,11 +39,11 @@ export default function CreateProductStripePage() {
       // Check admin role
       const { data: userData, error: userError } = await supabase
         .from('user_data')
-        .select('role')
-        .eq('user_id', user.id)
+        .select('user_role')
+        .eq('UID', user.id)
         .single()
 
-      if (userError || userData?.role !== 'admin') {
+      if (userError || userData?.user_role !== 'admin') {
         router.push('/dashboard')
         return
       }

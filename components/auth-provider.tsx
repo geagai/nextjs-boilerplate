@@ -1,4 +1,3 @@
-
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -37,78 +36,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Simplified role determination (temporarily avoiding database calls)
-  const getUserRole = (sessionUser: User): string => {
-    // Hardcoded admin role for john@doe.com
-    if (sessionUser.email === 'john@doe.com') {
-      console.log('Assigning admin role to john@doe.com')
-      return 'admin'
+  // Fetch user role from user_data table
+  const getUserRole = async (sessionUser: User): Promise<string> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('user_role')
+        .eq('UID', sessionUser.id)
+        .single();
+      if (error) {
+        console.error('Error fetching user role:', error);
+        return 'user';
+      }
+      return data?.user_role || 'user';
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+      return 'user';
     }
-    return 'user'
-  }
+  };
 
-  // Create auth user with role (simplified)
-  const createAuthUserWithRole = (sessionUser: User): AuthUser => {
-    const role = getUserRole(sessionUser)
-    
+  // Create auth user with role (fetch from DB)
+  const createAuthUserWithRole = async (sessionUser: User): Promise<AuthUser> => {
+    const role = await getUserRole(sessionUser);
     return {
       ...sessionUser,
       subscription: sessionUser.user_metadata?.subscription || null,
       role: role
-    }
-  }
+    };
+  };
 
   useEffect(() => {
-    // Get initial session (simplified, non-blocking)
+    // Get initial session (with DB role fetch)
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          // Use simplified role assignment
-          const authUser = createAuthUserWithRole(session.user)
-          setUser(authUser)
-          setSession(session)
+          const authUser = await createAuthUserWithRole(session.user);
+          setUser(authUser);
+          setSession(session);
         } else {
-          setUser(null)
-          setSession(null)
+          setUser(null);
+          setSession(null);
         }
       } catch (error) {
-        console.error('Error getting initial session:', error)
-        setUser(null)
-        setSession(null)
+        console.error('Error getting initial session:', error);
+        setUser(null);
+        setSession(null);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    getInitialSession()
+    getInitialSession();
 
-    // Listen for auth changes (simplified)
+    // Listen for auth changes (with DB role fetch)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         try {
           if (event === 'SIGNED_IN' && session) {
-            // Use simplified role assignment
-            const authUser = createAuthUserWithRole(session.user)
-            setUser(authUser)
-            setSession(session)
+            const authUser = await createAuthUserWithRole(session.user);
+            setUser(authUser);
+            setSession(session);
           } else if (event === 'SIGNED_OUT') {
-            setUser(null)
-            setSession(null)
-            router.push('/')
+            setUser(null);
+            setSession(null);
+            router.push('/');
           }
         } catch (error) {
-          console.error('Error in auth state change:', error)
-          setUser(null)
-          setSession(null)
+          console.error('Error in auth state change:', error);
+          setUser(null);
+          setSession(null);
         }
-        setLoading(false)
+        setLoading(false);
       }
-    )
+    );
 
-    return () => subscription.unsubscribe()
-  }, [supabase, router])
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
 
   const signOut = async () => {
     await supabase.auth.signOut()
