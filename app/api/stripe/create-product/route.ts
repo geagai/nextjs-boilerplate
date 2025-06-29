@@ -1,0 +1,181 @@
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase'
+import Stripe from 'stripe'
+
+export const dynamic = 'force-dynamic'
+
+interface PricingOption {
+  id: string
+  type: 'recurring' | 'one_time'
+  amount: number
+  currency: string
+  interval?: 'month' | 'year'
+  isDefault: boolean
+  active: boolean
+  trialPeriodDays?: number
+  trialRequiresPaymentMethod?: boolean
+  trialEndBehavior?: 'cancel' | 'create_invoice' | 'continue'
+}
+
+interface ProductData {
+  name: string
+  description: string
+  imageUrl?: string
+  statementDescriptor?: string
+  category?: string
+  marketingFeatures: Array<{
+    id: string
+    title: string
+    description?: string
+    order: number
+  }>
+  pricing: PricingOption[]
+  taxBehavior: 'inclusive' | 'exclusive' | 'unspecified'
+  credits?: number
+  creditsRollover?: boolean
+  redirectUrl?: string
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = createClient()
+    
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check admin role
+    const { data: userData, error: userError } = await supabase
+      .from('user_data')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    if (userError || userData?.role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
+
+    // Get Stripe configuration
+    const { data: settings, error: settingsError } = await supabase
+      .from('website_settings')
+      .select('stripe_secret_key')
+      .single()
+
+    if (settingsError || !settings?.stripe_secret_key) {
+      return NextResponse.json({ 
+        error: 'Stripe configuration not found. Please configure Stripe settings first.' 
+      }, { status: 400 })
+    }
+
+    const stripe = new Stripe(settings.stripe_secret_key, {
+      apiVersion: '2025-05-28.basil'
+    })
+
+    const productData: ProductData = await request.json()
+
+    // Validate required fields
+    if (!productData.name || !productData.description) {
+      return NextResponse.json({ 
+        error: 'Product name and description are required' 
+      }, { status: 400 })
+    }
+
+    if (!productData.pricing || productData.pricing.length === 0) {
+      return NextResponse.json({ 
+        error: 'At least one pricing option is required' 
+      }, { status: 400 })
+    }
+
+    const defaultPrices = productData.pricing.filter(p => p.isDefault)
+    if (defaultPrices.length !== 1) {
+      return NextResponse.json({ 
+        error: 'Exactly one pricing option must be set as default' 
+      }, { status: 400 })
+    }
+
+    // Create product in Stripe
+    const stripeProduct = await stripe.products.create({
+      name: productData.name,
+      description: productData.description,
+      images: productData.imageUrl ? [productData.imageUrl] : undefined,
+      statement_descriptor: productData.statementDescriptor,
+      metadata: {
+        category: productData.category || '',
+        marketing_features: JSON.stringify(productData.marketingFeatures),
+        credits: productData.credits?.toString() || '0',
+        credits_rollover: productData.creditsRollover?.toString() || 'false',
+        redirect_url: productData.redirectUrl || '',
+        tax_behavior: productData.taxBehavior
+      }
+    })
+
+    // Create prices in Stripe
+    const createdPrices = []
+    let defaultPriceId = ''
+
+    for (const pricing of productData.pricing) {
+      const priceData: Stripe.PriceCreateParams = {
+        product: stripeProduct.id,
+        unit_amount: Math.round(pricing.amount * 100), // Convert to cents
+        currency: pricing.currency,
+        active: pricing.active,
+        metadata: {
+          order: productData.pricing.indexOf(pricing).toString(),
+          is_default: pricing.isDefault.toString()
+        }
+      }
+
+      if (pricing.type === 'recurring') {
+        priceData.recurring = {
+          interval: pricing.interval!,
+          trial_period_days: pricing.trialPeriodDays
+        }
+        
+        if (pricing.trialPeriodDays && pricing.trialPeriodDays > 0) {
+          priceData.metadata!.trial_requires_payment_method = pricing.trialRequiresPaymentMethod?.toString() || 'false'
+          priceData.metadata!.trial_end_behavior = pricing.trialEndBehavior || 'cancel'
+        }
+      } else {
+        // One-time payment
+        priceData.metadata!.payment_type = 'one_time'
+      }
+
+      // Set tax behavior
+      if (productData.taxBehavior === 'inclusive') {
+        priceData.tax_behavior = 'inclusive'
+      } else if (productData.taxBehavior === 'exclusive') {
+        priceData.tax_behavior = 'exclusive'
+      }
+
+      const stripePrice = await stripe.prices.create(priceData)
+      createdPrices.push(stripePrice)
+
+      if (pricing.isDefault) {
+        defaultPriceId = stripePrice.id
+      }
+    }
+
+    // Update product with default price
+    if (defaultPriceId) {
+      await stripe.products.update(stripeProduct.id, {
+        default_price: defaultPriceId
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      product: stripeProduct,
+      prices: createdPrices,
+      defaultPriceId
+    })
+
+  } catch (error) {
+    console.error('Error creating product:', error)
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : 'Failed to create product'
+    }, { status: 500 })
+  }
+}
