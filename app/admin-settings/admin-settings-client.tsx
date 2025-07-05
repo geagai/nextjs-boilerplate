@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import React from "react";
 
 interface AdminSettingsRow {
   id?: string
@@ -30,6 +31,19 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<AdminSettingsRow>(initialSettings);
   const supabase = createClient();
+
+  // Debug: check admin status on mount
+  React.useEffect(() => {
+    async function checkAdminStatus() {
+      const { data, error } = await supabase.rpc('is_admin');
+      if (error) {
+        console.error('is_admin RPC error:', error);
+      } else {
+        console.log('is_admin RPC result:', data);
+      }
+    }
+    checkAdminStatus();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

@@ -27,11 +27,26 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
       return null
     }
 
+    // Fetch user role from user_data table
+    let dbRole = null;
+    try {
+      const { data: userData, error: userDataError } = await supabase
+        .from('user_data')
+        .select('user_role')
+        .eq('UID', session.user.id)
+        .single();
+      if (!userDataError && userData?.user_role) {
+        dbRole = userData.user_role;
+      }
+    } catch (err) {
+      // ignore, fallback below
+    }
+
     // Get additional user data from user_metadata or app_metadata
     const user: AuthUser = {
       ...session.user,
       subscription: session.user.user_metadata?.subscription || null,
-      role: session.user.user_metadata?.role || 'USER'
+      role: dbRole || session.user.user_metadata?.role || 'USER'
     }
 
     return { user, session }

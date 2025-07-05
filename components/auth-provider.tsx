@@ -114,6 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [supabase, router]);
 
+  useEffect(() => {
+    if (!loading) {
+      const isAdmin = user?.role?.toLowerCase() === 'admin';
+      console.log('[AuthProvider] Admin status:', isAdmin);
+    }
+  }, [loading, user]);
+
   const signOut = async () => {
     await supabase.auth.signOut()
   }
