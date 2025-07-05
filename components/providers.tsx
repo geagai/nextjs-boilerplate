@@ -3,7 +3,6 @@
 
 import { AuthProvider } from './auth-provider'
 import { ThemeProvider } from './theme-provider'
-import { PostHogProvider } from './posthog-provider'
 import { Toaster } from './ui/toaster'
 import { useEffect, useState } from 'react'
 
@@ -26,10 +25,8 @@ export function Providers({ children }: ProvidersProps) {
         enableSystem
         disableTransitionOnChange={false}
       >
-        <PostHogProvider>
-          {children}
-          {mounted && <Toaster />}
-        </PostHogProvider>
+        {children}
+        {mounted && <Toaster />}
       </ThemeProvider>
     </AuthProvider>
   )

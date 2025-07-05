@@ -1,5 +1,7 @@
 
 import { createBrowserClient, createServerClient as createSupabaseServerClient } from '@supabase/ssr'
+import { type CookieOptions } from '@supabase/ssr'
+import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -10,19 +12,20 @@ export const createClient = () => {
 }
 
 // Server-side Supabase client factory
-export const createServerClient = (cookieStore: any) => {
+export function createServerClient(cookieStore: ReadonlyRequestCookies) {
   return createSupabaseServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-        setAll(cookiesToSet: any[]) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options)
-          })
+        set(name: string, value: string, options: CookieOptions) {
+          // This will be a no-op in server components
+        },
+        remove(name: string, options: CookieOptions) {
+          // This will be a no-op in server components
         },
       },
     }

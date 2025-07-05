@@ -3,12 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
-import dynamic from 'next/dynamic'
-
-const Navigation = dynamic(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
-  ssr: false,
-  loading: () => <div className="h-16 bg-background border-b"></div>
-})
+import { Navigation } from '@/components/navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 

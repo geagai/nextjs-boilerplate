@@ -28,6 +28,40 @@ export function Navigation() {
               <Code2 className="h-8 w-8 text-primary" />
               <span className="font-bold text-xl">NextGeag BP</span>
             </Link>
+            
+            {/* Show basic navigation while loading */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
+                Features
+              </Link>
+              <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                Subscribe
+              </Link>
+              <Link href="/#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                Contact
+              </Link>
+              <div className="flex items-center space-x-4">
+                <ThemeToggle />
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" disabled>
+                  Dashboard
+                </Button>
+                <Button variant="outline" size="sm" disabled>
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center space-x-2">
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
@@ -83,6 +117,13 @@ export function Navigation() {
                     <Link href="/create-product-stripe" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Create Product</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {/* New Admin Settings link */}
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin-settings" className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Admin Settings</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -160,6 +201,15 @@ export function Navigation() {
                 >
                   <Settings className="h-4 w-4" />
                   <span>Create Product</span>
+                </Link>
+                {/* New Admin Settings link for mobile */}
+                <Link
+                  href="/admin-settings"
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors pl-4"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Admin Settings</span>
                 </Link>
               </div>
             )}

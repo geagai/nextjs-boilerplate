@@ -9,16 +9,6 @@ CREATE TABLE IF NOT EXISTS user_data (
   UNIQUE(user_id)
 );
 
--- Create website_settings table for Stripe configuration
-CREATE TABLE IF NOT EXISTS website_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  stripe_public_key TEXT,
-  stripe_secret_key TEXT,
-  stripe_webhook_secret TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Create RLS policies for user_data
 ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;
 
@@ -40,23 +30,38 @@ CREATE POLICY "Admin users can view all data" ON user_data
     )
   );
 
--- Create RLS policies for website_settings
-ALTER TABLE website_settings ENABLE ROW LEVEL SECURITY;
+-- Create admin_settings table for Stripe configuration and UI flags
+CREATE TABLE IF NOT EXISTS admin_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stripe_publishable_key TEXT,
+  stripe_secret TEXT,
+  stripe_webhook_secret TEXT,
+  show_header BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Policy: Only admin users can read/write website settings
-CREATE POLICY "Admin users can manage website settings" ON website_settings
+-- RLS policies for admin_settings
+ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin users can manage admin settings" ON admin_settings
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM user_data 
+      SELECT 1 FROM user_data
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   )
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM user_data 
+      SELECT 1 FROM user_data
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );
+
+-- Insert default admin settings row (empty)
+INSERT INTO admin_settings (id)
+VALUES (gen_random_uuid())
+ON CONFLICT DO NOTHING;
 
 -- Create storage bucket for product images
 INSERT INTO storage.buckets (id, name, public) 
@@ -82,8 +87,3 @@ SELECT id, 'admin'
 FROM auth.users
 WHERE email = 'john@doe.com'
 ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
-
--- Insert default website settings (empty for now)
-INSERT INTO website_settings (id)
-VALUES (gen_random_uuid())
-ON CONFLICT DO NOTHING;
