@@ -5,6 +5,8 @@ import { SettingsHeader } from '@/components/settings/settings-header'
 import { ProfileSettings } from '@/components/settings/profile-settings'
 import { SubscriptionSettings } from '@/components/settings/subscription-settings'
 import { SecuritySettings } from '@/components/settings/security-settings'
+import { createServerClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,11 +19,30 @@ export default async function SettingsPage() {
 
   const { user } = sessionData
 
+  // Fetch display_name and email from user_data table
+  const cookieStore = cookies()
+  const supabase = createServerClient(cookieStore)
+  let dbDisplayName = null
+  let dbEmail = null
+  try {
+    const { data, error } = await supabase
+      .from('user_data')
+      .select('display_name, email')
+      .eq('UID', user.id)
+      .single()
+    if (!error && data) {
+      dbDisplayName = data.display_name
+      dbEmail = data.email
+    }
+  } catch (e) {
+    // fallback to session values
+  }
+
   // Create user object that matches expected format
   const userWithMetadata = {
     id: user.id,
-    email: user.email!,
-    name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+    email: dbEmail || user.email!,
+    name: dbDisplayName || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
     role: user.user_metadata?.role || 'USER',
     subscription: user.user_metadata?.subscription || {
       id: 'default',
@@ -37,7 +58,6 @@ export default async function SettingsPage() {
         
         <div className="space-y-8 mt-8">
           <ProfileSettings user={userWithMetadata} />
-          <SubscriptionSettings subscription={userWithMetadata.subscription} />
           <SecuritySettings />
         </div>
       </div>

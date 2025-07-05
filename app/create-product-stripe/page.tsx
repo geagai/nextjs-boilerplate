@@ -52,11 +52,11 @@ export default function CreateProductStripePage() {
 
       // Check Stripe configuration
       const { data: settings, error: settingsError } = await supabase
-        .from('website_settings')
-        .select('stripe_secret_key, stripe_public_key')
+        .from('admin_settings')
+        .select('stripe_publishable_key, stripe_secret')
         .single()
 
-      if (!settingsError && settings?.stripe_secret_key && settings?.stripe_public_key) {
+      if (!settingsError && settings?.stripe_secret && settings?.stripe_publishable_key) {
         setHasStripeConfig(true)
       }
 
