@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 
 interface DashboardHeaderProps {
   user: {
+    id: string // Add id to the user object
     name: string | null
     email: string
     subscription: {
@@ -54,9 +55,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <CreditCard className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Current Plan</p>
+                <p className="text-sm text-muted-foreground">User ID</p>
                 <div className="flex items-center space-x-2">
-                  <p className="font-semibold">{user.subscription?.plan || 'FREE'}</p>
+                  <p className="text-xs text-muted-foreground break-all">{user.id}</p>
                 </div>
               </div>
             </div>

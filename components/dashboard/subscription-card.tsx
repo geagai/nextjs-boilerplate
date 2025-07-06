@@ -9,15 +9,31 @@ import { Crown, ExternalLink, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface SubscriptionCardProps {
-  subscription: {
+  subscription?: {
     plan: string
     status: string
     currentPeriodEnd: Date | null
     stripeCustomerId: string | null
   } | null
+  subscriptions?: Array<{
+    subscription_id: string
+    cost: number
+    billing_term: string
+    created_at: string
+    status: string
+  }>
+  purchases?: Array<{
+    subscription_id: string
+    cost: number
+    billing_term: string
+    created_at: string
+    status: string
+  }>
+  isPurchasesBlock?: boolean
+  className?: string
 }
 
-export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
+export function SubscriptionCard({ subscription, subscriptions = [], purchases = [], isPurchasesBlock = false, className }: SubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -75,78 +91,69 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center">
           <Crown className="h-5 w-5 mr-2 text-primary" />
-          Subscription Details
+          {isPurchasesBlock ? 'Purchases' : 'Active Subscriptions'}
         </CardTitle>
         <CardDescription>
-          Manage your current subscription and billing information
+          {isPurchasesBlock
+            ? 'Below you will see all the purchases you have made of subscriptions and one off payments.'
+            : 'Manage your active subscriptions.'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
-            <p className="font-semibold text-lg">{subscription?.plan || 'FREE'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Status</p>
-            <Badge className={getStatusColor(subscription?.status || 'active')}>
-              {subscription?.status || 'Active'}
-            </Badge>
-          </div>
+      {((isPurchasesBlock && purchases.length > 0) || (!isPurchasesBlock && subscriptions.length > 0)) && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Subscription ID</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Cost</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Billing Term</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Created At</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                {!isPurchasesBlock && (
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {(isPurchasesBlock ? purchases : subscriptions).map((sub, idx) => (
+                <tr key={idx}>
+                  <td className="px-4 py-2 text-xs break-all">{sub.subscription_id}</td>
+                  <td className="px-4 py-2 text-xs">${sub.cost.toFixed(2)}</td>
+                  <td className="px-4 py-2 text-xs">{
+                    sub.billing_term.charAt(0).toUpperCase() + sub.billing_term.slice(1)
+                  }</td>
+                  <td className="px-4 py-2 text-xs">{new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td className="px-4 py-2 text-xs">
+                    {isPurchasesBlock ? (
+                      <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-800 font-semibold">Paid</span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 font-semibold">Active</span>
+                    )}
+                  </td>
+                  {!isPurchasesBlock && (
+                    <td className="px-4 py-2 text-xs">
+                      {(sub.billing_term === 'month' || sub.billing_term === 'monthly' || sub.billing_term === 'year' || sub.billing_term === 'yearly') ? (
+                        <a
+                          href={`https://dashboard.stripe.com/subscriptions/${sub.subscription_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 text-xs font-medium"
+                        >
+                          Manage Subscription
+                        </a>
+                      ) : null}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        {subscription?.currentPeriodEnd && (
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Next Billing Date</p>
-            <p className="font-medium">{formatDate(subscription.currentPeriodEnd)}</p>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          {subscription?.stripeCustomerId ? (
-            <Button 
-              onClick={handleManageSubscription}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Manage Subscription
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button asChild className="flex-1">
-              <a href="/pricing">
-                <Crown className="mr-2 h-4 w-4" />
-                Upgrade Plan
-              </a>
-            </Button>
-          )}
-        </div>
-
-        {subscription?.plan === 'FREE' && (
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Upgrade for More Features</h4>
-            <p className="text-sm text-muted-foreground mb-3">
-              Unlock advanced features, priority support, and increased limits with a paid plan.
-            </p>
-            <Button asChild size="sm" variant="outline">
-              <a href="/pricing">View Plans</a>
-            </Button>
-          </div>
-        )}
-      </CardContent>
+      )}
     </Card>
   )
 }

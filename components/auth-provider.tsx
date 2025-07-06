@@ -74,16 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const authUser = await createAuthUserWithRole(session.user);
           setUser(authUser);
           setSession(session);
+          setLoading(false); // <-- moved here
         } else {
           setUser(null);
           setSession(null);
+          setLoading(false); // <-- and here
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
         setUser(null);
         setSession(null);
-      } finally {
-        setLoading(false);
+        setLoading(false); // <-- and here
       }
     };
 
@@ -97,17 +98,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const authUser = await createAuthUserWithRole(session.user);
             setUser(authUser);
             setSession(session);
+            setLoading(false); // <-- moved here
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
             setSession(null);
+            setLoading(false); // <-- moved here
             router.push('/');
           }
         } catch (error) {
           console.error('Error in auth state change:', error);
           setUser(null);
           setSession(null);
+          setLoading(false); // <-- moved here
         }
-        setLoading(false);
+        // setLoading(false) removed from here
       }
     );
 

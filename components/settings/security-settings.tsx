@@ -127,51 +127,6 @@ export function SecuritySettings() {
           </form>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Shield className="h-5 w-5 mr-2 text-primary" />
-            Security Information
-          </CardTitle>
-          <CardDescription>
-            Your account security status and recommendations
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <Shield className="h-5 w-5 text-green-600 mr-2" />
-                <div>
-                  <p className="font-medium text-green-800">Password Strength</p>
-                  <p className="text-sm text-green-600">Strong</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <Lock className="h-5 w-5 text-blue-600 mr-2" />
-                <div>
-                  <p className="font-medium text-blue-800">Account Security</p>
-                  <p className="text-sm text-blue-600">Protected</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Security Tips</h4>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>• Use a strong, unique password for your account</li>
-              <li>• Never share your login credentials with others</li>
-              <li>• Log out from shared or public computers</li>
-              <li>• Keep your browser and devices updated</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

@@ -46,18 +46,23 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     setIsLoading(true)
 
     try {
-      // Note: In a real application, you would implement the API endpoint
-      // for updating user profile information
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-
+      const response = await fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ display_name: data.name, email: data.email })
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update profile')
+      }
       toast({
         title: 'Profile Updated',
         description: 'Your profile information has been updated successfully.'
       })
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to update profile. Please try again.',
+        description: error.message || 'Failed to update profile. Please try again.',
         variant: 'destructive'
       })
     } finally {
