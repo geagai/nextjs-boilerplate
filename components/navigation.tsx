@@ -46,6 +46,39 @@ export function Navigation() {
               <Code2 className="h-8 w-8 text-primary" />
               <span className="font-bold text-xl">NextGeag BP</span>
             </Link>
+            {/* Middle Navigation - Home, Pricing, and Admin links */}
+            <div className="hidden md:flex flex-1 justify-center items-center space-x-4">
+              <Link href="/" className="text-muted-foreground hover:text-foreground font-medium transition-colors px-4">
+                Home
+              </Link>
+              <Link href="/pricing" className="text-muted-foreground hover:text-foreground font-medium transition-colors px-4">
+                Pricing
+              </Link>
+              {user && user.role === 'admin' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="text-muted-foreground hover:text-foreground font-medium transition-colors px-4 flex items-center space-x-1">
+                      <span>Admin</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin-settings" className="flex items-center space-x-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Admin Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/create-product-stripe" className="flex items-center space-x-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Create Product</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <ThemeToggle />
@@ -101,6 +134,11 @@ export function Navigation() {
           {/* Mobile Navigation */}
           {isOpen && (
             <div className="md:hidden py-4 space-y-4">
+              {user && user.role === 'admin' && (
+                <Link href="/admin-settings" onClick={() => setIsOpen(false)} className="block text-muted-foreground hover:text-foreground font-medium transition-colors px-4 py-2">
+                  Admin
+                </Link>
+              )}
               {user && (
                 <>
                   <Link href="/dashboard" onClick={() => setIsOpen(false)}>
