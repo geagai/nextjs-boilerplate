@@ -11,9 +11,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 173 80% 32%;
+    --primary: 214 53% 48%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
+    --secondary: 219 8% 22%; /* #33363B */
     --secondary-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -23,13 +23,16 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 173 80% 32%;
+    --ring: 214 53% 48%;
     --radius: 0.5rem;
-    --chart-1: 173 80% 32%;
+    --chart-1: 214 53% 48%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --header-bg: 210 40% 98%; /* #F7F9FB */
+    --link: 210 7% 21%; /* #33363B */
+    --link-hover: 213 54% 48%; /* #3872BB */
   }
 
   .dark {
@@ -39,7 +42,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 173 80% 32%;
+    --primary: 214 53% 48%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -51,12 +54,15 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 173 80% 32%;
-    --chart-1: 173 80% 32%;
+    --ring: 214 53% 48%;
+    --chart-1: 214 53% 48%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --header-bg: 222.2 84% 4.9%;
+    --link: 0 0% 100%;
+    --link-hover: 213 54% 48%;
   }
 }
 
@@ -159,4 +165,12 @@ html {
 
 .btn-glow:hover::before {
   transform: translateX(100%);
+}
+
+/* Add link color styling */
+a {
+  color: hsl(var(--link));
+}
+a:hover {
+  color: hsl(var(--link-hover));
 }

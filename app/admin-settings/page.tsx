@@ -11,6 +11,28 @@ interface AdminSettingsRow {
   stripe_secret: string | null
   stripe_webhook_secret: string | null
   show_header: boolean | null
+  primary_color: string | null
+  secondary_color: string | null
+  background_color: string | null
+  link_color: string | null
+  link_hover_color: string | null
+  header_background_color: string | null
+  dark_primary_color: string | null
+  dark_secondary_color: string | null
+  dark_background_color: string | null
+  dark_headline_text_color: string | null
+  dark_paragraph_text_color: string | null
+  dark_button_color: string | null
+  dark_button_hover_color: string | null
+  dark_button_text_color: string | null
+  dark_link_color: string | null
+  dark_link_hover_color: string | null
+  dark_header_background_color: string | null
+  headline_text_color: string | null
+  paragraph_text_color: string | null
+  button_color: string | null
+  button_hover_color: string | null
+  button_text_color: string | null
 }
 
 export default async function AdminSettingsPage() {
@@ -37,12 +59,56 @@ export default async function AdminSettingsPage() {
     stripe_secret: settings.stripe_secret ?? "",
     stripe_webhook_secret: settings.stripe_webhook_secret ?? "",
     show_header: settings.show_header ?? null,
+    primary_color: settings.primary_color ?? "#3A72BB",
+    secondary_color: settings.secondary_color ?? "#33363B",
+    background_color: settings.background_color ?? "#F7F9FB",
+    link_color: settings.link_color ?? "#33363B",
+    link_hover_color: settings.link_hover_color ?? "#3872BB",
+    header_background_color: settings.header_background_color ?? "#F7F9FB",
+    dark_primary_color: settings.dark_primary_color ?? null,
+    dark_secondary_color: settings.dark_secondary_color ?? null,
+    dark_background_color: settings.dark_background_color ?? null,
+    dark_headline_text_color: settings.dark_headline_text_color ?? null,
+    dark_paragraph_text_color: settings.dark_paragraph_text_color ?? null,
+    dark_button_color: settings.dark_button_color ?? null,
+    dark_button_hover_color: settings.dark_button_hover_color ?? null,
+    dark_button_text_color: settings.dark_button_text_color ?? null,
+    dark_link_color: settings.dark_link_color ?? null,
+    dark_link_hover_color: settings.dark_link_hover_color ?? null,
+    dark_header_background_color: settings.dark_header_background_color ?? null,
+    headline_text_color: settings.headline_text_color ?? "#000000",
+    paragraph_text_color: settings.paragraph_text_color ?? "#000000",
+    button_color: settings.button_color ?? "#000000",
+    button_hover_color: settings.button_hover_color ?? "#000000",
+    button_text_color: settings.button_text_color ?? "#ffffff",
     id: settings.id,
   } : {
     stripe_publishable_key: "",
     stripe_secret: "",
     stripe_webhook_secret: "",
     show_header: null,
+    primary_color: "#3A72BB", // default brand color
+    secondary_color: "#33363B",
+    background_color: "#F7F9FB",
+    link_color: "#33363B",
+    link_hover_color: "#3872BB",
+    header_background_color: "#F7F9FB",
+    dark_primary_color: null,
+    dark_secondary_color: null,
+    dark_background_color: null,
+    dark_headline_text_color: null,
+    dark_paragraph_text_color: null,
+    dark_button_color: null,
+    dark_button_hover_color: null,
+    dark_button_text_color: null,
+    dark_link_color: null,
+    dark_link_hover_color: null,
+    dark_header_background_color: null,
+    headline_text_color: "#000000",
+    paragraph_text_color: "#000000",
+    button_color: "#000000",
+    button_hover_color: "#000000",
+    button_text_color: "#ffffff",
   };
 
   return <AdminSettingsClient initialSettings={initialSettings} />;

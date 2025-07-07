@@ -11,11 +11,43 @@
         "dependencies": [],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Website Color Scheme Configuration System",
+        "description": "Create a system that allows administrators to customize the website's color scheme through the admin settings page, including database storage for color preferences and real-time UI updates.",
+        "details": "Implementation steps:\n\n1. Database Changes:\n   - Create new 'color_schemes' table with fields:\n     * id (primary key)\n     * primary_color (hex code)\n     * secondary_color (hex code)\n     * accent_color (hex code)\n     * text_color (hex code)\n     * is_active (boolean)\n     * created_at, updated_at timestamps\n\n2. Backend Implementation:\n   - Create RESTful API endpoints for color scheme CRUD operations\n   - Implement color scheme validation (valid hex codes)\n   - Add caching mechanism for active color scheme\n   - Create migration scripts for database changes\n\n3. Frontend Implementation:\n   - Add new section to admin settings page\n   - Create color picker component with hex code input\n   - Implement live preview functionality\n   - Add color scheme form with fields:\n     * Primary color picker\n     * Secondary color picker\n     * Accent color picker\n     * Text color picker\n   - Add save/reset buttons\n   - Implement real-time preview using CSS variables\n\n4. Integration:\n   - Create CSS variable system for colors\n   - Implement theme provider component\n   - Add color scheme loading on application startup\n   - Create fallback default theme\n\n5. Performance Considerations:\n   - Implement debouncing for color changes\n   - Add color scheme caching\n   - Optimize theme switching to prevent flickering",
+        "testStrategy": "1. Unit Testing:\n   - Test color scheme validation\n   - Verify hex code formatting\n   - Test database operations\n   - Validate API endpoints\n   - Test theme provider component\n   - Verify color picker component\n\n2. Integration Testing:\n   - Verify color scheme persistence\n   - Test real-time preview functionality\n   - Validate theme switching\n   - Test caching mechanism\n   - Verify CSS variable updates\n\n3. UI/UX Testing:\n   - Verify color picker usability\n   - Test responsive design\n   - Check color contrast accessibility\n   - Validate live preview accuracy\n   - Test across different browsers\n\n4. Performance Testing:\n   - Measure theme switching performance\n   - Test caching effectiveness\n   - Verify load times with different color schemes\n\n5. Security Testing:\n   - Verify admin-only access\n   - Test input sanitization\n   - Validate API endpoint security",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Use MCP server to create new columns in the admin_settings table for the color options",
+            "description": "Update the admin_settings table in the database to add columns for storing color scheme options. Use the MCP server to manage the migration and ensure the new columns are accessible for settings management.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 2,
+            "title": "Create settings for color picker on the /admin settings page in a new block in the settings form",
+            "description": "Implement a new UI block in the admin settings page that allows admins to pick and save color scheme options. Integrate the color picker with the new database columns and ensure changes are reflected in the website's appearance.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T20:48:35.105Z",
-      "updated": "2025-07-06T17:55:36.217Z",
+      "updated": "2025-07-07T17:12:47.758Z",
       "description": "Tasks for master context"
     }
   }
