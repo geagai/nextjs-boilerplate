@@ -72,6 +72,7 @@ export default async function RootLayout({
     '--link': hexToHsl(settings?.dark_link_color ?? '#FFFFFF'),
     '--link-hover': hexToHsl(settings?.dark_link_hover_color ?? '#3872BB'),
     '--header-bg': hexToHsl(settings?.dark_header_background_color ?? '#0D0D0D'),
+    '--foreground': hexToHsl(settings?.dark_paragraph_text_color ?? '#EDEDED'),
   }
   const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
 

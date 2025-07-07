@@ -335,7 +335,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                      {/* Dark Paragraph */}
                      <div className="space-y-2">
                        <label className="text-sm font-medium">Paragraph Text Color</label>
-                       <Input type="color" name="dark_paragraph_text_color" className="h-12 w-full" value={settings.dark_paragraph_text_color || '#CCCCCC'} onChange={handleChange}/>
+                       <Input type="color" name="dark_paragraph_text_color" className="h-12 w-full" value={settings.dark_paragraph_text_color || '#EDEDED'} onChange={handleChange}/>
                      </div>
                      {/* Dark Button Color */}
                      <div className="space-y-2">
