@@ -51,11 +51,11 @@ function EditProductStripeContent() {
       // Check admin role
       const { data: userData, error: userError } = await supabase
         .from('user_data')
-        .select('role')
-        .eq('user_id', user.id)
+        .select('user_role')
+        .eq('UID', user.id)
         .single()
 
-      if (userError || userData?.role !== 'admin') {
+      if (userError || userData?.user_role !== 'admin') {
         router.push('/dashboard')
         return
       }
@@ -64,13 +64,13 @@ function EditProductStripeContent() {
 
       // Check Stripe configuration
       const { data: settings, error: settingsError } = await supabase
-        .from('website_settings')
-        .select('stripe_secret_key, stripe_public_key')
+        .from('admin_settings')
+        .select('stripe_secret, stripe_publishable_key')
         .single()
 
-      if (!settingsError && settings?.stripe_secret_key && settings?.stripe_public_key) {
+      if (!settingsError && settings?.stripe_secret && settings?.stripe_publishable_key) {
         setHasStripeConfig(true)
-        await fetchProductData(settings.stripe_secret_key)
+        await fetchProductData()
       }
 
     } catch (error) {
@@ -81,14 +81,10 @@ function EditProductStripeContent() {
     }
   }
 
-  const fetchProductData = async (stripeSecretKey: string) => {
+  const fetchProductData = async () => {
     try {
       // Fetch product data from Stripe via API route
-      const response = await fetch(`/api/stripe/get-product?id=${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${stripeSecretKey}`
-        }
-      })
+      const response = await fetch(`/api/stripe/get-product?id=${productId}`)
 
       if (!response.ok) {
         if (response.status === 404) {

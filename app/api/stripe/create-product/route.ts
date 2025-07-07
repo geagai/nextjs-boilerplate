@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { createServerClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 import Stripe from 'stripe'
 
 export const dynamic = 'force-dynamic'
@@ -39,7 +40,7 @@ interface ProductData {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient(cookies())
     
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -50,27 +51,27 @@ export async function POST(request: NextRequest) {
     // Check admin role
     const { data: userData, error: userError } = await supabase
       .from('user_data')
-      .select('role')
-      .eq('user_id', user.id)
+      .select('user_role')
+      .eq('UID', user.id)
       .single()
 
-    if (userError || userData?.role !== 'admin') {
+    if (userError || userData?.user_role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     // Get Stripe configuration
     const { data: settings, error: settingsError } = await supabase
-      .from('website_settings')
-      .select('stripe_secret_key')
+      .from('admin_settings')
+      .select('stripe_secret')
       .single()
 
-    if (settingsError || !settings?.stripe_secret_key) {
+    if (settingsError || !settings?.stripe_secret) {
       return NextResponse.json({ 
         error: 'Stripe configuration not found. Please configure Stripe settings first.' 
       }, { status: 400 })
     }
 
-    const stripe = new Stripe(settings.stripe_secret_key, {
+    const stripe = new Stripe(settings.stripe_secret, {
       apiVersion: '2025-05-28.basil'
     })
 
