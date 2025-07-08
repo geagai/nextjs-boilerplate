@@ -31,6 +31,27 @@ function getPriceForTab(prices: Stripe.Price[], tab: string) {
   }
 }
 
+// Helper: determine CTA button label based on pricing rules
+function getButtonLabel(price: Stripe.Price, activeTab: 'monthly' | 'yearly' | 'one_time') {
+  // Free trial => "Start Trial"
+  const trialDays = (price as any).trial_period_days as number | undefined
+  if (trialDays && trialDays > 0) {
+    return 'Start Trial'
+  }
+
+  // No trial – decide label by pricing term
+  if (activeTab === 'one_time') return 'Purchase'
+  return 'Subscribe'
+}
+
+// Helper: decide whether to show "No Credit Card Required" note
+function showNoCardText(price: Stripe.Price) {
+  const trialDays = (price as any).trial_period_days as number | undefined
+  const hasTrial = trialDays && trialDays > 0
+  const requiresCardMeta = price.metadata?.trial_requires_payment_method === 'true'
+  return hasTrial && !requiresCardMeta
+}
+
 export function PricingCards({ session, products }: PricingCardsProps) {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
@@ -89,7 +110,11 @@ export function PricingCards({ session, products }: PricingCardsProps) {
         ] as const).map((tab) => (
           <button
             key={tab.key}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${activeTab === tab.key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`px-4 py-2 rounded-md text-sm font-medium border ${
+              activeTab === tab.key
+                ? 'border-primary text-primary bg-transparent'
+                : 'border-[#d8d8d8] bg-[--header-bg] text-muted-foreground'
+            }`}
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
@@ -138,8 +163,12 @@ export function PricingCards({ session, products }: PricingCardsProps) {
                     onClick={() => handleSelectPrice(price.id)}
                     disabled={loadingPriceId === price.id}
                   >
-                    {loadingPriceId === price.id ? 'Processing...' : 'Choose Plan'}
+                    {loadingPriceId === price.id ? 'Processing...' : getButtonLabel(price, activeTab)}
                   </Button>
+
+                  {showNoCardText(price) && (
+                    <p className="text-center text-sm text-muted-foreground">No Credit Card Required</p>
+                  )}
 
                   {/* Marketing features from metadata */}
                   {product.metadata?.marketing_features && (

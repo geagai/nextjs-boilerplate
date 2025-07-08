@@ -29,9 +29,15 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {}
 })
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+interface AuthProviderProps {
+  children: React.ReactNode
+  initialUser?: AuthUser | null
+  initialSession?: Session | null
+}
+
+export function AuthProvider({ children, initialUser = null, initialSession = null }: AuthProviderProps) {
+  const [user, setUser] = useState<AuthUser | null>(initialUser)
+  const [session, setSession] = useState<Session | null>(initialSession)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -66,7 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Get initial session (with DB role fetch)
+    // If we already have initial session, skip extra fetch
+    if (initialSession) {
+      setLoading(false)
+      return
+    }
+
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -74,17 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const authUser = await createAuthUserWithRole(session.user);
           setUser(authUser);
           setSession(session);
-          setLoading(false); // <-- moved here
-        } else {
-          setUser(null);
-          setSession(null);
-          setLoading(false); // <-- and here
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
-        setUser(null);
-        setSession(null);
-        setLoading(false); // <-- and here
+      } finally {
+        setLoading(false);
       }
     };
 

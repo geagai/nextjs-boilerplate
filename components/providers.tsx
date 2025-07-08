@@ -10,7 +10,7 @@ interface ProvidersProps {
   children: React.ReactNode
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children, initialUser, initialSession }: ProvidersProps & { initialUser?: any; initialSession?: any }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function Providers({ children }: ProvidersProps) {
   }, [])
 
   return (
-    <AuthProvider>
+    <AuthProvider initialUser={initialUser} initialSession={initialSession}>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"

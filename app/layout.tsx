@@ -7,6 +7,7 @@ import { Navigation } from '@/components/navigation'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { hexToHsl } from '@/lib/utils'
+import { getServerSession } from '@/lib/auth'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -52,6 +53,8 @@ export default async function RootLayout({
     .limit(1)
     .maybeSingle()
 
+  const showHeader = settings?.show_header ?? true
+
   const vars: Record<string, string> = {
     '--background': hexToHsl(settings?.background_color ?? '#F7F9FB'),
     '--primary': hexToHsl(settings?.primary_color ?? '#3A72BB'),
@@ -76,15 +79,17 @@ export default async function RootLayout({
   }
   const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
 
+  const sessionData = await getServerSession()
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>{/* Dynamic color variables */}
         <style>{`:root { ${cssVars} } html.dark { ${darkCssVars} }`}</style>
       </head>
       <body className={inter.className}>
-        <Providers>
+        <Providers initialUser={sessionData?.user} initialSession={sessionData?.session}>
           <div className="min-h-screen bg-background text-foreground">
-            <Navigation />
+            {showHeader && <Navigation />}
             <main>{children}</main>
           </div>
         </Providers>
