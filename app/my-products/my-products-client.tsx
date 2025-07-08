@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useMemo } from 'react'
+import ClearProductCacheButton from '@/components/clear-product-cache-button'
 
 interface PriceInfo {
   id: string
@@ -41,7 +42,10 @@ export default function MyProductsClient({ products, devMode }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold mb-6">My Products</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">My Products</h1>
+        <ClearProductCacheButton />
+      </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full border bg-white shadow-sm">

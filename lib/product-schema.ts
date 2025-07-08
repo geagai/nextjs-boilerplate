@@ -54,7 +54,8 @@ export const productFormSchema = z.object({
   taxBehavior: z.enum(['inclusive', 'exclusive', 'unspecified']),
   credits: z.number().min(0).optional(),
   creditsRollover: z.boolean().optional(),
-  redirectUrl: z.string().url('Invalid redirect URL').optional().or(z.literal(''))
+  redirectUrl: z.string().url('Invalid redirect URL').optional().or(z.literal('')),
+  mostPopular: z.boolean().optional().default(false)
 }).refine((data) => {
   // Exactly one pricing option must be default
   const defaultPrices = data.pricing.filter(p => p.isDefault)

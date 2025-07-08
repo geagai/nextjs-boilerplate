@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, ArrowLeft, AlertCircle, Settings, Package } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import ClearProductCacheButton from '@/components/clear-product-cache-button'
 
 function EditProductStripeContent() {
   const [isLoading, setIsLoading] = useState(true)
@@ -123,7 +124,8 @@ function EditProductStripeContent() {
         taxBehavior: data.product.metadata?.tax_behavior || 'unspecified',
         credits: parseInt(data.product.metadata?.credits || '0'),
         creditsRollover: data.product.metadata?.credits_rollover === 'true',
-        redirectUrl: data.product.metadata?.redirect_url || ''
+        redirectUrl: data.product.metadata?.redirect_url || '',
+        mostPopular: data.product.metadata?.most_popular === 'true'
       }
 
       setProductData(formData)
@@ -262,6 +264,7 @@ function EditProductStripeContent() {
                 Back to Dashboard
               </Link>
             </Button>
+            <ClearProductCacheButton />
           </div>
           
           <div>

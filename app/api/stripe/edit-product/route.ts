@@ -40,6 +40,7 @@ interface ProductData {
   credits?: number
   creditsRollover?: boolean
   redirectUrl?: string
+  mostPopular?: boolean
 }
 
 export async function POST(request: NextRequest) {
@@ -119,7 +120,8 @@ export async function POST(request: NextRequest) {
         credits: productData.credits?.toString() || '0',
         credits_rollover: productData.creditsRollover?.toString() || 'false',
         redirect_url: productData.redirectUrl || '',
-        tax_behavior: productData.taxBehavior
+        tax_behavior: productData.taxBehavior,
+        most_popular: productData.mostPopular ? 'true' : 'false'
       }
     })
 

@@ -23,7 +23,48 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { plan } = body
+    const { plan, priceId } = body
+    if (priceId) {
+      // Fetch price information
+      let price: any
+      try {
+        price = await stripe.prices.retrieve(priceId)
+      } catch (err) {
+        return NextResponse.json({ error: 'Invalid priceId' }, { status: 400 })
+      }
+
+      // Create or get Stripe customer
+      let customerId = session.user.user_metadata?.stripeCustomerId
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: session.user.email!,
+          name: session.user.user_metadata?.name || undefined,
+          metadata: { userId: session.user.id }
+        })
+        customerId = customer.id
+        await supabase.auth.updateUser({
+          data: { ...session.user.user_metadata, stripeCustomerId: customerId }
+        })
+      }
+
+      const mode = price.type === 'recurring' ? 'subscription' : 'payment'
+
+      const checkoutSession = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [{ price: price.id, quantity: 1 }],
+        mode,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+        metadata: {
+          userId: session.user.id,
+          priceId: price.id,
+          productId: price.product as string
+        }
+      })
+
+      return NextResponse.json({ sessionId: checkoutSession.id })
+    }
     console.log('📋 Request data:', { plan, userId: session.user.id })
 
     if (!plan || !SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS]) {

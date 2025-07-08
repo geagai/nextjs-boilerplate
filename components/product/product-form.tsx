@@ -59,6 +59,7 @@ export function ProductForm({
       credits: 0,
       creditsRollover: false,
       redirectUrl: '',
+      mostPopular: false,
       ...initialData
     }
   })
@@ -145,6 +146,15 @@ export function ProductForm({
             <p className="text-sm text-muted-foreground">
               This text will appear on your customers' credit card statements
             </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="mostPopular"
+              checked={watch('mostPopular')}
+              onCheckedChange={(checked) => setValue('mostPopular', checked)}
+            />
+            <Label htmlFor="mostPopular">Mark as Most Popular</Label>
           </div>
         </CardContent>
       </Card>
