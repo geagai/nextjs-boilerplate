@@ -14,19 +14,30 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Menu, X, Code2, ChevronDown, Settings } from 'lucide-react'
 
-export function Navigation() {
+interface NavigationProps {
+  /**
+   * Whether the header should use sticky positioning (default: true).
+   */
+  sticky?: boolean,
+  siteName?: string,
+}
+
+export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { user, loading, signOut } = useAuth()
 
   // Navigation bar (show basic links even while loading)
+  const baseClasses = 'z-50 border-b'
+  const positionClass = sticky ? 'sticky top-0' : 'relative'
+
   return (
-    <nav className="sticky top-0 z-50 border-b" style={{ backgroundColor: 'hsl(var(--header-bg))', backdropFilter: 'blur(12px)' }}>
+    <nav className={`${positionClass} ${baseClasses}`} style={{ backgroundColor: 'hsl(var(--header-bg))', backdropFilter: 'blur(12px)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Code2 className="h-8 w-8 text-secondary" />
-            <span className="font-bold text-xl text-primary">NextGeag BP</span>
+            <span className="font-bold text-xl text-primary">{siteName}</span>
           </Link>
           {/* Middle Navigation - Home, Pricing, and Admin links */}
           <div className="hidden md:flex justify-center items-center space-x-4">

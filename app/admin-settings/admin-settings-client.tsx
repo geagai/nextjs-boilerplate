@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,10 @@ import { Settings as SettingsIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import dynamic from "next/dynamic";
+
+// Dynamically import the RichTextEditor to avoid SSR issues
+const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false });
 
 interface AdminSettingsRow {
   id?: string
@@ -22,6 +26,7 @@ interface AdminSettingsRow {
   stripe_secret: string | null
   stripe_webhook_secret: string | null
   show_header: boolean | null
+  sticky_header: boolean | null
   primary_color: string | null
   secondary_color: string | null
   background_color: string | null
@@ -45,6 +50,18 @@ interface AdminSettingsRow {
   dark_link_hover_color: string | null
   dark_header_background_color: string | null
   dev_mode: boolean | null
+  pricing_page_headline: string | null
+  pricing_page_description: string | null
+  pricing_page_faq: { question: string, answer: string }[] | null
+  footer_background_color: string | null
+  dark_footer_background_color: string | null
+  footer_text_color: string | null
+  dark_footer_text_color: string | null
+  footer_link_color: string | null
+  dark_footer_link_color: string | null
+  site_name: string | null
+  footer_html_one: string | null
+  footer_html_two: string | null
 }
 
 interface AdminSettingsClientProps {
@@ -57,7 +74,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const supabase = createClient();
 
   // Debug: check admin status on mount
-  React.useEffect(() => {
+  useEffect(() => {
     async function checkAdminStatus() {
       const { data, error } = await supabase.rpc('is_admin');
       if (error) {
@@ -72,8 +89,25 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSettings((prev) => ({ ...prev, [name]:
-      name === "show_header" || name === "dev_mode" ? (value === '' ? null : value === 'true') : value
+      name === "show_header" || name === "dev_mode" || name === "sticky_header" ? (value === '' ? null : value === 'true') : value
     }));
+  };
+
+  const handleFaqChange = (index: number, field: 'question' | 'answer', value: string) => {
+    const newFaqs = [...(settings.pricing_page_faq || [])];
+    newFaqs[index] = { ...newFaqs[index], [field]: value };
+    setSettings((prev) => ({ ...prev, pricing_page_faq: newFaqs }));
+  };
+
+  const addFaqItem = () => {
+    const newFaqs = [...(settings.pricing_page_faq || []), { question: '', answer: '' }];
+    setSettings((prev) => ({ ...prev, pricing_page_faq: newFaqs }));
+  };
+
+  const removeFaqItem = (index: number) => {
+    const newFaqs = [...(settings.pricing_page_faq || [])];
+    newFaqs.splice(index, 1);
+    setSettings((prev) => ({ ...prev, pricing_page_faq: newFaqs }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,6 +120,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         stripe_secret: settings.stripe_secret,
         stripe_webhook_secret: settings.stripe_webhook_secret,
         show_header: settings.show_header,
+        sticky_header: settings.sticky_header,
         primary_color: settings.primary_color,
         secondary_color: settings.secondary_color,
         background_color: settings.background_color,
@@ -109,6 +144,19 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         dark_link_hover_color: settings.dark_link_hover_color,
         dark_header_background_color: settings.dark_header_background_color,
         dev_mode: settings.dev_mode,
+        pricing_page_headline: settings.pricing_page_headline,
+        pricing_page_description: settings.pricing_page_description,
+        pricing_page_faq: settings.pricing_page_faq,
+        // footer settings
+        footer_background_color: settings.footer_background_color,
+        dark_footer_background_color: settings.dark_footer_background_color,
+        footer_text_color: settings.footer_text_color,
+        dark_footer_text_color: settings.dark_footer_text_color,
+        footer_link_color: settings.footer_link_color,
+        dark_footer_link_color: settings.dark_footer_link_color,
+        site_name: settings.site_name,
+        footer_html_one: settings.footer_html_one,
+        footer_html_two: settings.footer_html_two,
       } as const;
 
       let error;
@@ -193,6 +241,16 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                   </select>
                 </div>
 
+                {/* Sticky Header */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sticky Header?</label>
+                  <select name="sticky_header" className="border rounded px-2 py-2 w-full bg-background" value={settings.sticky_header === null ? '' : settings.sticky_header ? 'true' : 'false'} onChange={handleChange}>
+                    <option value="" disabled>Select...</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+
                 {/* Developer Mode */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Developer Mode</label>
@@ -202,6 +260,53 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                     <option value="false">No</option>
                   </select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pricing Page Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-2 text-primary" />
+                Pricing Page
+              </CardTitle>
+              <CardDescription>
+                Customize the content of your pricing page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Pricing Page Headline */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Pricing Page Headline</label>
+                <Input name="pricing_page_headline" placeholder="Enter headline..." value={settings.pricing_page_headline || ''} onChange={handleChange} />
+              </div>
+
+              {/* Pricing Page Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Pricing Page Description</label>
+                <textarea name="pricing_page_description" rows={3} className="border rounded px-2 py-2 w-full bg-background" placeholder="Enter description..." value={settings.pricing_page_description || ''} onChange={(e) => setSettings(prev => ({...prev, pricing_page_description: e.target.value}))} />
+              </div>
+
+              {/* Pricing Page FAQ */}
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <label className="text-sm font-medium mr-5">Pricing Page FAQ</label>
+                  <Button type="button" variant="outline" size="sm" onClick={addFaqItem}>Add FAQ Item</Button>
+                </div>
+                {settings.pricing_page_faq?.map((faq, index) => (
+                  <div key={index} className="p-4 border rounded space-y-2 relative">
+                    <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2" onClick={() => removeFaqItem(index)}>X</Button>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Question</label>
+                      <Input placeholder="FAQ Question" value={faq.question} onChange={(e) => handleFaqChange(index, 'question', e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Answer</label>
+                      <textarea rows={2} className="border rounded px-2 py-2 w-full bg-background" placeholder="FAQ Answer" value={faq.answer} onChange={(e) => handleFaqChange(index, 'answer', e.target.value)} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -300,6 +405,21 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                        <label className="text-sm font-medium">Header Background Color</label>
                        <Input name="header_background_color" type="color" className="h-12 w-full" value={settings.header_background_color || '#FFFFFF'} onChange={handleChange} />
                      </div>
+                     {/* Footer Background Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Footer Background Color</label>
+                       <Input type="color" name="footer_background_color" className="h-12 w-full" value={settings.footer_background_color || '#F7F9FB'} onChange={handleChange} />
+                     </div>
+                     {/* Footer Text Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Footer Text Color</label>
+                       <Input type="color" name="footer_text_color" className="h-12 w-full" value={settings.footer_text_color || '#33363B'} onChange={handleChange} />
+                     </div>
+                     {/* Footer Link Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Footer Link Color</label>
+                       <Input type="color" name="footer_link_color" className="h-12 w-full" value={settings.footer_link_color || '#3A72BB'} onChange={handleChange} />
+                     </div>
                    </div>
                  </TabsContent>
 
@@ -379,12 +499,66 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                        <label className="text-sm font-medium">Header Background Color</label>
                        <Input type="color" name="dark_header_background_color" className="h-12 w-full" value={settings.dark_header_background_color || '#0D0D0D'} onChange={handleChange}/>
                      </div>
+                     {/* Dark Footer Background Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Dark Footer Background</label>
+                       <Input type="color" name="dark_footer_background_color" className="h-12 w-full" value={settings.dark_footer_background_color || '#0D0D0D'} onChange={handleChange} />
+                     </div>
+                     {/* Dark Footer Text Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Dark Footer Text Color</label>
+                       <Input type="color" name="dark_footer_text_color" className="h-12 w-full" value={settings.dark_footer_text_color || '#EDEDED'} onChange={handleChange} />
+                     </div>
+                     {/* Dark Footer Link Color */}
+                     <div className="space-y-2">
+                       <label className="text-sm font-medium">Dark Footer Link Color</label>
+                       <Input type="color" name="dark_footer_link_color" className="h-12 w-full" value={settings.dark_footer_link_color || '#3A72BB'} onChange={handleChange} />
+                     </div>
                    </div>
                  </TabsContent>
 
                </Tabs>
              </CardContent>
            </Card>
+
+          {/* Footer Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-2 text-primary" />
+                Footer Settings
+              </CardTitle>
+              <CardDescription>
+                Customize footer colors, site name and column content.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Site Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Site Name</label>
+                <Input name="site_name" placeholder="Enter site name..." value={settings.site_name || ''} onChange={handleChange} />
+              </div>
+              {/* Footer HTML Columns */}
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Footer Column Two HTML</label>
+                <RichTextEditor
+                  value={settings.footer_html_one || ""}
+                  onChange={(html) =>
+                    setSettings((prev) => ({ ...prev, footer_html_one: html }))
+                  }
+                  placeholder="Enter HTML for footer column two…"
+                />
+                <label className="text-sm font-medium">Footer Column Three HTML</label>
+                <RichTextEditor
+                  value={settings.footer_html_two || ""}
+                  onChange={(html) =>
+                    setSettings((prev) => ({ ...prev, footer_html_two: html }))
+                  }
+                  placeholder="Enter HTML for footer column three…"
+                />
+              </div>
+            </CardContent>
+          </Card>
             <div className="flex justify-end mt-6">
               <Button type="submit" disabled={saving}>
                 {saving ? "Saving..." : "Save Settings"}

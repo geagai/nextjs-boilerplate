@@ -6,7 +6,6 @@ import { PricingSection } from '@/components/pricing-section'
 import { MobileShowcase } from '@/components/mobile-showcase'
 import { DeveloperExperience } from '@/components/developer-experience'
 import { ContactSection } from '@/components/contact-section'
-import { Footer } from '@/components/footer'
 
 export default function HomePage() {
   return (
@@ -18,7 +17,6 @@ export default function HomePage() {
       <MobileShowcase />
       <DeveloperExperience />
       <ContactSection />
-      <Footer />
     </div>
   )
 }

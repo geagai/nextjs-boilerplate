@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Navigation } from '@/components/navigation'
+import { Footer } from '@/components/footer'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { hexToHsl } from '@/lib/utils'
@@ -54,6 +55,7 @@ export default async function RootLayout({
     .maybeSingle()
 
   const showHeader = settings?.show_header ?? true
+  const stickyHeader = settings?.sticky_header ?? true
 
   const vars: Record<string, string> = {
     '--background': hexToHsl(settings?.background_color ?? '#F7F9FB'),
@@ -79,6 +81,13 @@ export default async function RootLayout({
   }
   const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
 
+  const footerBg = settings?.footer_background_color ?? '#F7F9FB'
+  const footerText = settings?.footer_text_color ?? '#33363B'
+  const footerLink = settings?.footer_link_color ?? '#3A72BB'
+  const footerHtmlOne = settings?.footer_html_one ?? null
+  const footerHtmlTwo = settings?.footer_html_two ?? null
+  const siteName = settings?.site_name ?? 'NextGeag BP'
+
   const sessionData = await getServerSession()
 
   return (
@@ -89,8 +98,9 @@ export default async function RootLayout({
       <body className={inter.className}>
         <Providers initialUser={sessionData?.user} initialSession={sessionData?.session}>
           <div className="min-h-screen bg-background text-foreground">
-            {showHeader && <Navigation />}
+            {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
             <main>{children}</main>
+            <Footer siteName={siteName} bgColor={footerBg} textColor={footerText} linkColor={footerLink} htmlOne={footerHtmlOne} htmlTwo={footerHtmlTwo} />
           </div>
         </Providers>
       </body>

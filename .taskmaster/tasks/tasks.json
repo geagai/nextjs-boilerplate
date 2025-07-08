@@ -160,11 +160,181 @@
             "parentTaskId": 3
           }
         ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Admin Options for Pricing Page Customization",
+        "description": "Add new administrative controls in the admin settings to customize Pricing Page content, including configurable headline, description, and FAQ sections with corresponding database storage and front-end implementation.",
+        "details": "Implementation steps:\n\n1. Database Updates:\n   - Add new columns to appropriate table:\n     * pricing_headline (varchar)\n     * pricing_description (text)\n     * pricing_faq (json/text for FAQ items)\n   - Create migration script\n   - Update database schema documentation\n\n2. Admin Settings UI Changes:\n   - Create new \"Pricing Page Content\" section above Theme Colors\n   - Implement form components:\n     * Text input for headline\n     * Rich text editor for description\n     * Dynamic FAQ editor with add/remove capability\n   - Add form validation\n   - Implement save/reset functionality\n   - Update admin-settings.mdc documentation\n\n3. Backend Implementation:\n   - Create/update API endpoints:\n     * GET /api/admin/pricing-content\n     * PUT /api/admin/pricing-content\n   - Implement input sanitization\n   - Add validation middleware\n   - Create service layer for content management\n\n4. Pricing Page Updates:\n   - Modify PricingPage component to fetch custom content\n   - Implement conditional rendering:\n     * Use custom content when available\n     * Fall back to defaults when not set\n   - Ensure responsive design maintenance\n   - Remove hardcoded text\n   - Update styling to maintain consistency\n\n5. State Management:\n   - Add new state slices for pricing content\n   - Implement content caching strategy\n   - Create actions/reducers for content updates",
+        "testStrategy": "1. Unit Testing:\n   - Test database migrations\n   - Verify API endpoint functionality:\n     * Test successful content retrieval\n     * Validate content updates\n     * Check error handling\n   - Test form validation\n   - Verify state management\n   - Test conditional rendering logic\n\n2. Integration Testing:\n   - Verify end-to-end content update flow\n   - Test database persistence\n   - Validate admin settings integration\n   - Check pricing page rendering with:\n     * Default content\n     * Custom content\n     * Partial custom content\n   - Verify caching mechanism\n\n3. UI/UX Testing:\n   - Validate admin form usability\n   - Check responsive design\n   - Verify content preview functionality\n   - Test FAQ editor interactions\n   - Ensure consistent styling\n\n4. Documentation Testing:\n   - Verify admin-settings.mdc accuracy\n   - Check API documentation\n   - Validate database schema docs",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Database Migration for New Admin Settings",
+            "description": "Create and execute database migration to add new columns for pricing page customization in admin_settings table",
+            "dependencies": [],
+            "details": "Create migration file adding columns: pricing_headline (varchar(255)), pricing_description (text), pricing_faq (jsonb). Include up/down migrations. Update schema documentation.",
+            "status": "pending",
+            "testStrategy": "Verify migration runs successfully, columns are created with correct types, and rollback works properly"
+          },
+          {
+            "id": 2,
+            "title": "Implement Admin UI Section for Pricing Content",
+            "description": "Add new section in admin settings for pricing page customization with form fields",
+            "dependencies": [],
+            "details": "Create new section above Theme Colors. Add text input for headline, rich text editor for description, and dynamic FAQ editor with add/remove functionality. Implement form validation and save/reset buttons.",
+            "status": "pending",
+            "testStrategy": "Test form validation, field interactions, and proper state management"
+          },
+          {
+            "id": 3,
+            "title": "Create Backend API Endpoints",
+            "description": "Implement API endpoints for managing pricing page content",
+            "dependencies": [],
+            "details": "Create GET and PUT endpoints at /api/admin/pricing-content. Implement input validation, sanitization, and error handling. Create service layer for content management.",
+            "status": "pending",
+            "testStrategy": "Unit test validation and sanitization. Integration test API endpoints."
+          },
+          {
+            "id": 4,
+            "title": "Update Pricing Page Component",
+            "description": "Modify pricing page to use custom content from admin settings",
+            "dependencies": [],
+            "details": "Update component to fetch and display custom content. Implement fallback to defaults when custom content is null. Remove hardcoded trial and setup fee text.",
+            "status": "pending",
+            "testStrategy": "Test conditional rendering with both custom and default content"
+          },
+          {
+            "id": 5,
+            "title": "Implement FAQ Section Management",
+            "description": "Create dynamic FAQ management system with repeater fields",
+            "dependencies": [
+              4
+            ],
+            "details": "Implement repeater field component for FAQ items. Add question/answer fields. Store as JSON. Update display component to use custom FAQs or fall back to defaults.",
+            "status": "pending",
+            "testStrategy": "Test FAQ CRUD operations, JSON storage/retrieval, and display rendering"
+          },
+          {
+            "id": 6,
+            "title": "Update Documentation and Perform Final Testing",
+            "description": "Update admin-settings.mdc documentation and conduct comprehensive testing",
+            "dependencies": [
+              5
+            ],
+            "details": "Update documentation with new settings section details. Test entire workflow from admin settings to frontend display. Verify responsive design and styling consistency.",
+            "status": "pending",
+            "testStrategy": "End-to-end testing of complete feature. Verify documentation accuracy."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Customizable Footer with Admin Settings",
+        "description": "Develop a responsive three-column footer with administrative controls for customizing colors, site name, and column content through the admin settings interface.",
+        "details": "Implementation steps:\n\n1. Database Updates:\n   - Add new columns to settings table:\n     * footer_background_color (varchar)\n     * footer_text_color (varchar)\n     * footer_link_color (varchar)\n     * site_name (varchar)\n     * footer_column_1_content (text)\n     * footer_column_2_content (text)\n     * footer_column_3_content (text)\n   - Create migration script\n   - Update database schema documentation\n\n2. Admin Settings UI:\n   - Create new \"Footer Settings\" section in admin panel\n   - Implement color picker components for:\n     * Background color\n     * Text color\n     * Link color\n   - Add site name input field\n   - Create rich text editors for each footer column\n   - Implement preview functionality\n   - Add form validation and error handling\n\n3. Footer Component Implementation:\n   - Create new React FooterComponent using TypeScript\n   - Implement responsive three-column layout using CSS Grid/Flexbox\n   - Add breakpoints for mobile responsiveness:\n     * Desktop: three columns\n     * Tablet: two columns\n     * Mobile: single column\n   - Create styled-components/CSS modules for footer styling\n   - Implement dynamic color application using CSS variables\n   - Add sanitization for custom HTML content\n\n4. Integration:\n   - Create API endpoints for footer settings CRUD operations\n   - Implement footer settings context/store\n   - Add footer component to app layout\n   - Set up real-time preview in admin panel\n   - Implement caching for footer settings\n\n5. Documentation:\n   - Update admin documentation with new footer customization options\n   - Add technical documentation for footer component\n   - Include usage guidelines for HTML content",
+        "testStrategy": "1. Unit Testing:\n   - Test footer settings validation\n   - Verify color format validation\n   - Test HTML content sanitization\n   - Validate responsive layout calculations\n   - Test footer component rendering\n   - Verify settings persistence\n   - Test context/store functionality\n\n2. Integration Testing:\n   - Verify API endpoint functionality\n   - Test settings update flow\n   - Validate real-time preview\n   - Check cache invalidation\n   - Test color scheme integration\n   - Verify responsive behavior across breakpoints\n\n3. UI/UX Testing:\n   - Validate responsive layout on different devices\n   - Test accessibility compliance:\n     * Color contrast ratios\n     * Screen reader compatibility\n     * Keyboard navigation\n   - Verify custom HTML rendering\n   - Test admin interface usability\n   - Check cross-browser compatibility\n\n4. Security Testing:\n   - Validate HTML sanitization\n   - Test XSS prevention\n   - Verify admin access controls\n   - Check input validation",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Database Migration for Footer Settings",
+            "description": "Create and execute migration script to add new footer-related columns to admin_settings table",
+            "dependencies": [],
+            "details": "Create migration file adding columns: footer_background_color, dark_footer_background_color, footer_text_color, dark_footer_text_color, footer_link_color, dark_footer_link_color, site_name, footer_html_one, footer_html_two. Set appropriate default values and constraints. Update database schema documentation.",
+            "status": "done",
+            "testStrategy": "Verify migration up/down scripts, check column types and constraints, validate default values"
+          },
+          {
+            "id": 2,
+            "title": "Implement Theme Colors Section in Admin UI",
+            "description": "Add color picker components for footer-specific colors in Theme Colors section",
+            "dependencies": [
+              1
+            ],
+            "details": "Add color picker components for both light and dark theme footer colors (background, text, links). Implement live preview functionality. Include validation for color values. Add save/reset functionality.",
+            "status": "pending",
+            "testStrategy": "Test color picker functionality, value persistence, theme switching, and validation"
+          },
+          {
+            "id": 3,
+            "title": "Create Site Options Section in Admin UI",
+            "description": "Implement new Site Options section with site name configuration",
+            "dependencies": [
+              1
+            ],
+            "details": "Create new admin UI section for Site Options. Add input field for site name with validation. Implement save functionality. Add character limit and validation messages.",
+            "status": "pending",
+            "testStrategy": "Test input validation, character limits, persistence of values"
+          },
+          {
+            "id": 4,
+            "title": "Develop Footer Options Section in Admin UI",
+            "description": "Create Footer Options section with WYSIWYG editors for custom content",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement Footer Options section with two WYSIWYG editors for footer_html_one and footer_html_two. Add HTML sanitization. Include preview functionality. Implement save/reset capabilities.",
+            "status": "pending",
+            "testStrategy": "Test WYSIWYG functionality, HTML sanitization, content persistence"
+          },
+          {
+            "id": 5,
+            "title": "Create Responsive Footer Component",
+            "description": "Build responsive footer component using new settings and styling",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Create React footer component with TypeScript. Implement responsive 3-column layout using CSS Grid/Flexbox. Add breakpoints for mobile/tablet. Integrate theme colors and custom content. Implement copyright section with dynamic site name.",
+            "status": "pending",
+            "testStrategy": "Test responsive behavior, theme switching, content rendering, accessibility"
+          },
+          {
+            "id": 6,
+            "title": "Integrate Footer into Application",
+            "description": "Integrate new footer component into main application layout",
+            "dependencies": [
+              5
+            ],
+            "details": "Add footer component to main layout. Implement context/store for footer settings. Set up API endpoints for settings CRUD operations. Add caching for footer settings. Update header component to use dynamic site name.",
+            "status": "pending",
+            "testStrategy": "Test integration points, API endpoints, caching mechanism, overall layout"
+          },
+          {
+            "id": 7,
+            "title": "Update Technical Documentation",
+            "description": "Update all relevant documentation with new footer functionality",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "details": "Update @admin-settings.mdc and @1-supabase-database-setup.mdc with new fields and sections. Document footer component usage, theming system, and HTML content guidelines. Include updated table schema and API endpoints.",
+            "status": "pending",
+            "testStrategy": "Verify documentation accuracy, completeness, and clarity through peer review"
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T20:48:35.105Z",
-      "updated": "2025-07-08T16:34:51.009Z",
+      "updated": "2025-07-08T23:19:59.503Z",
       "description": "Tasks for master context"
     }
   }
