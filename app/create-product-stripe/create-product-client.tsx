@@ -24,7 +24,7 @@ export default function CreateProductClient() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to create product')
       toast.success('Product created successfully!')
-      router.push('/dashboard?tab=products')
+      router.push('/my-products')
     } catch (err) {
       console.error('Product creation error:', err)
       toast.error(err instanceof Error ? err.message : 'Failed to create product')

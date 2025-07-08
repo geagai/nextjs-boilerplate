@@ -27,6 +27,7 @@ interface AdminSettingsRow {
   dark_button_text_color: string | null
   dark_link_color: string | null
   dark_link_hover_color: string | null
+  dev_mode: boolean | null
   dark_header_background_color: string | null
   headline_text_color: string | null
   paragraph_text_color: string | null
@@ -75,6 +76,7 @@ export default async function AdminSettingsPage() {
     dark_button_text_color: settings.dark_button_text_color ?? null,
     dark_link_color: settings.dark_link_color ?? null,
     dark_link_hover_color: settings.dark_link_hover_color ?? null,
+    dev_mode: settings.dev_mode ?? null,
     dark_header_background_color: settings.dark_header_background_color ?? null,
     headline_text_color: settings.headline_text_color ?? "#000000",
     paragraph_text_color: settings.paragraph_text_color ?? "#000000",
@@ -103,6 +105,7 @@ export default async function AdminSettingsPage() {
     dark_button_text_color: null,
     dark_link_color: null,
     dark_link_hover_color: null,
+    dev_mode: null,
     dark_header_background_color: null,
     headline_text_color: "#000000",
     paragraph_text_color: "#000000",

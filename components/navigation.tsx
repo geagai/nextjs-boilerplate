@@ -52,6 +52,12 @@ export function Navigation() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/my-products" className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4" />
+                      <span>My Products</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/create-product-stripe" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Create Product</span>

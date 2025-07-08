@@ -153,9 +153,6 @@ function EditProductStripeContent() {
 
       toast.success('Product updated successfully!')
       
-      // Redirect to products page or dashboard
-      router.push('/dashboard?tab=products')
-      
     } catch (error) {
       console.error('Product update error:', error)
       throw error // Re-throw to let ProductForm handle the error display

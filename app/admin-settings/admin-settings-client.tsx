@@ -44,6 +44,7 @@ interface AdminSettingsRow {
   dark_link_color: string | null
   dark_link_hover_color: string | null
   dark_header_background_color: string | null
+  dev_mode: boolean | null
 }
 
 interface AdminSettingsClientProps {
@@ -71,7 +72,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSettings((prev) => ({ ...prev, [name]:
-      name === "show_header" ? (value === '' ? null : value === 'true') : value
+      name === "show_header" || name === "dev_mode" ? (value === '' ? null : value === 'true') : value
     }));
   };
 
@@ -107,6 +108,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         dark_link_color: settings.dark_link_color,
         dark_link_hover_color: settings.dark_link_hover_color,
         dark_header_background_color: settings.dark_header_background_color,
+        dev_mode: settings.dev_mode,
       } as const;
 
       let error;
@@ -182,9 +184,19 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                 </div>
 
                 {/* Header Visibility */}
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2">
                   <label className="text-sm font-medium">Show Header?</label>
                   <select name="show_header" className="border rounded px-2 py-2 w-full bg-background" value={settings.show_header === null ? '' : settings.show_header ? 'true' : 'false'} onChange={handleChange}>
+                    <option value="" disabled>Select...</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+
+                {/* Developer Mode */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Developer Mode</label>
+                  <select name="dev_mode" className="border rounded px-2 py-2 w-full bg-background" value={settings.dev_mode === null ? '' : settings.dev_mode ? 'true' : 'false'} onChange={handleChange}>
                     <option value="" disabled>Select...</option>
                     <option value="true">Yes</option>
                     <option value="false">No</option>
