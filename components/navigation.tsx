@@ -47,6 +47,9 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
             </Link>
+            <Link href="/contact" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Contact
+            </Link>
             {(!loading && user?.role === 'admin') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -72,6 +75,12 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                     <Link href="/create-product-stripe" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Create Product</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin-submissions" className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Contact Submissions</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

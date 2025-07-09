@@ -16,6 +16,8 @@ import { toast } from "@/hooks/use-toast";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
+import { useAdminSettings } from "@/components/admin-settings-provider";
+import { adminSettingsCache } from "@/lib/admin-settings-cache";
 
 // Dynamically import the RichTextEditor to avoid SSR issues
 const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false });
@@ -27,6 +29,7 @@ interface AdminSettingsRow {
   stripe_webhook_secret: string | null
   show_header: boolean | null
   sticky_header: boolean | null
+  email: string | null
   primary_color: string | null
   secondary_color: string | null
   background_color: string | null
@@ -66,12 +69,20 @@ interface AdminSettingsRow {
 
 interface AdminSettingsClientProps {
   initialSettings: AdminSettingsRow
+  initialPageContent: {
+    terms_service: string | null
+    privacy_policy: string | null
+    contact_us: string | null
+  }
 }
 
-export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProps) {
+export function AdminSettingsClient({ initialSettings, initialPageContent }: AdminSettingsClientProps) {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<AdminSettingsRow>(initialSettings);
+  const [pageContent, setPageContent] = useState(initialPageContent);
+  const [clearingCache, setClearingCache] = useState(false);
   const supabase = createClient();
+  const { refreshSettings, clearCacheAndRefresh } = useAdminSettings();
 
   // Debug: check admin status on mount
   useEffect(() => {
@@ -110,6 +121,19 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     setSettings((prev) => ({ ...prev, pricing_page_faq: newFaqs }));
   };
 
+  const handleClearCache = async () => {
+    setClearingCache(true);
+    try {
+      await clearCacheAndRefresh();
+      toast({ title: "Cache cleared successfully" });
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      toast({ title: "Failed to clear cache", variant: "destructive" });
+    } finally {
+      setClearingCache(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -121,6 +145,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         stripe_webhook_secret: settings.stripe_webhook_secret,
         show_header: settings.show_header,
         sticky_header: settings.sticky_header,
+        email: settings.email,
         primary_color: settings.primary_color,
         secondary_color: settings.secondary_color,
         background_color: settings.background_color,
@@ -180,7 +205,22 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
       }
 
       if (error) throw error;
+
+      // Also save page content to the pages table
+      const { error: pageError } = await supabase
+        .from("pages")
+        .upsert(pageContent)
+        .eq('id', 1); // Assuming single row with id 1
+
+      // If no rows exist, insert
+      if (pageError?.code === "PGRST116") {
+        await supabase.from("pages").insert(pageContent);
+      }
+
       toast({ title: "Settings saved" });
+      
+      // Clear cache and refresh with new data from database
+      await clearCacheAndRefresh();
     } catch (err) {
       console.error(err);
       toast({ title: "Failed to save settings", variant: "destructive" });
@@ -193,9 +233,34 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page header */}
-        <div>
-          <h1 className="text-3xl font-bold">Admin Settings</h1>
-          <p className="text-muted-foreground mt-2">Manage global configuration and integrations.</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">Admin Settings</h1>
+            <p className="text-muted-foreground mt-2">Manage global configuration and integrations.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearCache}
+            disabled={clearingCache}
+            className="px-4 py-2 bg-white hover:bg-gray-100 border border-[#d8d8d8] rounded-[10px] text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #d8d8d8',
+              borderRadius: '10px'
+            }}
+            onMouseEnter={(e) => {
+              if (!clearingCache) {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!clearingCache) {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+              }
+            }}
+          >
+            {clearingCache ? 'Clearing...' : 'Clear Cache'}
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 mt-8">
@@ -259,6 +324,13 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
+                </div>
+
+                {/* Contact Email */}
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-medium">Contact Email</label>
+                  <Input name="email" type="email" placeholder="contact@yoursite.com" value={settings.email || ''} onChange={handleChange} />
+                  <p className="text-xs text-muted-foreground">Email address where contact form submissions will be sent</p>
                 </div>
               </div>
             </CardContent>
@@ -521,6 +593,56 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
              </CardContent>
            </Card>
 
+          {/* Page Content Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-2 text-primary" />
+                Page Content Management
+              </CardTitle>
+              <CardDescription>
+                Manage content for static pages like Terms of Service, Privacy Policy, and Contact Us.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Terms of Service */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Terms of Service</label>
+                <RichTextEditor
+                  value={pageContent.terms_service || ""}
+                  onChange={(html) =>
+                    setPageContent((prev) => ({ ...prev, terms_service: html }))
+                  }
+                  placeholder="Enter Terms of Service content..."
+                />
+              </div>
+
+              {/* Privacy Policy */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Privacy Policy</label>
+                <RichTextEditor
+                  value={pageContent.privacy_policy || ""}
+                  onChange={(html) =>
+                    setPageContent((prev) => ({ ...prev, privacy_policy: html }))
+                  }
+                  placeholder="Enter Privacy Policy content..."
+                />
+              </div>
+
+              {/* Contact Us */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Us</label>
+                <RichTextEditor
+                  value={pageContent.contact_us || ""}
+                  onChange={(html) =>
+                    setPageContent((prev) => ({ ...prev, contact_us: html }))
+                  }
+                  placeholder="Enter Contact Us content..."
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Footer Settings */}
           <Card>
             <CardHeader>
@@ -533,6 +655,11 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Contact Email & Site Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Email</label>
+                <Input name="email" placeholder="contact@example.com" value={settings.email || ''} onChange={handleChange} />
+              </div>
               {/* Site Name */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Site Name</label>

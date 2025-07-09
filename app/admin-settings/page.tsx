@@ -12,6 +12,7 @@ interface AdminSettingsRow {
   stripe_webhook_secret: string | null
   show_header: boolean | null
   sticky_header: boolean | null
+  email: string | null
   primary_color: string | null
   secondary_color: string | null
   background_color: string | null
@@ -70,12 +71,20 @@ export default async function AdminSettingsPage() {
     .limit(1)
     .maybeSingle();
 
+  // Also fetch page content
+  const { data: pageContent } = await supabase
+    .from("pages")
+    .select("terms_service, privacy_policy, contact_us")
+    .limit(1)
+    .maybeSingle();
+
   const initialSettings: AdminSettingsRow = settings ? {
     stripe_publishable_key: settings.stripe_publishable_key ?? "",
     stripe_secret: settings.stripe_secret ?? "",
     stripe_webhook_secret: settings.stripe_webhook_secret ?? "",
     show_header: settings.show_header ?? null,
     sticky_header: settings.sticky_header ?? null,
+    email: settings.email ?? null,
     primary_color: settings.primary_color ?? "#3A72BB",
     secondary_color: settings.secondary_color ?? "#33363B",
     background_color: settings.background_color ?? "#F7F9FB",
@@ -120,6 +129,7 @@ export default async function AdminSettingsPage() {
     stripe_webhook_secret: "",
     show_header: null,
     sticky_header: null,
+    email: null,
     primary_color: "#3A72BB", // default brand color
     secondary_color: "#33363B",
     background_color: "#F7F9FB",
@@ -159,5 +169,8 @@ export default async function AdminSettingsPage() {
     pricing_page_faq: null,
   };
 
-  return <AdminSettingsClient initialSettings={initialSettings} />;
+  return <AdminSettingsClient 
+    initialSettings={initialSettings} 
+    initialPageContent={pageContent || { terms_service: null, privacy_policy: null, contact_us: null }}
+  />;
 } 

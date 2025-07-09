@@ -18,7 +18,7 @@ const devTools = [
   {
     icon: Palette,
     title: 'Design System',
-    description: 'Radix UI components with Tailwind CSS. Consistent, accessible, and beautiful by default.'
+    description: 'Radix UI components with Tailwind CSS and Tiptap rich text editing. Consistent, accessible, and beautiful by default.'
   },
   {
     icon: GitBranch,

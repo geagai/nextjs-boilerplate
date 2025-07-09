@@ -3,6 +3,7 @@
 
 import { AuthProvider } from './auth-provider'
 import { ThemeProvider } from './theme-provider'
+import { AdminSettingsProvider } from './admin-settings-provider'
 import { Toaster } from './ui/toaster'
 import { useEffect, useState } from 'react'
 
@@ -25,8 +26,10 @@ export function Providers({ children, initialUser, initialSession }: ProvidersPr
         enableSystem
         disableTransitionOnChange={false}
       >
-        {children}
-        {mounted && <Toaster />}
+        <AdminSettingsProvider>
+          {children}
+          {mounted && <Toaster />}
+        </AdminSettingsProvider>
       </ThemeProvider>
     </AuthProvider>
   )

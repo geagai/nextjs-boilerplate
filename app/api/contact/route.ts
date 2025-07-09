@@ -19,14 +19,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServerClient()
     
+    // First, get the contact email from admin settings
+    const { data: adminSettings } = await supabase
+      .from('admin_settings')
+      .select('email')
+      .limit(1)
+      .maybeSingle()
+    
     const { data: submission, error } = await supabase
-      .from('contact_submissions')
+      .from('submissions')
       .insert({
         name: validatedData.name,
         email: validatedData.email,
         subject: validatedData.subject || 'General Inquiry',
-        message: validatedData.message,
-        created_at: new Date().toISOString()
+        message: validatedData.message
       })
       .select()
       .single()
@@ -37,6 +43,31 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to submit contact form' },
         { status: 500 }
       )
+    }
+
+    // Send email notification if contact email is configured
+    if (adminSettings?.email) {
+      try {
+        // For now, we'll log the email content
+        // In production, this would integrate with an email service like SendGrid, Resend, etc.
+        console.log('Email notification:', {
+          to: adminSettings.email,
+          subject: `New Contact Form Submission: ${validatedData.subject || 'General Inquiry'}`,
+          content: `
+            New contact form submission received:
+            
+            Name: ${validatedData.name}
+            Email: ${validatedData.email}
+            Subject: ${validatedData.subject || 'General Inquiry'}
+            Message: ${validatedData.message}
+            
+            Submitted at: ${new Date().toISOString()}
+          `
+        })
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError)
+        // Don't fail the entire request if email fails
+      }
     }
 
     return NextResponse.json(

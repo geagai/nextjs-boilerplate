@@ -46,7 +46,7 @@ const features = [
   {
     icon: Code2,
     title: 'MCP Server Integration',
-    description: 'Model Context Protocol support with SSE/HTTP streaming, IP lookup tools, and AI-ready architecture.'
+    description: 'Model Context Protocol support with TaskMaster, Supabase, and GitHub integrations for easy setup and custom development workflows.'
   },
   {
     icon: TestTube,
@@ -71,7 +71,7 @@ const features = [
   {
     icon: Palette,
     title: 'Design System',
-    description: 'Radix UI components, Tailwind CSS theming, dark mode support, and consistent design tokens.'
+    description: 'Radix UI components, Tiptap rich text editing, Tailwind CSS theming, dark mode support, and consistent design tokens.'
   },
   {
     icon: Globe,

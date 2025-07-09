@@ -4,6 +4,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { useAdminSettings } from "@/components/admin-settings-provider"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
@@ -42,11 +43,56 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant = "default", size, asChild = false, style, onMouseEnter, onMouseLeave, ...props }, ref) => {
+    const { getButtonStyles, getButtonHoverStyles } = useAdminSettings();
+    
+    // Get custom styles based on variant
+    const customStyles = getButtonStyles(variant || "default");
+    const customHoverStyles = getButtonHoverStyles(variant || "default");
+    
+    // Combine custom styles with any provided inline styles
+    const combinedStyles = { ...customStyles, ...style };
+    
+    // Enhanced mouse event handlers for dynamic hover effects
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Apply custom hover styles if available
+      if (customHoverStyles.backgroundColor) {
+        e.currentTarget.style.backgroundColor = customHoverStyles.backgroundColor;
+      }
+      if (customHoverStyles.borderColor) {
+        e.currentTarget.style.borderColor = customHoverStyles.borderColor;
+      }
+      if (customHoverStyles.color) {
+        e.currentTarget.style.color = customHoverStyles.color;
+      }
+      
+      // Call the original onMouseEnter if provided
+      onMouseEnter?.(e);
+    };
+    
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Restore normal styles
+      if (customStyles.backgroundColor) {
+        e.currentTarget.style.backgroundColor = customStyles.backgroundColor;
+      }
+      if (customStyles.borderColor) {
+        e.currentTarget.style.borderColor = customStyles.borderColor;
+      }
+      if (customStyles.color) {
+        e.currentTarget.style.color = customStyles.color;
+      }
+      
+      // Call the original onMouseLeave if provided
+      onMouseLeave?.(e);
+    };
+    
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
+        style={combinedStyles}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         ref={ref}
         {...props}
       />
