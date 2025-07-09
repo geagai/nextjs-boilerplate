@@ -64,6 +64,7 @@ export default async function RootLayout({
     '--link': hexToHsl(settings?.link_color ?? '#33363B'),
     '--link-hover': hexToHsl(settings?.link_hover_color ?? '#3872BB'),
     '--header-bg': hexToHsl(settings?.header_background_color ?? '#F7F9FB'),
+    '--headline': hexToHsl(settings?.headline_text_color ?? '#3A72BB'),
   }
 
   const cssVars = Object.entries(vars)
@@ -78,6 +79,7 @@ export default async function RootLayout({
     '--link-hover': hexToHsl(settings?.dark_link_hover_color ?? '#3872BB'),
     '--header-bg': hexToHsl(settings?.dark_header_background_color ?? '#0D0D0D'),
     '--foreground': hexToHsl(settings?.dark_paragraph_text_color ?? '#EDEDED'),
+    '--headline': hexToHsl(settings?.dark_headline_text_color ?? '#3A72BB'),
   }
   const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
 

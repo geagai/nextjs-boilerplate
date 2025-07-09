@@ -67,6 +67,12 @@
   }
 }
 
+/* Global headline styles */
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(var(--headline));
+  margin-top: 2rem; /* 2rem = 32px */
+}
+
 @layer base {
   * {
     @apply border-border;
