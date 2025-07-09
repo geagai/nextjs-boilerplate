@@ -34,6 +34,7 @@ export function ContactForm({
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const [adminEmail, setAdminEmail] = useState<string>('hello@me.com')
+  const [emailLoading, setEmailLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true;
@@ -47,6 +48,7 @@ export function ContactForm({
       }
       if (!email) email = 'hello@me.com';
       if (isMounted) setAdminEmail(email);
+      if (isMounted) setEmailLoading(false);
     }
     fetchEmail();
     return () => { isMounted = false; };
@@ -173,15 +175,17 @@ export function ContactForm({
         </form>
 
         <div className="mt-6 pt-6 border-t text-center">
-          <p className="text-sm text-muted-foreground">
-            Or email us directly at{' '}
-            <a 
-              href={`mailto:${adminEmail}`}
-              className="text-primary hover:underline"
-            >
-              {adminEmail}
-            </a>
-          </p>
+          {!emailLoading && (
+            <p className="text-sm text-muted-foreground">
+              Or email us directly at{' '}
+              <a 
+                href={`mailto:${adminEmail}`}
+                className="text-primary hover:underline"
+              >
+                {adminEmail}
+              </a>
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

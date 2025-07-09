@@ -44,7 +44,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size, asChild = false, style, onMouseEnter, onMouseLeave, ...props }, ref) => {
-    const { getButtonStyles, getButtonHoverStyles } = useAdminSettings();
+    const { getButtonStyles, getButtonHoverStyles, loading: adminSettingsLoading } = useAdminSettings();
     
     // Get custom styles based on variant
     const customStyles = getButtonStyles(variant || "default");
@@ -55,38 +55,40 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     // Enhanced mouse event handlers for dynamic hover effects
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-      // Apply custom hover styles if available
-      if (customHoverStyles.backgroundColor) {
-        e.currentTarget.style.backgroundColor = customHoverStyles.backgroundColor;
+      if (customHoverStyles && typeof customHoverStyles === 'object') {
+        if ('backgroundColor' in customHoverStyles && typeof customHoverStyles.backgroundColor === 'string') {
+          e.currentTarget.style.backgroundColor = customHoverStyles.backgroundColor;
+        }
+        if ('borderColor' in customHoverStyles && typeof customHoverStyles.borderColor === 'string') {
+          e.currentTarget.style.borderColor = customHoverStyles.borderColor;
+        }
+        if ('color' in customHoverStyles && typeof customHoverStyles.color === 'string') {
+          e.currentTarget.style.color = customHoverStyles.color;
+        }
       }
-      if (customHoverStyles.borderColor) {
-        e.currentTarget.style.borderColor = customHoverStyles.borderColor;
-      }
-      if (customHoverStyles.color) {
-        e.currentTarget.style.color = customHoverStyles.color;
-      }
-      
-      // Call the original onMouseEnter if provided
       onMouseEnter?.(e);
     };
-    
+
     const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-      // Restore normal styles
-      if (customStyles.backgroundColor) {
-        e.currentTarget.style.backgroundColor = customStyles.backgroundColor;
+      if (customStyles && typeof customStyles === 'object') {
+        if ('backgroundColor' in customStyles && typeof customStyles.backgroundColor === 'string') {
+          e.currentTarget.style.backgroundColor = customStyles.backgroundColor;
+        }
+        if ('borderColor' in customStyles && typeof customStyles.borderColor === 'string') {
+          e.currentTarget.style.borderColor = customStyles.borderColor;
+        }
+        if ('color' in customStyles && typeof customStyles.color === 'string') {
+          e.currentTarget.style.color = customStyles.color;
+        }
       }
-      if (customStyles.borderColor) {
-        e.currentTarget.style.borderColor = customStyles.borderColor;
-      }
-      if (customStyles.color) {
-        e.currentTarget.style.color = customStyles.color;
-      }
-      
-      // Call the original onMouseLeave if provided
       onMouseLeave?.(e);
     };
     
     const Comp = asChild ? Slot : "button"
+    if (adminSettingsLoading) {
+      // Optionally, render a skeleton or nothing while loading
+      return <div className={cn(buttonVariants({ variant, size, className }), "opacity-0")}></div>;
+    }
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
