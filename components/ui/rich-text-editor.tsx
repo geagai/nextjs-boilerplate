@@ -21,9 +21,10 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+  minHeight?: number;
 }
 
-export default function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
+export default function RichTextEditor({ value, onChange, placeholder, className, minHeight = 500 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit, Link],
     content: value || "",
@@ -36,6 +37,7 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         spellCheck: "true",
       },
     },
+    immediatelyRender: false,
   });
 
   // Keep editor content in sync when the parent value changes externally (e.g., form reset)
@@ -154,7 +156,7 @@ export default function RichTextEditor({ value, onChange, placeholder, className
       </div>
 
       {/* Editable content */}
-      <div className="min-h-[120px] p-2">
+      <div className={"p-2 bg-white"} style={{ minHeight: minHeight }}>
         <EditorContent editor={editor} />
         {editor.isEmpty && !editor.isFocused && placeholder ? (
           <p className="pointer-events-none absolute opacity-50 select-none m-0">

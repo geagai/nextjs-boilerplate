@@ -100,7 +100,9 @@ export default async function RootLayout({
           <div className="min-h-screen bg-background text-foreground">
             {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
             <main>{children}</main>
-            <Footer siteName={siteName} bgColor={footerBg} textColor={footerText} linkColor={footerLink} htmlOne={footerHtmlOne} htmlTwo={footerHtmlTwo} />
+            <div className="mt-[100px]">
+              <Footer siteName={siteName} bgColor={footerBg} textColor={footerText} linkColor={footerLink} htmlOne={footerHtmlOne} htmlTwo={footerHtmlTwo} />
+            </div>
           </div>
         </Providers>
       </body>

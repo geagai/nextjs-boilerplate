@@ -206,17 +206,6 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
 
       if (error) throw error;
 
-      // Also save page content to the pages table
-      const { error: pageError } = await supabase
-        .from("pages")
-        .upsert(pageContent)
-        .eq('id', 1); // Assuming single row with id 1
-
-      // If no rows exist, insert
-      if (pageError?.code === "PGRST116") {
-        await supabase.from("pages").insert(pageContent);
-      }
-
       toast({ title: "Settings saved" });
       
       // Clear cache and refresh with new data from database
@@ -593,56 +582,6 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
              </CardContent>
            </Card>
 
-          {/* Page Content Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <SettingsIcon className="h-5 w-5 mr-2 text-primary" />
-                Page Content Management
-              </CardTitle>
-              <CardDescription>
-                Manage content for static pages like Terms of Service, Privacy Policy, and Contact Us.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Terms of Service */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Terms of Service</label>
-                <RichTextEditor
-                  value={pageContent.terms_service || ""}
-                  onChange={(html) =>
-                    setPageContent((prev) => ({ ...prev, terms_service: html }))
-                  }
-                  placeholder="Enter Terms of Service content..."
-                />
-              </div>
-
-              {/* Privacy Policy */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Privacy Policy</label>
-                <RichTextEditor
-                  value={pageContent.privacy_policy || ""}
-                  onChange={(html) =>
-                    setPageContent((prev) => ({ ...prev, privacy_policy: html }))
-                  }
-                  placeholder="Enter Privacy Policy content..."
-                />
-              </div>
-
-              {/* Contact Us */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Contact Us</label>
-                <RichTextEditor
-                  value={pageContent.contact_us || ""}
-                  onChange={(html) =>
-                    setPageContent((prev) => ({ ...prev, contact_us: html }))
-                  }
-                  placeholder="Enter Contact Us content..."
-                />
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Footer Settings */}
           <Card>
             <CardHeader>
@@ -674,6 +613,7 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
                     setSettings((prev) => ({ ...prev, footer_html_one: html }))
                   }
                   placeholder="Enter HTML for footer column two…"
+                  minHeight={200}
                 />
                 <label className="text-sm font-medium">Footer Column Three HTML</label>
                 <RichTextEditor
@@ -682,6 +622,7 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
                     setSettings((prev) => ({ ...prev, footer_html_two: html }))
                   }
                   placeholder="Enter HTML for footer column three…"
+                  minHeight={200}
                 />
               </div>
             </CardContent>

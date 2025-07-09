@@ -118,7 +118,6 @@ class AdminSettingsCacheManager {
       }
 
       const settings = data as AdminSettingsCache;
-      console.log('📦 Database Response: Successfully fetched admin settings', settings);
       
       // Update all caches
       this.memoryCache = settings;

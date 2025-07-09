@@ -26,6 +26,8 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
   const [editMode, setEditMode] = useState(false);
   const [content, setContent] = useState<string>(initialContent ?? "");
   const [saving, setSaving] = useState(false);
+  const [codeView, setCodeView] = useState(false);
+  const [html, setHtml] = useState(initialContent ?? "");
 
   // Check admin status on mount
   useEffect(() => {
@@ -35,18 +37,36 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
     })();
   }, [supabase]);
 
+  // Keep html state in sync with content
+  useEffect(() => {
+    if (!codeView) setHtml(content);
+  }, [content, codeView]);
+
   const handleSave = async () => {
     setSaving(true);
-    // Upsert single-row strategy: assume only one row in pages table.
-    const { error } = await supabase
+    // Check if a row exists in the pages table
+    const { data: existingRows, error: fetchError } = await supabase
       .from("pages")
-      .update({ [column]: content })
-      .neq(column, null) // ensure update occurs even if previously null
+      .select("*")
       .limit(1);
 
-    // If no rows were updated, insert new
-    if (error?.code === "PGRST116" || !error) {
-      await supabase.from("pages").insert({ [column]: content }).single();
+    let error = null;
+    if (fetchError) {
+      error = fetchError;
+    } else if (existingRows && existingRows.length > 0) {
+      // Update the first row
+      const rowId = existingRows[0].id;
+      const { error: updateError } = await supabase
+        .from("pages")
+        .update({ [column]: codeView ? html : content })
+        .eq("id", rowId);
+      error = updateError;
+    } else {
+      // Insert a new row
+      const { error: insertError } = await supabase
+        .from("pages")
+        .insert({ [column]: codeView ? html : content });
+      error = insertError;
     }
 
     if (error) {
@@ -68,34 +88,84 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
     );
   }
 
+  // --- Toolbar for text alignment ---
+  function AlignmentToolbar({ editor }: { editor: any }) {
+    if (!editor) return null;
+    return (
+      <div className="flex gap-1 mb-2">
+        <Button size="sm" variant={editor.isActive("textAlign", { textAlign: "left" }) ? "default" : "outline"} onClick={() => editor.chain().focus().setTextAlign("left").run()}>Left</Button>
+        <Button size="sm" variant={editor.isActive("textAlign", { textAlign: "center" }) ? "default" : "outline"} onClick={() => editor.chain().focus().setTextAlign("center").run()}>Center</Button>
+        <Button size="sm" variant={editor.isActive("textAlign", { textAlign: "right" }) ? "default" : "outline"} onClick={() => editor.chain().focus().setTextAlign("right").run()}>Right</Button>
+        <Button size="sm" variant={editor.isActive("textAlign", { textAlign: "justify" }) ? "default" : "outline"} onClick={() => editor.chain().focus().setTextAlign("justify").run()}>Justify</Button>
+      </div>
+    );
+  }
 
+  // --- Dynamic import for RichTextEditor with text alignment ---
+  const RichTextEditorWithAlignment = dynamic(async () => {
+    const mod = await import("@/components/ui/rich-text-editor");
+    const { useEditor } = await import("@tiptap/react");
+    const StarterKit = (await import("@tiptap/starter-kit")).default;
+    const Link = (await import("@tiptap/extension-link")).default;
+    const TextAlign = (await import("@tiptap/extension-text-align")).default;
+    return function EditorWithAlignment(props: any) {
+      const editor = useEditor({
+        extensions: [StarterKit, Link, TextAlign.configure({ types: ["heading", "paragraph"] })],
+        content: props.value || "",
+        onUpdate({ editor }: any) {
+          props.onChange(editor.getHTML());
+        },
+        editorProps: {
+          attributes: {
+            class: `prose prose-sm max-w-none focus:outline-none ${props.className ?? ""}`,
+            spellCheck: "true",
+          },
+        },
+      });
+      return (
+        <>
+          <AlignmentToolbar editor={editor} />
+          <mod.default {...props} editor={editor} />
+        </>
+      );
+    };
+  }, { ssr: false });
 
   return (
     <div className={className}>
       {!editMode && (
-          <div className="flex justify-end">
-            <Button 
-              size="sm" 
-              onClick={() => setEditMode(true)}
-            >
-              Edit
-            </Button>
-          </div>
-        )}
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => setEditMode(true)}>
+            Edit
+          </Button>
+        </div>
+      )}
 
       {editMode ? (
         <div className="space-y-4">
-          <RichTextEditor value={content} onChange={setContent} />
+          <div className="flex gap-2 mb-2">
+            <Button size="sm" variant={codeView ? "default" : "outline"} onClick={() => setCodeView(false)}>WYSIWYG</Button>
+            <Button size="sm" variant={codeView ? "outline" : "default"} onClick={() => setCodeView(true)}>Code View</Button>
+          </div>
+          {codeView ? (
+            <textarea
+              className="w-full min-h-[500px] font-mono border rounded p-2"
+              value={html}
+              onChange={e => setHtml(e.target.value)}
+              onBlur={() => setContent(html)}
+            />
+          ) : (
+            <RichTextEditorWithAlignment value={content} onChange={setContent} />
+          )}
           <div className="flex gap-2">
-            <Button 
-              onClick={handleSave} 
-              disabled={saving}
-            >
+            <Button onClick={handleSave} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />} Save
             </Button>
             <Button variant="outline" onClick={() => {
               setContent(initialContent ?? "");
+              setHtml(initialContent ?? "");
               setEditMode(false);
+              setCodeView(false);
             }}>Cancel</Button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, MessageSquare, Send } from 'lucide-react'
+import { adminSettingsCache } from '@/lib/admin-settings-cache'
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,6 +33,24 @@ export function ContactForm({
 }: ContactFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const [adminEmail, setAdminEmail] = useState<string>('hello@me.com')
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchEmail() {
+      const settings = await adminSettingsCache.getSettings();
+      let email = settings?.email;
+      if (!email) {
+        // Try fetching fresh from DB
+        const fresh = await adminSettingsCache.fetchAndCache();
+        email = fresh?.email;
+      }
+      if (!email) email = 'hello@me.com';
+      if (isMounted) setAdminEmail(email);
+    }
+    fetchEmail();
+    return () => { isMounted = false; };
+  }, []);
 
   const {
     register,
@@ -157,10 +176,10 @@ export function ContactForm({
           <p className="text-sm text-muted-foreground">
             Or email us directly at{' '}
             <a 
-              href="mailto:hello@nextgeag-bp.com"
+              href={`mailto:${adminEmail}`}
               className="text-primary hover:underline"
             >
-              hello@nextgeag-bp.com
+              {adminEmail}
             </a>
           </p>
         </div>
