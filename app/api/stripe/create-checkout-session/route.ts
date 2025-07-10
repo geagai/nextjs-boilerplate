@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
     
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!session?.user) {
+    if (!user) {
       console.log('❌ No authenticated user found')
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -34,16 +34,16 @@ export async function POST(request: NextRequest) {
       }
 
       // Create or get Stripe customer
-      let customerId = session.user.user_metadata?.stripeCustomerId
+      let customerId = user.user_metadata?.stripeCustomerId
       if (!customerId) {
         const customer = await stripe.customers.create({
-          email: session.user.email!,
-          name: session.user.user_metadata?.name || undefined,
-          metadata: { userId: session.user.id }
+          email: user.email!,
+          name: user.user_metadata?.name || undefined,
+          metadata: { userId: user.id }
         })
         customerId = customer.id
         await supabase.auth.updateUser({
-          data: { ...session.user.user_metadata, stripeCustomerId: customerId }
+          data: { ...user.user_metadata, stripeCustomerId: customerId }
         })
       }
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
         metadata: {
-          userId: session.user.id,
+          userId: user.id,
           priceId: price.id,
           productId: price.product as string
         }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ sessionId: checkoutSession.id })
     }
-    console.log('📋 Request data:', { plan, userId: session.user.id })
+    console.log('📋 Request data:', { plan, userId: user.id })
 
     if (!plan || !SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS]) {
       console.log('❌ Invalid plan:', plan)
@@ -75,7 +75,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = session.user
     const selectedPlan = SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS]
     console.log('✅ Selected plan:', selectedPlan.name, 'Price ID:', selectedPlan.stripePriceId)
 

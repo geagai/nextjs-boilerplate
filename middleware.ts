@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh session if needed
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const { data: { user }, error } = await supabase.auth.getUser()
 
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
                           request.nextUrl.pathname.startsWith('/settings') ||
@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
                           request.nextUrl.pathname.startsWith('/edit-product-stripe') ||
                           request.nextUrl.pathname.startsWith('/agent')
 
-  if (isProtectedRoute && (!session || error)) {
+  if (isProtectedRoute && (!user || error)) {
     // Redirect to login if accessing protected route without authentication
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)

@@ -10,16 +10,15 @@ export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const user = session.user
     const stripeCustomerId = user.user_metadata?.stripeCustomerId
 
     if (!stripeCustomerId) {

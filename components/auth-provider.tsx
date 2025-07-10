@@ -80,14 +80,16 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
 
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const authUser = await createAuthUserWithRole(session.user);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const authUser = await createAuthUserWithRole(user);
           setUser(authUser);
+          // Optionally, get session if needed
+          const { data: { session } } = await supabase.auth.getSession();
           setSession(session);
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        console.error('Error getting initial user:', error);
       } finally {
         setLoading(false);
       }
@@ -99,11 +101,19 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          if (event === 'SIGNED_IN' && session) {
-            const authUser = await createAuthUserWithRole(session.user);
-            setUser(authUser);
-            setSession(session);
-            setLoading(false); // <-- moved here
+          if (event === 'SIGNED_IN') {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const authUser = await createAuthUserWithRole(user);
+              setUser(authUser);
+              // Optionally, fetch session if needed
+              const { data: { session } } = await supabase.auth.getSession();
+              setSession(session);
+            } else {
+              setUser(null);
+              setSession(null);
+            }
+            setLoading(false);
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
             setSession(null);

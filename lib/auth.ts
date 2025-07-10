@@ -16,14 +16,14 @@ export interface AuthUser extends User {
 }
 
 // Get current session on server side
-export async function getServerSession(): Promise<{ user: AuthUser; session: Session } | null> {
+export async function getServerSession(): Promise<{ user: AuthUser; session: Session | null } | null> {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
   
   try {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    
-    if (error || !session) {
+    const { data: { user: baseUser }, error } = await supabase.auth.getUser()
+
+    if (error || !baseUser) {
       return null
     }
 
@@ -33,7 +33,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
       const { data: userData, error: userDataError } = await supabase
         .from('user_data')
         .select('user_role')
-        .eq('UID', session.user.id)
+        .eq('UID', baseUser.id)
         .single();
       if (!userDataError && userData?.user_role) {
         dbRole = userData.user_role;
@@ -44,12 +44,12 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
 
     // Get additional user data from user_metadata or app_metadata
     const user: AuthUser = {
-      ...session.user,
-      subscription: session.user.user_metadata?.subscription || null,
-      role: dbRole || session.user.user_metadata?.role || 'USER'
+      ...baseUser,
+      subscription: baseUser.user_metadata?.subscription || null,
+      role: dbRole || baseUser.user_metadata?.role || 'user'
     }
 
-    return { user, session }
+    return { user, session: null } // session is not available from getUser()
   } catch (error) {
     console.error('Error getting session:', error)
     return null
@@ -57,7 +57,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
 }
 
 // Require authentication - redirect if not logged in
-export async function requireAuth(): Promise<{ user: AuthUser; session: Session }> {
+export async function requireAuth(): Promise<{ user: AuthUser; session: Session | null }> {
   const sessionData = await getServerSession()
   
   if (!sessionData) {

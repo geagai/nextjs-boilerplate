@@ -50,9 +50,15 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             <Link href="/contact" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Contact
             </Link>
-            <Link href="/ai-agents/agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              AI Agents
-            </Link>
+            {(!loading && user) ? (
+              <Link href="/agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+                AI Agents
+              </Link>
+            ) : (!loading && !user) ? (
+              <Link href="/ai-agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+                AI Agents
+              </Link>
+            ) : null}
             {(!loading && user?.role === 'admin') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
