@@ -92,6 +92,21 @@ export default async function RootLayout({
 
   const sessionData = await getServerSession()
 
+  if (typeof window !== 'undefined') {
+    const originalWarn = console.warn;
+    console.warn = function (...args) {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].includes('Do not use the user object from getSession() or onAuthStateChange() for authentication or authorization')
+      ) {
+        originalWarn.apply(console, args);
+        console.trace('Supabase session warning stack trace:');
+      } else {
+        originalWarn.apply(console, args);
+      }
+    };
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>{/* Dynamic color variables */}

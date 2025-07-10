@@ -15,6 +15,22 @@ export interface AuthUser extends User {
   role?: string
 }
 
+// Monkey-patch console.warn to trace Supabase session warning on the server
+if (typeof process !== 'undefined' && process?.versions?.node) {
+  const originalWarn = console.warn;
+  console.warn = function (...args) {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Do not use the user object from getSession() or onAuthStateChange() for authentication or authorization')
+    ) {
+      originalWarn.apply(console, args);
+      console.trace('Supabase session warning stack trace (server):');
+    } else {
+      originalWarn.apply(console, args);
+    }
+  };
+}
+
 // Get current session on server side
 export async function getServerSession(): Promise<{ user: AuthUser; session: Session | null } | null> {
   const cookieStore = cookies()
