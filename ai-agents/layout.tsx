@@ -1,10 +1,9 @@
-
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import '../app/globals.css'
+import './agent-page.css'
 import { Providers } from '@/components/providers'
 import { Navigation } from '@/components/navigation'
-import { ConditionalFooter } from '@/components/conditional-footer'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { hexToHsl } from '@/lib/utils'
@@ -13,34 +12,11 @@ import { getServerSession } from '@/lib/auth'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-  description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features. Built with React 19, TypeScript, Supabase, and Stripe.',
-  keywords: 'Next.js, React, TypeScript, Supabase, Stripe, boilerplate, enterprise, mobile, authentication',
-  authors: [{ name: 'NextGeag BP Team' }],
-  openGraph: {
-    title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-    description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features.',
-    url: 'https://nextgeag-bp.com',
-    siteName: 'NextGeag BP',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-    description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features.',
-  },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  title: 'AI Agents - NextGeag BP',
+  description: 'AI Agents powered by NextGeag BP',
 }
 
-export default async function RootLayout({
+export default async function AIAgentsLayout({
   children,
 }: {
   children: React.ReactNode
@@ -83,29 +59,23 @@ export default async function RootLayout({
   }
   const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
 
-  const footerBg = settings?.footer_background_color ?? '#F7F9FB'
-  const footerText = settings?.footer_text_color ?? '#33363B'
-  const footerLink = settings?.footer_link_color ?? '#3A72BB'
-  const footerHtmlOne = settings?.footer_html_one ?? null
-  const footerHtmlTwo = settings?.footer_html_two ?? null
   const siteName = settings?.site_name ?? 'NextGeag BP'
 
   const sessionData = await getServerSession()
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>{/* Dynamic color variables */}
+      <head>
         <style>{`:root { ${cssVars} } html.dark { ${darkCssVars} }`}</style>
       </head>
       <body className={inter.className}>
         <Providers initialUser={sessionData?.user} initialSession={sessionData?.session}>
-          <div className="min-h-screen bg-background text-foreground">
+          <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
             {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
-            <main>{children}</main>
-            <ConditionalFooter siteName={siteName} bgColor={footerBg} textColor={footerText} linkColor={footerLink} htmlOne={footerHtmlOne} htmlTwo={footerHtmlTwo} />
+            <main className="flex-1 overflow-hidden">{children}</main>
           </div>
         </Providers>
       </body>
     </html>
   )
-}
+} 

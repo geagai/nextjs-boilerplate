@@ -1,0 +1,16 @@
+/* Hide footer on agent pages only */
+body:has([data-agent-page]) footer,
+body:has([data-agent-page]) .footer {
+  display: none !important;
+}
+
+/* Ensure full height layout for agent pages */
+body:has([data-agent-page]) {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body:has([data-agent-page]) main {
+  flex: 1;
+  overflow: hidden;
+} 

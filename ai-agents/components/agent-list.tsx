@@ -51,7 +51,7 @@ export function AgentList({ agents, viewMode, emptyMessage, emptyAction }: Agent
               <p className="text-sm text-muted-foreground">
                 {agent.description ?? 'No description provided.'}
               </p>
-              <Link href={`/agents/${agent.id}`} className="mt-4 inline-block">
+              <Link href={`/ai-agents/agent/${agent.id}`} className="mt-4 inline-block">
                 <Button size="sm">View</Button>
               </Link>
             </CardContent>
@@ -78,7 +78,7 @@ export function AgentList({ agents, viewMode, emptyMessage, emptyAction }: Agent
             <p className="text-sm text-muted-foreground mb-2">
               {agent.description ?? 'No description provided.'}
             </p>
-            <Link href={`/agents/${agent.id}`}>View</Link>
+            <Link href={`/ai-agents/agent/${agent.id}`}>View</Link>
           </CardContent>
         </Card>
       ))}
