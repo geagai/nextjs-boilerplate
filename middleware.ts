@@ -34,7 +34,8 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
                           request.nextUrl.pathname.startsWith('/settings') ||
                           request.nextUrl.pathname.startsWith('/create-product-stripe') ||
-                          request.nextUrl.pathname.startsWith('/edit-product-stripe')
+                          request.nextUrl.pathname.startsWith('/edit-product-stripe') ||
+                          request.nextUrl.pathname.startsWith('/agent')
 
   if (isProtectedRoute && (!session || error)) {
     // Redirect to login if accessing protected route without authentication
@@ -47,5 +48,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/settings/:path*', '/create-product-stripe/:path*', '/edit-product-stripe/:path*']
+  matcher: ['/dashboard/:path*', '/settings/:path*', '/create-product-stripe/:path*', '/edit-product-stripe/:path*', '/agent/:path*']
 }
