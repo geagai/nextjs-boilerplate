@@ -1,151 +1,141 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Send, Bot, User } from 'lucide-react'
-import { useAdminSettings } from '@/components/admin-settings-provider'
-import { useAuth } from '@/components/auth-provider'
-
-interface Message {
-  id: string
-  content: string
-  role: 'user' | 'assistant'
-  timestamp: string
-}
-
-interface Agent {
-  id: string | number
-  name: string
-  description?: string | null
-  config?: {
-    options?: {
-      icon?: string
-    }
-  }
-}
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Send, AlertCircle, Bot } from 'lucide-react'
+import { DynamicFormFields } from './dynamic-form-fields'
+import { ResponseDisplay } from './response-display'
+import { useChat } from '../hooks/use-chat'
+import { loadAgent } from '@/lib/ai-agent-utils'
+import type { Agent } from '@/lib/types'
+import { toast } from '@/hooks/use-toast'
 
 interface ChatInterfaceProps {
-  agent: Agent
-  sessionId: string | null
-  onSessionCreate: (sessionId: string) => void
+  agentId: string
+  className?: string
 }
 
-export function ChatInterface({ agent, sessionId, onSessionCreate }: ChatInterfaceProps) {
-  const { getButtonStyles, getButtonHoverStyles } = useAdminSettings()
-  const { user } = useAuth()
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputValue, setInputValue] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  // Load messages for current session
-  useEffect(() => {
-    if (sessionId) {
-      const loadMessages = () => {
-        try {
-          const savedMessages = localStorage.getItem(`chat_messages_${sessionId}`)
-          if (savedMessages) {
-            setMessages(JSON.parse(savedMessages))
-          } else {
-            setMessages([])
-          }
-        } catch (error) {
-          console.error('Error loading messages:', error)
-          setMessages([])
-        }
-      }
-
-      loadMessages()
-    } else {
-      setMessages([])
+export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
+  const [agent, setAgent] = useState<Agent | null>(null)
+  const [isAgentLoading, setIsAgentLoading] = useState(true)
+  const [agentError, setAgentError] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  // Form state for dynamic fields
+  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [isFormValid, setIsFormValid] = useState(true)
+  const [formErrors, setFormErrors] = useState<string[]>([])
+  
+  // Chat input state
+  const [inputMessage, setInputMessage] = useState('')
+  
+  // Chat hook for message management
+  const {
+    messages,
+    isLoading: isChatLoading,
+    sessionId,
+    sendMessage,
+    retryMessage,
+    clearMessages,
+    loadHistory,
+    isHistoryLoaded
+  } = useChat({
+    agent: agent!,
+    userId: currentUser?.id,
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive"
+      })
+    },
+    onSuccess: (message) => {
+      toast({
+        title: "Success",
+        description: "Message sent successfully!"
+      })
     }
-  }, [sessionId])
+  })
 
-  const saveMessages = (newMessages: Message[]) => {
-    if (sessionId) {
+  // Load user and agent data on mount
+  useEffect(() => {
+    const loadUserAndAgent = async () => {
       try {
-        localStorage.setItem(`chat_messages_${sessionId}`, JSON.stringify(newMessages))
+        setIsAgentLoading(true)
+        setAgentError(null)
+        
+        // Get current user
+        const supabase = createClient()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        
+        if (userError) {
+          throw new Error(`Failed to get user: ${userError.message}`)
+        }
+        
+        if (!user) {
+          throw new Error('You must be logged in to use this feature')
+        }
+        
+        setCurrentUser(user)
+        
+        // Load agent data
+        const agentResult = await loadAgent(agentId, user.id)
+        
+        if (!agentResult.success || !agentResult.agent) {
+          throw new Error(agentResult.error || 'Failed to load agent')
+        }
+        
+        setAgent(agentResult.agent)
+        
       } catch (error) {
-        console.error('Error saving messages:', error)
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+        setAgentError(errorMessage)
+        console.error('Failed to load user and agent:', error)
+      } finally {
+        setIsAgentLoading(false)
       }
+    }
+    
+    if (agentId) {
+      loadUserAndAgent()
+    }
+  }, [agentId])
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !agent || !currentUser) return
+    
+    // Check form validation for dynamic fields
+    if (agent.config?.body && agent.config.body.length > 0 && !isFormValid) {
+      toast({
+        title: "Form Validation Error",
+        description: "Please fix the form errors before sending your message.",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    try {
+      await sendMessage(inputMessage, formData)
+      setInputMessage('') // Clear input after successful send
+    } catch (error) {
+      // Error handling is done in the useChat hook
+      console.error('Send message error:', error)
     }
   }
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return
-
-    const userMessage: Message = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      content: inputValue.trim(),
-      role: 'user',
-      timestamp: new Date().toISOString()
-    }
-
-    let currentSessionId = sessionId
-    if (!currentSessionId) {
-      // Create new session if none exists
-      currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      onSessionCreate(currentSessionId)
-    }
-
-    const newMessages = [...messages, userMessage]
-    setMessages(newMessages)
-    setInputValue('')
-    setIsLoading(true)
-
+  const handleRetry = async (messageId: string) => {
     try {
-      // Simulate AI response for now
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const assistantMessage: Message = {
-        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        content: `Hello! I'm ${agent.name}. I received your message: "${userMessage.content}". This is a placeholder response. In a real implementation, this would connect to your AI backend.`,
-        role: 'assistant',
-        timestamp: new Date().toISOString()
-      }
-
-      const finalMessages = [...newMessages, assistantMessage]
-      setMessages(finalMessages)
-      saveMessages(finalMessages)
-
-      // Update session in localStorage
-      try {
-        const existingSessions = localStorage.getItem(`agent_sessions_${agent.id}`)
-        const sessions = existingSessions ? JSON.parse(existingSessions) : []
-        
-        const sessionIndex = sessions.findIndex((s: any) => s.id === currentSessionId)
-        const sessionData = {
-          id: currentSessionId,
-          title: userMessage.content.substring(0, 50),
-          created_at: sessionIndex === -1 ? new Date().toISOString() : sessions[sessionIndex].created_at,
-          updated_at: new Date().toISOString()
-        }
-
-        if (sessionIndex === -1) {
-          sessions.unshift(sessionData)
-        } else {
-          sessions[sessionIndex] = sessionData
-        }
-
-        localStorage.setItem(`agent_sessions_${agent.id}`, JSON.stringify(sessions))
-      } catch (error) {
-        console.error('Error updating session:', error)
-      }
-
+      await retryMessage(messageId)
     } catch (error) {
-      console.error('Error sending message:', error)
-      // Remove the user message on error
-      setMessages(messages)
-    } finally {
-      setIsLoading(false)
+      toast({
+        title: "Retry Failed",
+        description: "Failed to retry the message. Please try again.",
+        variant: "destructive"
+      })
     }
   }
 
@@ -156,105 +146,123 @@ export function ChatInterface({ agent, sessionId, onSessionCreate }: ChatInterfa
     }
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Start a conversation</h3>
-              <p className="text-sm">
-                Ask {agent.name} anything to get started!
-              </p>
+  // Loading state
+  if (isAgentLoading) {
+    return (
+      <div className={`space-y-6 ${className}`}>
+        <Card>
+          <CardContent className="py-8">
+            <div className="flex items-center justify-center space-x-2">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span>Loading agent...</span>
             </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-primary" />
-                    </div>
-                  </div>
-                )}
-                
-                <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground ml-auto'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <div className="text-sm whitespace-pre-wrap">
-                    {message.content}
-                  </div>
-                  <div className="text-xs opacity-70 mt-1">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </div>
-                </div>
-
-                {message.role === 'user' && (
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                      <User className="w-4 h-4 text-secondary" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-          
-          {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-              <div className="bg-muted rounded-lg p-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-
-      {/* Input Area */}
-      <div className="border-t p-4">
-        <div className="flex gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={`Message ${agent.name}...`}
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
-            size="icon"
-            style={getButtonStyles()}
-            onMouseEnter={(e) => Object.assign(e.currentTarget.style, getButtonHoverStyles())}
-            onMouseLeave={(e) => Object.assign(e.currentTarget.style, getButtonStyles())}
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
       </div>
+    )
+  }
+
+  // Error state
+  if (agentError || !agent || !currentUser) {
+    return (
+      <div className={`space-y-6 ${className}`}>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {agentError || 'Failed to load agent or user data'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* Agent Header */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">{agent.name}</h2>
+              {agent.description && (
+                <p className="text-sm text-muted-foreground mt-1">{agent.description}</p>
+              )}
+            </div>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
+      {/* Dynamic Form Fields */}
+      {agent.config?.body && agent.config.body.length > 0 && (
+        <DynamicFormFields
+          agent={agent}
+          formData={formData}
+          onFormDataChange={setFormData}
+          onValidationChange={setIsFormValid}
+          disabled={isChatLoading}
+        />
+      )}
+
+      {/* Chat Messages */}
+      <ResponseDisplay
+        messages={messages}
+        isLoading={isChatLoading}
+        agent={{
+          name: agent.name,
+          config: agent.config || undefined
+        }}
+        onRetry={handleRetry}
+      />
+
+      {/* Chat Input */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex space-x-2">
+            <Input
+              placeholder={`Ask ${agent.name} anything...`}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isChatLoading}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={isChatLoading || !inputMessage.trim() || !isFormValid}
+              size="icon"
+            >
+              {isChatLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+          
+          {/* Form validation errors */}
+          {formErrors.length > 0 && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <ul className="list-disc list-inside space-y-1">
+                  {formErrors.map((error, index) => (
+                    <li key={index} className="text-sm">{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {/* Session Info */}
+          <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
+            <span>Session: {sessionId.split('_')[1]}</span>
+            <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 } 
