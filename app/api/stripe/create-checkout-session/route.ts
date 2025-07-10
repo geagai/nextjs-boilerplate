@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { stripe, SUBSCRIPTION_PLANS } from '@/lib/stripe'
 import { cookies } from 'next/headers'
+import { requireAuth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const { user } = await requireAuth()
   try {
     console.log('🔄 Creating checkout session...')
     

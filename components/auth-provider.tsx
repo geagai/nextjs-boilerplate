@@ -118,7 +118,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
             setUser(null);
             setSession(null);
             setLoading(false); // <-- moved here
-            router.push('/');
+            router.push('/login');
           }
         } catch (error) {
           console.error('Error in auth state change:', error);

@@ -1,0 +1,155 @@
+# Authentication & Authorization Rules (UPDATED)
+
+## STRICT POLICY: Supabase Auth Only
+
+**This application uses ONLY Supabase Auth for authentication and authorization. NextAuth is DISABLED and must NEVER be used.**
+
+---
+
+## 🔒 Always Use These Patterns
+
+- **All authentication/authorization logic MUST use `supabase.auth.getUser()` (or the helpers in `lib/auth.ts` that use it).**
+- **Do NOT use `getSession()` or `onAuthStateChange()` for any authentication or authorization logic.**
+- **Do NOT use NextAuth anywhere in the codebase.**
+- **Do NOT use the Supabase service role key in client-side code.**
+- **Do NOT skip authentication checks.**
+
+---
+
+## 1. Supabase Auth Configuration
+
+- Use the helpers in `lib/supabase.ts`:
+  - `createClient()` for browser/client components
+  - `createServerClient(cookieStore)` for server components and API routes
+
+```typescript
+// Browser usage
+import { createClient } from '@/lib/supabase'
+const supabase = createClient()
+
+// Server usage
+import { createServerClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
+const supabaseServer = createServerClient(cookies())
+```
+
+---
+
+## 2. Environment Variables
+
+- Only use the anon key in the client:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+---
+
+## 3. Authentication Patterns
+
+### Client-Side
+- Use the `AuthProvider` and `useAuth` for session state.
+- Use `supabase.auth.signUp`, `signInWithPassword`, and `signOut` for auth actions.
+- **Never use `getSession()` or `onAuthStateChange()` for auth logic.**
+
+### Server-Side
+- Use `getServerSession()` and `requireAuth()` from `lib/auth.ts`.
+- These helpers use `getUser()` under the hood for secure, up-to-date user info.
+- For protected pages, the entry file must be a SERVER component (no `'use client'`) and must call `requireAuth()` immediately.
+- Do not rely on client-only checks for protected routes.
+
+---
+
+## 3A. SSR Hydration: Use getSession() for Initial Auth State
+
+- **When hydrating the Providers (AuthProvider) on the server, you MUST use `supabase.auth.getSession()` to fetch both the user and session.**
+- This is required so that navigation and all auth-dependent UI render correctly on the first paint, with no flash or delay.
+- **Do NOT use `getUser()` for this purpose**—it does NOT return a session and will break navigation hydration.
+- Example (in `lib/auth.ts`):
+
+```typescript
+// Correct pattern for getServerSession
+const { data: { session }, error } = await supabase.auth.getSession()
+if (error || !session?.user) return null
+// ... fetch role, build user ...
+return { user, session }
+```
+
+- **Use `getUser()` only for authorization checks (middleware, requireAuth, etc.), NOT for hydration.**
+
+---
+
+## 🚨 WARNING: SSR Hydration Pattern
+
+> For correct navigation and initial auth state on all pages, always use `supabase.auth.getSession()` in your server-side session fetcher (e.g., `getServerSession`).
+> Using `getUser()` here will break navigation and cause inconsistent UI. Only use `getUser()` for authorization logic.
+
+---
+
+## 4. Authorization Patterns
+
+- Use `isAdmin(user)` and `hasValidSubscription(user)` from `lib/auth.ts` for role and subscription checks.
+- User roles are stored in the `user_data` table, column `user_role`.
+- Always fetch the role from the database for critical access checks.
+
+---
+
+## 5. Route Protection
+
+### Middleware
+- Protect routes using middleware with Supabase server client and `getUser()`.
+- Do not use `getSession()` in middleware for auth checks.
+
+### Page-Level
+- Use `requireAuth()` in server components for protected pages.
+- Do not use `'use client'` in protected page entry files.
+
+### API Routes
+- Use `getServerSession()` in API routes to check authentication.
+
+---
+
+## 6. Security & Best Practices
+
+- Always enable Row Level Security (RLS) on user tables.
+- Require email verification on sign up.
+- Enforce strong password requirements.
+- Never store or handle passwords directly.
+- Never use the service role key in the client.
+
+---
+
+## 7. Testing
+
+- Use mocks for Supabase auth in tests.
+- Test all authentication flows and route protection.
+
+---
+
+## 8. Common Anti-Patterns (DO NOT DO THESE)
+
+- ❌ Do NOT use NextAuth.
+- ❌ Do NOT use `getSession()` or `onAuthStateChange()` for authentication/authorization.
+- ❌ Do NOT use the service role key in client code.
+- ❌ Do NOT skip authentication checks.
+- ❌ Do NOT put `'use client'` at the top of protected route files.
+
+---
+
+## 🚨 STRICT INSTRUCTION FOR ALL FUTURE CHANGES
+
+**Any changes to authentication or authorization logic MUST follow the patterns and rules in this file. If you are unsure, STOP and consult this file before making changes.**
+
+- If you see any usage of `getSession()` or `onAuthStateChange()` for authentication/authorization, REPLACE IT with `getUser()` or the helpers in `lib/auth.ts`.
+- If you see any usage of NextAuth, REMOVE IT IMMEDIATELY.
+- If you are adding a new protected page, it MUST be a server component and call `requireAuth()` at the top.
+- If you are adding a new API route that requires authentication, use `getServerSession()` for the check.
+- If you are unsure about any authentication logic, ASK before proceeding.
+
+---
+
+**This file is the single source of truth for authentication and authorization in this project.**
+description:
+globs:
+alwaysApply: false
+---

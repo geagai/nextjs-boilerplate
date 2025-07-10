@@ -21,10 +21,51 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
   const supabase = createServerClient(cookieStore)
   
   try {
-    const { data: { user: baseUser }, error } = await supabase.auth.getUser()
-
-    if (error || !baseUser) {
+    // FIX: Use getSession() for hydration
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error || !session?.user) {
       return null
+    }
+
+    // Fetch user role from user_data table
+    let dbRole = null;
+    try {
+      const { data: userData, error: userDataError } = await supabase
+        .from('user_data')
+        .select('user_role')
+        .eq('UID', session.user.id)
+        .single();
+      if (!userDataError && userData?.user_role) {
+        dbRole = userData.user_role;
+      }
+    } catch (err) {
+      // ignore, fallback below
+    }
+
+    // Get additional user data from user_metadata or app_metadata
+    const user: AuthUser = {
+      ...session.user,
+      subscription: session.user.user_metadata?.subscription || null,
+      role: dbRole || session.user.user_metadata?.role || 'user'
+    }
+
+    return { user, session }
+  } catch (error) {
+    console.error('Error getting session:', error)
+    return null
+  }
+}
+
+// Require authentication - redirect if not logged in
+export async function requireAuth(): Promise<{ user: AuthUser; session: Session | null }> {
+  const cookieStore = cookies()
+  const supabase = createServerClient(cookieStore)
+
+  try {
+    // Use getUser() for secure authentication
+    const { data: { user: baseUser }, error } = await supabase.auth.getUser()
+    if (error || !baseUser) {
+      redirect('/login')
     }
 
     // Fetch user role from user_data table
@@ -42,29 +83,17 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
       // ignore, fallback below
     }
 
-    // Get additional user data from user_metadata or app_metadata
     const user: AuthUser = {
       ...baseUser,
       subscription: baseUser.user_metadata?.subscription || null,
       role: dbRole || baseUser.user_metadata?.role || 'user'
     }
 
-    return { user, session: null } // session is not available from getUser()
+    return { user, session: null }
   } catch (error) {
-    console.error('Error getting session:', error)
-    return null
-  }
-}
-
-// Require authentication - redirect if not logged in
-export async function requireAuth(): Promise<{ user: AuthUser; session: Session | null }> {
-  const sessionData = await getServerSession()
-  
-  if (!sessionData) {
+    console.error('Error in requireAuth:', error)
     redirect('/login')
   }
-  
-  return sessionData
 }
 
 // Sign out helper

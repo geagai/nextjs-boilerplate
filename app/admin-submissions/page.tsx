@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createSupabaseServerClient } from '@/lib/db'
 import SubmissionsClient from './submissions-client'
+import { requireAuth } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: 'Admin - Contact Submissions',
@@ -10,18 +11,13 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminSubmissionsPage() {
+  const { user } = await requireAuth()
+  const cookieStore = cookies()
   const supabase = createSupabaseServerClient()
-  
-  // Check if user is admin
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  
-  if (userError || !userData?.user) {
-    redirect('/auth/login')
-  }
 
-  // Check admin status
+  // Check admin status (replace with your admin check logic)
+  // Example: check user.role or use a DB RPC
   const { data: isAdminData } = await supabase.rpc('is_admin')
-  
   if (!isAdminData) {
     redirect('/')
   }

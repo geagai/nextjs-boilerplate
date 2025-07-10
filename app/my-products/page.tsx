@@ -7,7 +7,6 @@ import MyProductsClient from './my-products-client'
 export const dynamic = 'force-dynamic'
 
 export default async function MyProductsPage() {
-  // Ensure user is authenticated
   const { user } = await requireAuth()
 
   // Get Stripe secret & dev mode flag from admin_settings

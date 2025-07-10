@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import Stripe from 'stripe'
+import { requireAuth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,16 +40,11 @@ interface ProductData {
   mostPopular?: boolean
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const { user } = await requireAuth()
   try {
     const supabase = createServerClient(cookies())
     
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Check admin role
     const { data: userData, error: userError } = await supabase
       .from('user_data')

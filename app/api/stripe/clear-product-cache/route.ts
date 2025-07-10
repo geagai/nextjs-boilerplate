@@ -4,7 +4,7 @@ import { clearStripeProductsCache } from '@/lib/stripe-cache'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const { user } = await requireAuth()
     if (!isAdmin(user)) {

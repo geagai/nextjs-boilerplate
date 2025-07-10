@@ -12,6 +12,7 @@ import { Loader2, ArrowLeft, AlertCircle, Settings, Package } from 'lucide-react
 import { toast } from 'sonner'
 import Link from 'next/link'
 import ClearProductCacheButton from '@/components/clear-product-cache-button'
+import { requireAuth } from '@/lib/auth'
 
 function EditProductStripeContent() {
   const [isLoading, setIsLoading] = useState(true)
@@ -40,9 +41,9 @@ function EditProductStripeContent() {
   const checkAuthAndPermissions = async () => {
     try {
       // Check authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const { user } = await requireAuth()
       
-      if (authError || !user) {
+      if (!user) {
         router.push('/login')
         return
       }
@@ -293,7 +294,8 @@ function EditProductStripeContent() {
   )
 }
 
-export default function EditProductStripePage() {
+export default async function EditProductStripePage() {
+  const { user } = await requireAuth()
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
