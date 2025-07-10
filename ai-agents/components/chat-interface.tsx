@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Send, AlertCircle, Bot } from 'lucide-react'
 import { DynamicFormFields } from './dynamic-form-fields'
@@ -17,9 +18,10 @@ import { toast } from '@/hooks/use-toast'
 interface ChatInterfaceProps {
   agentId: string
   className?: string
+  hideAgentHeader?: boolean
 }
 
-export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
+export function ChatInterface({ agentId, className = "", hideAgentHeader = false }: ChatInterfaceProps) {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [isAgentLoading, setIsAgentLoading] = useState(true)
   const [agentError, setAgentError] = useState<string | null>(null)
@@ -149,7 +151,7 @@ export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
   // Loading state
   if (isAgentLoading) {
     return (
-      <div className={`space-y-6 ${className}`}>
+      <div className={`h-full flex items-center justify-center ${className}`}>
         <Card>
           <CardContent className="py-8">
             <div className="flex items-center justify-center space-x-2">
@@ -165,8 +167,8 @@ export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
   // Error state
   if (agentError || !agent || !currentUser) {
     return (
-      <div className={`space-y-6 ${className}`}>
-        <Alert variant="destructive">
+      <div className={`h-full flex items-center justify-center ${className}`}>
+        <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {agentError || 'Failed to load agent or user data'}
@@ -177,49 +179,56 @@ export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Agent Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">{agent.name}</h2>
-              {agent.description && (
-                <p className="text-sm text-muted-foreground mt-1">{agent.description}</p>
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-      </Card>
+    <div className={`flex flex-col h-full ${className}`}>
+      {/* Scrollable Messages Area */}
+      <ScrollArea className="flex-1 p-4 pb-24">
+        <div className="space-y-6 max-w-4xl mx-auto">
+          {/* Agent Header - Only show if not hidden */}
+          {!hideAgentHeader && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">{agent.name}</h2>
+                    {agent.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{agent.description}</p>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          )}
 
-      {/* Dynamic Form Fields */}
-      {agent.config?.body && agent.config.body.length > 0 && (
-        <DynamicFormFields
-          agent={agent}
-          formData={formData}
-          onFormDataChange={setFormData}
-          onValidationChange={setIsFormValid}
-          disabled={isChatLoading}
-        />
-      )}
+          {/* Dynamic Form Fields */}
+          {agent.config?.body && agent.config.body.length > 0 && (
+            <DynamicFormFields
+              agent={agent}
+              formData={formData}
+              onFormDataChange={setFormData}
+              onValidationChange={setIsFormValid}
+              disabled={isChatLoading}
+            />
+          )}
 
-      {/* Chat Messages */}
-      <ResponseDisplay
-        messages={messages}
-        isLoading={isChatLoading}
-        agent={{
-          name: agent.name,
-          config: agent.config || undefined
-        }}
-        onRetry={handleRetry}
-      />
+          {/* Chat Messages */}
+          <ResponseDisplay
+            messages={messages}
+            isLoading={isChatLoading}
+            agent={{
+              name: agent.name,
+              config: agent.config || undefined
+            }}
+            onRetry={handleRetry}
+          />
+        </div>
+      </ScrollArea>
 
-      {/* Chat Input */}
-      <Card>
-        <CardContent className="p-4">
+      {/* Fixed Input Area - Fixed to bottom of viewport */}
+      <div className="fixed bottom-0 left-0 right-0 border-t p-4 bg-white z-50">
+        <div className="max-w-4xl mx-auto">
           <div className="flex space-x-2">
             <Input
               placeholder={`Ask ${agent.name} anything...`}
@@ -227,7 +236,7 @@ export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               disabled={isChatLoading}
-              className="flex-1"
+              className="flex-1 bg-background"
             />
             <Button
               onClick={handleSendMessage}
@@ -257,12 +266,11 @@ export function ChatInterface({ agentId, className = "" }: ChatInterfaceProps) {
           )}
           
           {/* Session Info */}
-          <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
-            <span>Session: {sessionId.split('_')[1]}</span>
+          <div className="flex justify-end items-center mt-3 text-xs text-muted-foreground">
             <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 } 
