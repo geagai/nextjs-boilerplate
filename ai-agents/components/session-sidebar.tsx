@@ -78,7 +78,42 @@ export function SessionSidebar({
     if (agentId && isOpen) {
       loadSessions()
     }
-  }, [agentId, isOpen])
+    // --- Real-time subscription for new agent_messages ---
+    let supabase = createClient();
+    let channel: any;
+    let isMounted = true;
+    // Helper to get current user ID (async)
+    const getUserId = async () => {
+      const user = await supabase.auth.getUser();
+      return user.data.user?.id;
+    };
+    getUserId().then((UID) => {
+      if (!UID) return;
+      channel = supabase
+        .channel('agent-messages-inserts')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'agent_messages',
+            filter: `UID=eq.${UID},agent_id=eq.${agentId}`,
+          },
+          (payload) => {
+            if (isMounted) {
+              loadSessions();
+            }
+          }
+        )
+        .subscribe();
+    });
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [agentId, isOpen]);
 
   const handleSessionClick = (sessionId: string) => {
     onSessionSelect(sessionId)
@@ -157,7 +192,7 @@ export function SessionSidebar({
             </div>
           ) : (
             sessions.map((session) => (
-              <div key={session.id} className="relative group">
+              <div key={session.id} className="relative group bg-card text-card-foreground" style={{ border: '1px solid #d8d8d8', borderRadius: '6px', background: '#ffffff' }}>
                 <Button
                   variant={currentSessionId === session.id ? 'secondary' : 'ghost'}
                   className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.id ? ' active-session' : ''}`}
@@ -177,6 +212,7 @@ export function SessionSidebar({
                   variant="ghost"
                   size="sm"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive font-medium"
+                  style={{ marginTop: '15px' }}
                   onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
                   aria-label="Delete session"
                 >

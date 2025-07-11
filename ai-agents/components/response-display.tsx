@@ -136,7 +136,7 @@ export function ResponseDisplay({
             </pre>
           )
         } catch {
-          return <div className="whitespace-pre-wrap break-words">{formattedContent}</div>
+          return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.8rem' }}>{formattedContent}</div>
         }
       
       case 'html':
@@ -163,7 +163,7 @@ export function ResponseDisplay({
         )
       
       default:
-        return <div className="whitespace-pre-wrap break-words">{formattedContent}</div>
+        return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.8rem' }}>{formattedContent}</div>
     }
   }
 

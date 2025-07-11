@@ -318,7 +318,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
 
         if (error) throw error
 
-        toast.success('Agent updated successfully!')
+        toast.success('Your Agent information has been saved.')
         // router.push('/ai-agents') // No redirect for update
       }
 
