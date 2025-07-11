@@ -49,20 +49,24 @@ export function AgentList({ agents, viewMode, emptyMessage, emptyAction }: Agent
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {agents.map((agent) => (
-          <Card key={agent.id} className="flex flex-col relative">
+          <Card key={agent.id} className="flex flex-col relative min-h-[220px]">
             <div className="absolute top-4 right-4 text-muted-foreground">
               {renderAgentIcon(agent.icon)}
             </div>
             <CardHeader>
               <CardTitle className="text-primary pr-10">{agent.name}</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                {agent.description ?? 'No description provided.'}
-              </p>
-              <Link href={`/agent/${agent.id}`} className="mt-4 inline-block">
-                <Button size="sm">View</Button>
-              </Link>
+            <CardContent className="flex flex-col h-full justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {agent.description ?? 'No description provided.'}
+                </p>
+              </div>
+              <div className="flex justify-end mt-4">
+                <Link href={`/agent/${agent.id}`}>
+                  <Button size="sm">View</Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -74,20 +78,24 @@ export function AgentList({ agents, viewMode, emptyMessage, emptyAction }: Agent
   return (
     <div className="space-y-4">
       {agents.map((agent) => (
-        <Card key={agent.id} className="relative">
+        <Card key={agent.id} className="relative min-h-[220px]">
           <div className="absolute top-4 right-4 text-muted-foreground">
             {renderAgentIcon(agent.icon)}
           </div>
           <CardHeader>
             <CardTitle className="text-primary pr-10">{agent.name}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-2">
-              {agent.description ?? 'No description provided.'}
-            </p>
-            <Link href={`/agent/${agent.id}`} className="mt-4 inline-block">
-              <Button size="sm">View</Button>
-            </Link>
+          <CardContent className="flex flex-col h-full justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
+                {agent.description ?? 'No description provided.'}
+              </p>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Link href={`/agent/${agent.id}`}>
+                <Button size="sm">View</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       ))}
