@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { 
   callAgentApi, 
   saveAgentMessages, 
@@ -50,39 +50,44 @@ export function useChat({
 }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [sessionId] = useState(() => validateSessionId(providedSessionId))
+  const sessionId = useMemo(() => validateSessionId(providedSessionId), [providedSessionId])
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false)
   const [retryData, setRetryData] = useState<Map<string, { content: string; formData?: Record<string, any> }>>(new Map())
-
-  // Load conversation history on mount
-  useEffect(() => {
-    if (sessionId && userId && !isHistoryLoaded) {
-      loadHistory()
-    }
-  }, [sessionId, userId, isHistoryLoaded])
 
   const loadHistory = useCallback(async () => {
     try {
       const result = await loadSessionMessages(sessionId, userId)
-      
       if (result.success && result.messages) {
-        const formattedMessages: Message[] = result.messages.map(msg => ({
-          id: msg.id || generateMessageId(),
-          content: msg.prompt || msg.message || '',
-          role: msg.prompt ? 'user' : 'assistant',
-          timestamp: msg.created_at || new Date().toISOString(),
-          rawData: msg
-        }))
-        
+        // Only show the assistant's response (message column) for each row
+        const formattedMessages: Message[] = result.messages
+          .filter(msg => msg.message && msg.message.trim() !== '')
+          .map(msg => ({
+            id: msg.id || generateMessageId(),
+            content: msg.message ?? '',
+            role: 'assistant',
+            timestamp: msg.created_at || new Date().toISOString(),
+            rawData: msg
+          }))
         setMessages(formattedMessages)
       }
-      
       setIsHistoryLoaded(true)
     } catch (error) {
       console.error('Failed to load chat history:', error)
       setIsHistoryLoaded(true)
     }
   }, [sessionId, userId])
+
+  useEffect(() => {
+    setMessages([])
+    setIsHistoryLoaded(false)
+  }, [sessionId])
+
+  // Load conversation history on mount or when sessionId changes
+  useEffect(() => {
+    if (sessionId && userId && !isHistoryLoaded) {
+      loadHistory()
+    }
+  }, [sessionId, userId, isHistoryLoaded, loadHistory])
 
   const clearMessages = useCallback(() => {
     setMessages([])

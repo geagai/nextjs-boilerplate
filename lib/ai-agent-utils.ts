@@ -75,7 +75,6 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     }
     
     // Make API call
-    console.log('[Agent API] Request URL:', agent.api_url)
     const response = await fetch(agent.api_url, {
       method: 'POST',
       headers,
@@ -87,7 +86,6 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     }
     
     const responseData = await response.json()
-    console.log('[Agent API] Response:', responseData)
     // Extract message following AI Agents repository pattern
     // Expected response format: [{ message: "..." }] or { message: "..." }
     let message = ''
@@ -106,7 +104,6 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     }
     
   } catch (error) {
-    console.error('Agent API call error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -126,15 +123,15 @@ export async function saveAgentMessages(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Ensure UID is uppercase
-    const upperCaseUID = userId.toUpperCase()
+    // Use the original userId value for UID
+    const UID = userId
     
     // Save one row with both prompt and message
     const { error } = await supabase
       .from('agent_messages')
       .insert({
         session_id: sessionId,
-        UID: upperCaseUID,
+        UID,
         agent_id: agentId,
         prompt: userPrompt,
         message: assistantResponse
@@ -147,7 +144,6 @@ export async function saveAgentMessages(
     return { success: true }
     
   } catch (error) {
-    console.error('Error saving agent messages:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -165,14 +161,12 @@ export async function loadSessionMessages(
   try {
     const supabase = createClient()
     
-    // Ensure UID is uppercase for consistency
-    const upperCaseUID = userId.toUpperCase()
-    
+    // Use UID as-is (do not uppercase)
     const { data, error } = await supabase
       .from('agent_messages')
       .select('*')
       .eq('session_id', sessionId)
-      .eq('UID', upperCaseUID)
+      .eq('UID', userId)
       .order('created_at', { ascending: true })
     
     if (error) {
@@ -185,7 +179,6 @@ export async function loadSessionMessages(
     }
     
   } catch (error) {
-    console.error('Error loading session messages:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -224,7 +217,6 @@ export async function loadAgent(
     }
     
   } catch (error) {
-    console.error('Error loading agent:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -314,15 +306,13 @@ export async function getAgentSessions(
   try {
     const supabase = createClient()
     
-    // Ensure UID is uppercase for consistency
-    const upperCaseUID = userId.toUpperCase()
-    
+    // Use UID as-is (do not uppercase)
     // Get unique sessions with latest message for each
     const { data, error } = await supabase
       .from('agent_messages')
       .select('session_id, created_at, prompt, message')
       .eq('agent_id', agentId)
-      .eq('UID', upperCaseUID)
+      .eq('UID', userId)
       .not('session_id', 'is', null)
       .order('created_at', { ascending: false })
     
@@ -353,7 +343,6 @@ export async function getAgentSessions(
     }
     
   } catch (error) {
-    console.error('Error loading agent sessions:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'

@@ -19,9 +19,10 @@ interface ChatInterfaceProps {
   agentId: string
   className?: string
   hideAgentHeader?: boolean
+  sessionId?: string | null
 }
 
-export function ChatInterface({ agentId, className = "", hideAgentHeader = false }: ChatInterfaceProps) {
+export function ChatInterface({ agentId, className = "", hideAgentHeader = false, sessionId }: ChatInterfaceProps) {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [isAgentLoading, setIsAgentLoading] = useState(true)
   const [agentError, setAgentError] = useState<string | null>(null)
@@ -41,10 +42,11 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
     isLoading: isChatLoading,
     sendMessage,
     retryMessage,
-    sessionId
+    sessionId: activeSessionId
   } = useChat({
     agent: agent || { id: '', name: '', description: '', config: null, is_public: false, UID: '' },
     userId: currentUser?.id || '',
+    sessionId: sessionId || undefined,
     onError: (error) => {
       toast({
         title: "Error",

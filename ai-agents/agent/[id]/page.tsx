@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { loadAgent } from '@/lib/ai-agent-utils'
 import type { Agent } from '@/lib/types'
+import { SessionSidebar } from '@/ai-agents/components/session-sidebar'
 
 export default function AgentChatPage() {
   const params = useParams()
@@ -16,6 +17,8 @@ export default function AgentChatPage() {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [isAgentLoading, setIsAgentLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
   // Load user and agent data for header
   useEffect(() => {
@@ -58,14 +61,28 @@ export default function AgentChatPage() {
     }
   }, [agentId])
 
+  useEffect(() => {
+    // console.log('DEBUG: AgentChatPage selectedSessionId', selectedSessionId)
+  }, [selectedSessionId])
+
   if (!agentId) {
     notFound()
   }
 
   return (
     <div className="flex bg-background" style={{ height: 'calc(100vh - 100px)' }}>
+      {/* Chat History Sidebar */}
+      <SessionSidebar
+        agentId={agentId}
+        currentSessionId={selectedSessionId}
+        onSessionSelect={setSelectedSessionId}
+        onNewSession={() => setSelectedSessionId(null)}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isMobile={false}
+      />
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Chat Interface (fills entire space, now includes scrollable header) */}
         <div className="flex-1 min-h-0 overflow-y-auto">
           {/* Header (now scrollable) */}
@@ -73,12 +90,11 @@ export default function AgentChatPage() {
             <div className="flex items-center justify-between p-4 h-full max-h-full">
               <div className="flex items-center gap-3 max-h-full">
                 {/* Back Button */}
-                <Link href="/ai-agents/agents">
+                <Link href="/agents">
                   <Button variant="ghost" size="icon">
                     <ArrowLeft className="w-4 h-4" />
                   </Button>
                 </Link>
-                
                 {/* Agent Info */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -110,12 +126,18 @@ export default function AgentChatPage() {
               </div>
             </div>
           </div>
-          
           <ChatInterface 
             agentId={agentId}
             hideAgentHeader={true}
+            sessionId={selectedSessionId}
           />
         </div>
+      </div>
+      {/* Chat History Button - fixed to bottom left of viewport */}
+      <div style={{ position: 'fixed', left: 16, bottom: 16, zIndex: 100 }}>
+        <Button variant="outline" onClick={() => setIsSidebarOpen(open => !open)}>
+          Chat History
+        </Button>
       </div>
     </div>
   )

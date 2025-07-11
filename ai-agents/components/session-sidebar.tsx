@@ -1,5 +1,6 @@
 "use client"
 
+import { createClient } from '@/lib/supabase'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -38,22 +39,45 @@ export function SessionSidebar({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Load sessions from localStorage for now
-    const loadSessions = () => {
+    // Load sessions from Supabase agent_messages table
+    const loadSessions = async () => {
+      setIsLoading(true)
       try {
-        const savedSessions = localStorage.getItem(`agent_sessions_${agentId}`)
-        if (savedSessions) {
-          setSessions(JSON.parse(savedSessions))
+        const supabase = createClient()
+        const user = await supabase.auth.getUser()
+        const UID = user.data.user?.id
+        if (!UID) throw new Error('User not authenticated')
+        // Query agent_messages for this UID and agentId
+        const { data, error } = await supabase
+          .from('agent_messages')
+          .select('session_id, prompt, created_at')
+          .eq('UID', UID)
+          .eq('agent_id', agentId)
+          .order('created_at', { ascending: true })
+        if (error) throw error
+        // Group by session_id, only keep the first row per session
+        const sessionMap = new Map<string, Session>()
+        for (const row of data || []) {
+          if (!row.session_id || sessionMap.has(row.session_id)) continue
+          sessionMap.set(row.session_id, {
+            id: row.session_id,
+            title: (row.prompt || 'New Chat').slice(0, 50),
+            created_at: row.created_at,
+            updated_at: row.created_at
+          })
         }
+        setSessions(Array.from(sessionMap.values()))
+        setIsLoading(false)
       } catch (error) {
         console.error('Error loading sessions:', error)
-      } finally {
+        setSessions([])
         setIsLoading(false)
       }
     }
-
-    loadSessions()
-  }, [agentId])
+    if (agentId && isOpen) {
+      loadSessions()
+    }
+  }, [agentId, isOpen])
 
   const handleSessionClick = (sessionId: string) => {
     onSessionSelect(sessionId)
@@ -110,7 +134,8 @@ export function SessionSidebar({
               <Button
                 key={session.id}
                 variant={currentSessionId === session.id ? 'secondary' : 'ghost'}
-                className="w-full justify-start text-left h-auto p-3"
+                className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.id ? ' active-session' : ''}`}
+                style={currentSessionId === session.id ? { backgroundColor: '#fafafa' } : {}}
                 onClick={() => handleSessionClick(session.id)}
               >
                 <div className="flex-1 min-w-0">
@@ -132,7 +157,7 @@ export function SessionSidebar({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="left" className="w-80 p-0">
+        <SheetContent side="left" className="p-0" style={{ width: 400, maxWidth: '95vw' }}>
           <SheetHeader className="sr-only">
             <SheetTitle>Chat History</SheetTitle>
           </SheetHeader>
@@ -145,8 +170,9 @@ export function SessionSidebar({
   return (
     <div
       className={`bg-background border-r transition-all duration-300 ${
-        isOpen ? 'w-80' : 'w-0'
+        isOpen ? '' : 'w-0'
       } overflow-hidden`}
+      style={isOpen ? { width: 400, maxWidth: '95vw' } : { width: 0 }}
     >
       {isOpen && sidebarContent}
     </div>
