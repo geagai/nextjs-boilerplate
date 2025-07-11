@@ -70,7 +70,8 @@ export function ChatInterface({
     isLoading: isChatLoading,
     sendMessage,
     retryMessage,
-    sessionId: activeSessionId
+    sessionId: activeSessionId,
+    loadHistory
   } = useChat({
     agent: agent || { id: '', name: '', description: '', config: null, is_public: false, UID: '' },
     userId: currentUser?.id || '',
@@ -204,6 +205,11 @@ export function ChatInterface({
     }
   }
 
+  const handleDeleteMessage = async (id: string) => {
+    // Fallback: reload history after deletion
+    await loadHistory();
+  };
+
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Scrollable Messages Area */}
@@ -248,6 +254,7 @@ export function ChatInterface({
               config: agent.config || undefined
             }}
             onRetry={handleRetry}
+            onDeleteMessage={handleDeleteMessage}
           />
         </div>
       </ScrollArea>
@@ -276,7 +283,6 @@ export function ChatInterface({
               )}
             </Button>
           </div>
-          
           {/* Form validation errors */}
           {formErrors.length > 0 && (
             <Alert variant="destructive" className="mt-3">
@@ -290,7 +296,6 @@ export function ChatInterface({
               </AlertDescription>
             </Alert>
           )}
-          
           {/* Session Info */}
           <div className="flex justify-end items-center mt-3 text-xs text-muted-foreground">
             <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
@@ -298,5 +303,5 @@ export function ChatInterface({
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

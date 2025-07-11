@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Plus, MessageSquare, X } from 'lucide-react'
 import { useAdminSettings } from '@/components/admin-settings-provider'
+import { toast } from '@/hooks/use-toast'
 
 interface Session {
   id: string
@@ -93,6 +94,31 @@ export function SessionSidebar({
     }
   }
 
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      const supabase = createClient();
+      const user = await supabase.auth.getUser();
+      const UID = user.data.user?.id;
+      if (!UID) throw new Error('User not authenticated');
+      // Delete all messages for this session, agent, and user
+      const { error } = await supabase
+        .from('agent_messages')
+        .delete()
+        .eq('UID', UID)
+        .eq('agent_id', agentId)
+        .eq('session_id', sessionId);
+      if (error) throw error;
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      toast({ title: 'Session deleted', description: 'Chat session and messages successfully deleted.' });
+      // Optionally, if the deleted session was active, trigger onSessionSelect with empty string
+      if (currentSessionId === sessionId) {
+        onSessionSelect(''); // '' means no session selected
+      }
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to delete session.' });
+    }
+  };
+
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
@@ -131,22 +157,32 @@ export function SessionSidebar({
             </div>
           ) : (
             sessions.map((session) => (
-              <Button
-                key={session.id}
-                variant={currentSessionId === session.id ? 'secondary' : 'ghost'}
-                className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.id ? ' active-session' : ''}`}
-                style={currentSessionId === session.id ? { backgroundColor: '#fafafa' } : {}}
-                onClick={() => handleSessionClick(session.id)}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="truncate font-medium">
-                    {session.title || 'New Chat'}
+              <div key={session.id} className="relative group">
+                <Button
+                  variant={currentSessionId === session.id ? 'secondary' : 'ghost'}
+                  className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.id ? ' active-session' : ''}`}
+                  style={currentSessionId === session.id ? { backgroundColor: '#fafafa' } : {}}
+                  onClick={() => handleSessionClick(session.id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate font-medium">
+                      {session.title || 'New Chat'}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {new Date(session.updated_at).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {new Date(session.updated_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </Button>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive font-medium"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                  aria-label="Delete session"
+                >
+                  Delete
+                </Button>
+              </div>
             ))
           )}
         </div>

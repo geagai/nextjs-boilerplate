@@ -87,6 +87,12 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/create-agent" className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Create Agent</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/admin-submissions" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Contact Submissions</span>

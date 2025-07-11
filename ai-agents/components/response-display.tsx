@@ -21,6 +21,8 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
+import { toast } from '@/hooks/use-toast'
 
 interface Message {
   id: string
@@ -45,6 +47,11 @@ interface ResponseDisplayProps {
   }
   className?: string
   onRetry?: (messageId: string) => void
+  /**
+   * Optional callback when a message is deleted. Should remove the message from the parent state.
+   * Receives the deleted message id.
+   */
+  onDeleteMessage?: (id: string) => void
 }
 
 export function ResponseDisplay({
@@ -52,7 +59,8 @@ export function ResponseDisplay({
   isLoading = false,
   agent,
   className = "",
-  onRetry
+  onRetry,
+  onDeleteMessage
 }: ResponseDisplayProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set())
@@ -158,6 +166,33 @@ export function ResponseDisplay({
         return <div className="whitespace-pre-wrap break-words">{formattedContent}</div>
     }
   }
+
+  const handleDelete = async (message: Message) => {
+    const supabase = createClient();
+    const id = message.rawData?.id || message.id;
+    if (!id) return;
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be logged in to delete messages.', variant: 'destructive' });
+      return;
+    }
+    // Delete from Supabase
+    const { error } = await supabase
+      .from('agent_messages')
+      .delete()
+      .eq('id', id)
+      .eq('UID', user.id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    // Notify parent to remove from UI
+    if (typeof onDeleteMessage === 'function') {
+      onDeleteMessage(id);
+    }
+    toast({ title: 'Message successfully deleted.' });
+  };
 
   const MessageComponent = ({ message }: { message: Message }) => {
     const contentType = detectContentType(message.content)
@@ -273,24 +308,37 @@ export function ResponseDisplay({
                       )}
                     </div>
                     
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopy(message.content, message.id)}
-                      className="text-xs"
-                    >
-                      {copiedId === message.id ? (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3 mr-1" />
-                          Copy
-                        </>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(message.content, message.id)}
+                        className="text-xs"
+                      >
+                        {copiedId === message.id ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                      {/* Delete button for user messages */}
+                      {message.role === 'user' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-red-600 hover:text-red-800"
+                          onClick={() => handleDelete(message)}
+                        >
+                          Delete
+                        </Button>
                       )}
-                    </Button>
+                    </div>
                   </div>
                 </div>
               )}
