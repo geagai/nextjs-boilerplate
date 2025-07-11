@@ -181,8 +181,8 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Scrollable Messages Area */}
-      <ScrollArea className="flex-1 p-4 pb-24">
-        <div className="space-y-6 max-w-4xl mx-auto">
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-6 max-w-4xl mx-auto pb-56 mb-24">
           {/* Agent Header - Only show if not hidden */}
           {!hideAgentHeader && (
             <Card>

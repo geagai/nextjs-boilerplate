@@ -246,14 +246,16 @@ export async function loadAgent(
  * Generate a unique session ID
  */
 export function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  // Generate a proper UUID v4 for database compatibility
+  return crypto.randomUUID()
 }
 
 /**
  * Generate a unique message ID
  */
 export function generateMessageId(): string {
-  return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  // Generate a proper UUID v4 for consistency
+  return crypto.randomUUID()
 }
 
 /**

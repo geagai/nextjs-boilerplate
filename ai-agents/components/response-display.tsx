@@ -327,24 +327,6 @@ export function ResponseDisplay({
             ))
           )}
           
-          {/* Loading indicator for new messages */}
-          {isLoading && messages.length > 0 && (
-            <div className="flex justify-start">
-              <div className="flex-shrink-0 mr-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary animate-pulse" />
-                </div>
-              </div>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
       </ScrollArea>
     </div>

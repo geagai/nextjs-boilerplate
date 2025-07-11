@@ -186,3 +186,7 @@ a {
 a:hover {
   color: hsl(var(--link-hover));
 }
+
+.h-full.w-full.rounded-\[inherit\] {
+    margin-bottom: 50px;
+}

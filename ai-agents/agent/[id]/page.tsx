@@ -66,51 +66,51 @@ export default function AgentChatPage() {
     <div className="flex bg-background" style={{ height: 'calc(100vh - 100px)' }}>
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header (fixed height) */}
-        <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ height: 97, minHeight: 97 }}>
-          <div className="flex items-center justify-between p-4 h-full max-h-full">
-            <div className="flex items-center gap-3 max-h-full">
-              {/* Back Button */}
-              <Link href="/ai-agents/agents">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-              </Link>
-              
-              {/* Agent Info */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  {isAgentLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-lg font-semibold">Loading agent...</span>
-                    </div>
-                  ) : agent ? (
-                    <>
-                      <h1 className="text-lg font-semibold">{agent.name}</h1>
-                      <p className="text-sm text-muted-foreground">
-                        {agent.description || 'Interact with your AI agent'}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h1 className="text-lg font-semibold">AI Agent Chat</h1>
-                      <p className="text-sm text-muted-foreground">
-                        Interact with your AI agent
-                      </p>
-                    </>
-                  )}
+        {/* Chat Interface (fills entire space, now includes scrollable header) */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {/* Header (now scrollable) */}
+          <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ height: 97, minHeight: 97 }}>
+            <div className="flex items-center justify-between p-4 h-full max-h-full">
+              <div className="flex items-center gap-3 max-h-full">
+                {/* Back Button */}
+                <Link href="/ai-agents/agents">
+                  <Button variant="ghost" size="icon">
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                </Link>
+                
+                {/* Agent Info */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    {isAgentLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-lg font-semibold">Loading agent...</span>
+                      </div>
+                    ) : agent ? (
+                      <>
+                        <h1 className="text-lg font-semibold" style={{ marginTop: 0 }}>{agent.name}</h1>
+                        <p className="text-sm text-muted-foreground">
+                          {agent.description || 'Interact with your AI agent'}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h1 className="text-lg font-semibold" style={{ marginTop: 0 }}>AI Agent Chat</h1>
+                        <p className="text-sm text-muted-foreground">
+                          Interact with your AI agent
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Chat Interface (fills remaining space below header) */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+          
           <ChatInterface 
             agentId={agentId}
             hideAgentHeader={true}
