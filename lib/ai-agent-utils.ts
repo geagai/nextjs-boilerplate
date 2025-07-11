@@ -12,15 +12,24 @@ import type {
  * Process agent configuration body fields into form fields with default values
  */
 export function processFormFields(bodyFields: BodyField[]): FormField[] {
-  return bodyFields.map(field => ({
-    name: field.name,
-    type: field.type,
-    label: field.label,
-    required: field.required || false,
-    placeholder: field.placeholder,
-    options: field.options,
-    value: field.default_value || ''
-  }))
+  return bodyFields.map(field => {
+    // Handle different JSON structure patterns
+    const fieldType = field.type || (field as any).input || 'text'
+    const fieldLabel = field.label || (field as any).input_label || 'Field'
+    const fieldName = field.name || Object.keys(field).find(key => 
+      !['type', 'input', 'label', 'input_label', 'required', 'placeholder', 'options', 'default_value'].includes(key)
+    ) || 'field'
+    
+    return {
+      name: fieldName,
+      type: fieldType,
+      label: fieldLabel,
+      required: field.required || false,
+      placeholder: field.placeholder,
+      options: field.options,
+      value: field.default_value || (field as any)[fieldName] || ''
+    }
+  })
 }
 
 /**
@@ -48,7 +57,7 @@ export function validateFormData(
  * Make API call to external agent endpoint with proper configuration
  */
 export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse> {
-  const { agent, userMessage, formData, sessionId } = options
+  const { agent, userMessage, formData, sessionId, userId } = options
   
   try {
     if (!agent.api_url) {
@@ -60,6 +69,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
       query: userMessage,
       agent_role: agent.agent_role || '',
       prompt: agent.prompt || '',
+      UID: userId, // Include user ID parameter
       ...formData // Include all form field values
     }
     
@@ -73,6 +83,14 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
       'Content-Type': 'application/json',
       ...agent.config?.headers || {}
     }
+    
+    // Console log the complete API request for debugging
+    console.log('🚀 Agent API Request:', {
+      url: agent.api_url,
+      method: 'POST',
+      headers,
+      body: requestBody
+    })
     
     // Make API call
     const response = await fetch(agent.api_url, {

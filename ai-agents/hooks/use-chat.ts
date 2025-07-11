@@ -138,7 +138,8 @@ export function useChat({
         agent,
         userMessage: content,
         formData: formData || {},
-        sessionId
+        sessionId,
+        userId
       })
       
       if (response.success && response.message) {

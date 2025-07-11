@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams, notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ChatInterface } from '@/ai-agents/components/chat-interface'
-import { ArrowLeft, Bot, Loader2 } from 'lucide-react'
+import { ArrowLeft, Bot, Loader2, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { loadAgent } from '@/lib/ai-agent-utils'
 import type { Agent } from '@/lib/types'
 import { SessionSidebar } from '@/ai-agents/components/session-sidebar'
+import { AgentConfigSidebar } from '@/ai-agents/components/agent-config-sidebar'
 
 export default function AgentChatPage() {
   const params = useParams()
@@ -18,7 +19,18 @@ export default function AgentChatPage() {
   const [isAgentLoading, setIsAgentLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isConfigSidebarOpen, setIsConfigSidebarOpen] = useState(false)
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  
+  // Form state for agent config
+  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [isFormValid, setIsFormValid] = useState(true)
+  const [formErrors, setFormErrors] = useState<string[]>([])
+  
+  const handleValidationChange = (valid: boolean, errors: string[]) => {
+    setIsFormValid(valid)
+    setFormErrors(errors)
+  }
 
   // Load user and agent data for header
   useEffect(() => {
@@ -81,6 +93,7 @@ export default function AgentChatPage() {
         onClose={() => setIsSidebarOpen(false)}
         isMobile={false}
       />
+      
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Chat Interface (fills entire space, now includes scrollable header) */}
@@ -130,15 +143,44 @@ export default function AgentChatPage() {
             agentId={agentId}
             hideAgentHeader={true}
             sessionId={selectedSessionId}
+            formData={formData}
+            onFormDataChange={setFormData}
+            isFormValid={isFormValid}
+            onValidationChange={handleValidationChange}
           />
         </div>
       </div>
+      
+      {/* Agent Config Sidebar */}
+      {agent && (
+        <AgentConfigSidebar
+          agent={agent}
+          formData={formData}
+          onFormDataChange={setFormData}
+          onValidationChange={setIsFormValid}
+          disabled={false}
+          isOpen={isConfigSidebarOpen}
+          onClose={() => setIsConfigSidebarOpen(false)}
+          isMobile={false}
+        />
+      )}
+      
       {/* Chat History Button - fixed to bottom left of viewport */}
       <div style={{ position: 'fixed', left: 16, bottom: 16, zIndex: 100 }}>
         <Button variant="outline" onClick={() => setIsSidebarOpen(open => !open)}>
           Chat History
         </Button>
       </div>
+      
+      {/* Agent Config Button - fixed to bottom right of viewport */}
+      {agent?.config?.body && agent.config.body.length > 0 && (
+        <div style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 100 }}>
+          <Button variant="outline" onClick={() => setIsConfigSidebarOpen(open => !open)}>
+            <Settings className="w-4 h-4 mr-2" />
+            Agent Config
+          </Button>
+        </div>
+      )}
     </div>
   )
 } 

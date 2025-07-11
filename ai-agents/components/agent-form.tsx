@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase'
-import { Agent, createDefaultAgentConfig } from '@/lib/ai-agent-utils'
+import type { Agent } from '@/lib/types'
 import { useAuth } from '@/components/auth-provider'
 import { toast } from 'sonner'
 import { Trash2, Plus, Bot } from 'lucide-react'
@@ -185,7 +185,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
   // Load initial data for edit mode
   useEffect(() => {
     if (mode === 'edit' && initialData) {
-      const config = initialData.config || createDefaultAgentConfig()
+      const config = initialData.config || {}
       
       // Transform headers
       const headers = Object.entries(config.headers || {}).map(([param, value], index) => ({
@@ -195,7 +195,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
       }))
 
       // Transform body fields
-      const body = (config.body || []).map((field, index) => {
+      const body = (config.body || []).map((field: any, index: number) => {
         const paramName = Object.keys(field).find(key => 
           !['input', 'input_label', 'dropdown_options'].includes(key)
         ) || ''
@@ -302,8 +302,8 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
 
         if (error) throw error
 
-        toast.success('Agent created successfully!')
-        router.push('/ai-agents')
+        toast.success('Your Agent Has Been Created - You are now being redirected to the My Agents page.')
+        router.push('/my-agents')
       } else {
         if (!initialData?.id) throw new Error('Agent ID is required for update')
 
@@ -319,7 +319,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
         if (error) throw error
 
         toast.success('Agent updated successfully!')
-        router.push('/ai-agents')
+        // router.push('/ai-agents') // No redirect for update
       }
 
     } catch (error) {

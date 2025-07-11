@@ -99,6 +99,7 @@ export interface ApiCallOptions {
   userMessage: string
   formData: Record<string, any>
   sessionId?: string
+  userId: string
 }
 
 export interface ApiResponse {

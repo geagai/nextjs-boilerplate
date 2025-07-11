@@ -20,18 +20,46 @@ interface ChatInterfaceProps {
   className?: string
   hideAgentHeader?: boolean
   sessionId?: string | null
+  // Optional form state props (if not provided, component manages its own)
+  formData?: Record<string, any>
+  onFormDataChange?: (data: Record<string, any>) => void
+  isFormValid?: boolean
+  onValidationChange?: (isValid: boolean, errors: string[]) => void
 }
 
-export function ChatInterface({ agentId, className = "", hideAgentHeader = false, sessionId }: ChatInterfaceProps) {
+export function ChatInterface({ 
+  agentId, 
+  className = "", 
+  hideAgentHeader = false, 
+  sessionId,
+  formData: externalFormData,
+  onFormDataChange: externalOnFormDataChange,
+  isFormValid: externalIsFormValid,
+  onValidationChange: externalOnValidationChange
+}: ChatInterfaceProps) {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [isAgentLoading, setIsAgentLoading] = useState(true)
   const [agentError, setAgentError] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<any>(null)
   
-  // Form state for dynamic fields
-  const [formData, setFormData] = useState<Record<string, any>>({})
-  const [isFormValid, setIsFormValid] = useState(true)
+  // Form state for dynamic fields (only used if not provided by parent)
+  const [internalFormData, setInternalFormData] = useState<Record<string, any>>({})
+  const [internalIsFormValid, setInternalIsFormValid] = useState(true)
   const [formErrors, setFormErrors] = useState<string[]>([])
+  
+  // Use external form state if provided, otherwise use internal
+  const formData = externalFormData !== undefined ? externalFormData : internalFormData
+  const setFormData = externalOnFormDataChange || setInternalFormData
+  const isFormValid = externalIsFormValid !== undefined ? externalIsFormValid : internalIsFormValid
+  
+  const handleValidationChange = (valid: boolean, errors: string[]) => {
+    if (externalOnValidationChange) {
+      externalOnValidationChange(valid, errors)
+    } else {
+      setInternalIsFormValid(valid)
+    }
+    setFormErrors(errors)
+  }
   
   // Chat input state
   const [inputMessage, setInputMessage] = useState('')
@@ -100,18 +128,39 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
     }
   }, [agentId])
 
-  // Error state
-  if (agentError || !agent || !currentUser) {
+  // Error state: Only show error if loading is done and agentError is set
+  if (!isAgentLoading && agentError) {
     return (
       <div className={`h-full flex items-center justify-center ${className}`}>
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {agentError || 'Failed to load agent or user data'}
+            {agentError}
           </AlertDescription>
         </Alert>
       </div>
     )
+  }
+
+  // Loading state
+  if (isAgentLoading) {
+    return (
+      <div className={`h-full flex items-center justify-center ${className}`}>
+        <Card>
+          <CardContent className="py-8">
+            <div className="flex items-center justify-center space-x-2">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span>Loading agent...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Guard: If agent or currentUser is still null after loading, show nothing (or fallback)
+  if (!agent || !currentUser) {
+    return null
   }
 
   const handleSendMessage = async () => {
@@ -155,22 +204,6 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
     }
   }
 
-  // Loading state
-  if (isAgentLoading) {
-    return (
-      <div className={`h-full flex items-center justify-center ${className}`}>
-        <Card>
-          <CardContent className="py-8">
-            <div className="flex items-center justify-center space-x-2">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span>Loading agent...</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Scrollable Messages Area */}
@@ -195,13 +228,13 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
             </Card>
           )}
 
-          {/* Dynamic Form Fields */}
-          {agent.config?.body && agent.config.body.length > 0 && (
+          {/* Dynamic Form Fields - Only show if no external form management */}
+          {!externalFormData && agent.config?.body && agent.config.body.length > 0 && (
             <DynamicFormFields
               agent={agent}
               formData={formData}
               onFormDataChange={setFormData}
-              onValidationChange={setIsFormValid}
+              onValidationChange={handleValidationChange}
               disabled={isChatLoading}
             />
           )}

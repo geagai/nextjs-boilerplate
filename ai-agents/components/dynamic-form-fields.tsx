@@ -32,7 +32,6 @@ export function DynamicFormFields({
 }: DynamicFormFieldsProps) {
   const [formFields, setFormFields] = useState<FormField[]>([])
   const [validationErrors, setValidationErrors] = useState<string[]>([])
-  const [isExpanded, setIsExpanded] = useState(false)
 
   // Process agent configuration into form fields
   useEffect(() => {
@@ -175,59 +174,39 @@ export function DynamicFormFields({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Collapsible Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Settings className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">
-            Configuration ({formFields.length} field{formFields.length !== 1 ? 's' : ''})
-          </span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-xs"
-        >
-          {isExpanded ? 'Hide' : 'Show'}
-        </Button>
-      </div>
+      {/* Form Fields - Always visible */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            {formFields.map((field) => (
+              <div key={field.name} className="space-y-2">
+                <Label 
+                  htmlFor={`field-${field.name}`}
+                  className="text-sm font-medium"
+                >
+                  {field.label}
+                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                </Label>
+                {renderField(field)}
+              </div>
+            ))}
+          </div>
 
-      {/* Form Fields */}
-      {isExpanded && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {formFields.map((field) => (
-                <div key={field.name} className="space-y-2">
-                  <Label 
-                    htmlFor={`field-${field.name}`}
-                    className="text-sm font-medium"
-                  >
-                    {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </Label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-
-            {/* Validation Errors */}
-            {validationErrors.length > 0 && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <ul className="list-disc list-inside space-y-1">
-                    {validationErrors.map((error, index) => (
-                      <li key={index} className="text-sm">{error}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      )}
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-sm">{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 } 
