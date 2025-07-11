@@ -44,12 +44,6 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             <Link href="/" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Home
             </Link>
-            <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              Pricing
-            </Link>
-            <Link href="/contact" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              Contact
-            </Link>
             {(!loading && user) ? (
               <Link href="/agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
                 AI Agents
@@ -59,6 +53,12 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                 AI Agents
               </Link>
             ) : null}
+            <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Pricing
+            </Link>
+            <Link href="/contact" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Contact
+            </Link>
             {(!loading && user?.role === 'admin') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
