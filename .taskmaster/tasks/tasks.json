@@ -124,11 +124,105 @@
             "testStrategy": "Performance testing, load time measurements, cache verification"
           }
         ]
+      },
+      {
+        "id": 9,
+        "title": "Implement My Agents Admin Page with Table View",
+        "description": "Create a secure /my-agents page that displays a table of agents from Supabase, accessible only to admin users, featuring agent details like icon, visibility status, category, name, API URL, and edit actions.",
+        "details": "Implementation steps:\n\n1. File Structure Setup\n- Create new file `/ai-agents/my-agents.tsx`\n- Import required components from shared UI library\n- Set up admin authentication guard using existing patterns\n- Configure Supabase query hooks and types\n\n2. Admin Authorization\n- Implement useAdmin hook integration\n- Add server-side authentication check\n- Configure RLS policies for admin-only access\n- Set up redirect for unauthorized users\n\n3. Table Component Development\n- Create MyAgentsTable component with responsive design\n- Implement columns with proper sorting:\n  * Icon (using existing IconRenderer component)\n  * Public status (boolean toggle display)\n  * Category (with filtering capability)\n  * Agent name (with search functionality)\n  * API URL (with copy functionality)\n  * Edit action button linking to /edit-agent/{id}\n- Add pagination with configurable page size\n\n4. Data Integration\n- Set up Supabase real-time subscription for agent updates\n- Implement error handling and loading states\n- Add optimistic updates for status changes\n- Configure proper data typing with Supabase schema\n\n5. UI/UX Implementation\n- Apply consistent theme styling using design system\n- Add loading skeletons for better UX\n- Implement responsive layout breakpoints\n- Add proper accessibility attributes\n- Include empty state handling\n\n6. Performance Optimization\n- Implement virtual scrolling for large datasets\n- Add proper memoization for table components\n- Configure proper data fetching strategies\n- Optimize re-renders using React.memo",
+        "testStrategy": "1. Security Testing\n- Verify admin authentication guard prevents unauthorized access\n- Test RLS policies for proper data access control\n- Validate session handling and token expiration\n- Check secure data transmission\n\n2. Functional Testing\n- Verify all table columns display correct data\n- Test sorting functionality for each column\n- Validate pagination works correctly\n- Confirm edit links navigate to correct pages\n- Test real-time updates appear properly\n- Verify search and filter functionality\n\n3. UI/UX Testing\n- Validate responsive design across breakpoints\n- Test accessibility using screen readers\n- Verify proper theme application\n- Check loading states and animations\n- Test empty state displays\n\n4. Performance Testing\n- Measure initial load time\n- Test table performance with large datasets\n- Verify memory usage with virtual scrolling\n- Monitor network request efficiency\n\n5. Integration Testing\n- Validate Supabase integration\n- Test data flow between components\n- Verify proper state management\n- Check edit functionality integration",
+        "status": "pending",
+        "dependencies": [
+          7,
+          8
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up basic file structure and authentication",
+            "description": "Create the initial my-agents.tsx file with basic routing and admin authentication guards",
+            "dependencies": [],
+            "details": "Create /ai-agents/my-agents.tsx, import AuthGuard component, set up admin-only route protection, implement useAdmin hook, configure basic layout structure following existing patterns from /agents page",
+            "status": "done",
+            "testStrategy": "Verify route protection redirects non-admin users, test authentication guard integration"
+          },
+          {
+            "id": 2,
+            "title": "Implement Supabase data fetching and types",
+            "description": "Set up database queries, types, and real-time subscriptions for agent data",
+            "dependencies": [
+              1
+            ],
+            "details": "Define Agent interface, implement useQuery hook for fetching agents, set up real-time subscription handlers, configure proper RLS policies for admin access",
+            "status": "pending",
+            "testStrategy": "Test data fetching with mock responses, verify real-time updates"
+          },
+          {
+            "id": 3,
+            "title": "Create base table component structure",
+            "description": "Develop the foundational table component with basic column definitions",
+            "dependencies": [
+              2
+            ],
+            "details": "Create MyAgentsTable component, define column configurations for icon, status, category, name, API URL, and actions, implement basic sorting functionality",
+            "status": "pending",
+            "testStrategy": "Test table rendering with sample data, verify column sorting"
+          },
+          {
+            "id": 4,
+            "title": "Implement interactive table features",
+            "description": "Add advanced table functionality including filtering, search, and pagination",
+            "dependencies": [
+              3
+            ],
+            "details": "Add category filtering, name search functionality, implement pagination logic, add copy-to-clipboard for API URLs, create edit action links",
+            "status": "pending",
+            "testStrategy": "Verify filter operations, test search functionality, validate pagination"
+          },
+          {
+            "id": 5,
+            "title": "Develop status toggle and real-time updates",
+            "description": "Implement agent visibility toggle with optimistic updates",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create status toggle component, implement optimistic updates, handle error states, integrate with Supabase real-time subscription",
+            "status": "pending",
+            "testStrategy": "Test toggle functionality, verify optimistic updates, check error handling"
+          },
+          {
+            "id": 6,
+            "title": "Add responsive styling and UX enhancements",
+            "description": "Implement responsive design and loading states",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Add responsive breakpoints, implement loading skeletons, style empty states, ensure proper theme integration, add accessibility attributes",
+            "status": "pending",
+            "testStrategy": "Test responsive layouts, verify loading states, check accessibility"
+          },
+          {
+            "id": 7,
+            "title": "Optimize performance and implement error handling",
+            "description": "Add performance optimizations and comprehensive error handling",
+            "dependencies": [
+              4,
+              5,
+              6
+            ],
+            "details": "Implement virtual scrolling, add component memoization, optimize re-renders, add error boundaries, implement comprehensive error handling",
+            "status": "pending",
+            "testStrategy": "Performance testing, error simulation testing, load testing with large datasets"
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T20:48:35.105Z",
-      "updated": "2025-07-11T18:00:43.045Z",
+      "updated": "2025-07-11T18:20:30.403Z",
       "description": "Tasks for master context"
     }
   }

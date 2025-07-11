@@ -107,6 +107,19 @@ export default async function RootLayout({
     };
   }
 
+  // Footer color logic
+  const isDarkMode = typeof window !== 'undefined' ? document.documentElement.classList.contains('dark') : false;
+  // Always compute both sets for SSR/CSR
+  const footerBgLight = settings?.footer_background_color ?? '#F7F9FB';
+  const footerTextLight = settings?.footer_text_color ?? '#33363B';
+  const footerLinkLight = settings?.footer_link_color ?? '#3A72BB';
+  const footerBgDark = settings?.dark_footer_background_color ?? footerBgLight;
+  const footerTextDark = settings?.dark_footer_text_color ?? footerTextLight;
+  const footerLinkDark = settings?.dark_footer_link_color ?? footerLinkLight;
+
+  // Use CSS prefers-color-scheme for SSR, fallback to light
+  // We'll pass both sets and ConditionalFooter can pick based on theme
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>{/* Dynamic color variables */}
@@ -117,7 +130,17 @@ export default async function RootLayout({
           <div className="min-h-screen bg-background text-foreground">
             {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
             <main>{children}</main>
-            <ConditionalFooter siteName={siteName} bgColor={footerBg} textColor={footerText} linkColor={footerLink} htmlOne={footerHtmlOne} htmlTwo={footerHtmlTwo} />
+            <ConditionalFooter 
+              siteName={siteName} 
+              bgColor={footerBgLight} 
+              textColor={footerTextLight} 
+              linkColor={footerLinkLight} 
+              bgColorDark={footerBgDark}
+              textColorDark={footerTextDark}
+              linkColorDark={footerLinkDark}
+              htmlOne={footerHtmlOne} 
+              htmlTwo={footerHtmlTwo} 
+            />
           </div>
         </Providers>
       </body>

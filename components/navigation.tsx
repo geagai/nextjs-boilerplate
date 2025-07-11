@@ -81,6 +81,12 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/my-agents" className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4" />
+                      <span>My Agents</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/create-product-stripe" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Create Product</span>

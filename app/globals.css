@@ -190,3 +190,18 @@ a:hover {
 .h-full.w-full.rounded-\[inherit\] {
     margin-bottom: 50px;
 }
+
+.custom-admin-table {
+  background: #fff;
+  border: 1px solid #d8d8d8;
+}
+@media (prefers-color-scheme: dark) {
+  .custom-admin-table {
+    background: #4b4b4b;
+    border: 1px solid #d8d8d8;
+  }
+}
+
+.container.mx-auto.px-4.py-8.max-w-7xl {
+  min-height: 40rem;
+}

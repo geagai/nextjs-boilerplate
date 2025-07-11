@@ -80,20 +80,18 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
   }, [supabase]);
 
   const getButtonStyles = (variant = 'default'): ButtonStyles => {
-    if (!adminSettings) return {};
-    
     const isDark = theme === 'dark';
     const styles: ButtonStyles = {};
-    
+    // Defaults
+    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#383838';
     // Apply custom colors for primary/default buttons
     if (variant === 'default' || variant === 'primary') {
       const buttonColor = isDark 
-        ? adminSettings.dark_button_color || adminSettings.button_color 
-        : adminSettings.button_color;
+        ? adminSettings?.dark_button_color || adminSettings?.button_color 
+        : adminSettings?.button_color;
       const buttonTextColor = isDark 
-        ? adminSettings.dark_button_text_color || adminSettings.button_text_color 
-        : adminSettings.button_text_color;
-      
+        ? adminSettings?.dark_button_text_color || adminSettings?.button_text_color || defaultButtonTextColor
+        : adminSettings?.button_text_color || defaultButtonTextColor;
       if (buttonColor) {
         styles.backgroundColor = buttonColor;
         styles.borderColor = buttonColor;
@@ -102,34 +100,28 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
         styles.color = buttonTextColor;
       }
     }
-    
     // For outline buttons, use custom colors for border and text
     if (variant === 'outline') {
       const buttonColor = isDark 
-        ? adminSettings.dark_button_color || adminSettings.button_color 
-        : adminSettings.button_color;
-      
+        ? adminSettings?.dark_button_color || adminSettings?.button_color 
+        : adminSettings?.button_color;
       if (buttonColor) {
         styles.borderColor = buttonColor;
         styles.color = buttonColor;
       }
     }
-    
     return styles;
   };
 
   const getButtonHoverStyles = (variant = 'default'): ButtonStyles => {
-    if (!adminSettings) return {};
-    
     const isDark = theme === 'dark';
+    // Defaults
+    const defaultButtonHoverColor = isDark ? '#D6D6D6' : '#B6B6B6';
+    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#383838';
     const hoverColor = isDark 
-      ? adminSettings.dark_button_hover_color || adminSettings.button_hover_color 
-      : adminSettings.button_hover_color;
-    
-    if (!hoverColor) return {};
-    
+      ? adminSettings?.dark_button_hover_color || adminSettings?.button_hover_color || defaultButtonHoverColor
+      : adminSettings?.button_hover_color || defaultButtonHoverColor;
     const styles: ButtonStyles = {};
-    
     // Apply hover colors based on variant
     if (variant === 'default' || variant === 'primary') {
       styles.backgroundColor = hoverColor;
@@ -138,13 +130,12 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
       styles.backgroundColor = hoverColor;
       // Keep text color from normal state for outline on hover
       const buttonTextColor = isDark 
-        ? adminSettings.dark_button_text_color || adminSettings.button_text_color 
-        : adminSettings.button_text_color;
+        ? adminSettings?.dark_button_text_color || adminSettings?.button_text_color || defaultButtonTextColor
+        : adminSettings?.button_text_color || defaultButtonTextColor;
       if (buttonTextColor) {
         styles.color = buttonTextColor;
       }
     }
-    
     return styles;
   };
 
