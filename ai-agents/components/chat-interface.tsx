@@ -35,30 +35,21 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
   // Chat input state
   const [inputMessage, setInputMessage] = useState('')
   
-  // Chat hook for message management
+  // Chat hook for message management - must be called before any conditional returns
   const {
     messages,
     isLoading: isChatLoading,
-    sessionId,
     sendMessage,
     retryMessage,
-    clearMessages,
-    loadHistory,
-    isHistoryLoaded
+    sessionId
   } = useChat({
-    agent: agent!,
-    userId: currentUser?.id,
+    agent: agent || { id: '', name: '', description: '', config: null, is_public: false, UID: '' },
+    userId: currentUser?.id || '',
     onError: (error) => {
       toast({
         title: "Error",
         description: error,
         variant: "destructive"
-      })
-    },
-    onSuccess: (message) => {
-      toast({
-        title: "Success",
-        description: "Message sent successfully!"
       })
     }
   })
@@ -106,6 +97,20 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
       loadUserAndAgent()
     }
   }, [agentId])
+
+  // Error state
+  if (agentError || !agent || !currentUser) {
+    return (
+      <div className={`h-full flex items-center justify-center ${className}`}>
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {agentError || 'Failed to load agent or user data'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !agent || !currentUser) return
@@ -160,20 +165,6 @@ export function ChatInterface({ agentId, className = "", hideAgentHeader = false
             </div>
           </CardContent>
         </Card>
-      </div>
-    )
-  }
-
-  // Error state
-  if (agentError || !agent || !currentUser) {
-    return (
-      <div className={`h-full flex items-center justify-center ${className}`}>
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {agentError || 'Failed to load agent or user data'}
-          </AlertDescription>
-        </Alert>
       </div>
     )
   }

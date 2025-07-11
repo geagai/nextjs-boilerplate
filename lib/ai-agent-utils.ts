@@ -118,6 +118,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
  * Save user prompt and assistant response to Supabase agent_messages table
  */
 export async function saveAgentMessages(
+  supabase: any,
   agentId: string,
   sessionId: string,
   userPrompt: string,
@@ -125,36 +126,22 @@ export async function saveAgentMessages(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = createClient()
+    // Ensure UID is uppercase
+    const upperCaseUID = userId.toUpperCase()
     
-    // Save user message
-    const { error: userError } = await supabase
+    // Save one row with both prompt and message
+    const { error } = await supabase
       .from('agent_messages')
       .insert({
         session_id: sessionId,
-        UID: userId,
+        UID: upperCaseUID,
         agent_id: agentId,
         prompt: userPrompt,
-        message: null // User prompts don't have message content
-      })
-    
-    if (userError) {
-      throw new Error(`Failed to save user message: ${userError.message}`)
-    }
-    
-    // Save assistant response
-    const { error: assistantError } = await supabase
-      .from('agent_messages')
-      .insert({
-        session_id: sessionId,
-        UID: userId,
-        agent_id: agentId,
-        prompt: null, // Assistant responses don't have prompt content
         message: assistantResponse
       })
     
-    if (assistantError) {
-      throw new Error(`Failed to save assistant message: ${assistantError.message}`)
+    if (error) {
+      throw new Error(`Failed to save conversation: ${error.message}`)
     }
     
     return { success: true }
@@ -178,11 +165,14 @@ export async function loadSessionMessages(
   try {
     const supabase = createClient()
     
+    // Ensure UID is uppercase for consistency
+    const upperCaseUID = userId.toUpperCase()
+    
     const { data, error } = await supabase
       .from('agent_messages')
       .select('*')
       .eq('session_id', sessionId)
-      .eq('UID', userId)
+      .eq('UID', upperCaseUID)
       .order('created_at', { ascending: true })
     
     if (error) {
@@ -246,8 +236,20 @@ export async function loadAgent(
  * Generate a unique session ID
  */
 export function generateSessionId(): string {
-  // Generate a proper UUID v4 for database compatibility
+  // Generate a proper UUID v4 for consistency
   return crypto.randomUUID()
+}
+
+/**
+ * Validate and return session ID - now accepts any text format
+ */
+export function validateSessionId(sessionId?: string): string {
+  // If session ID is provided, use it (now supports any text format)
+  if (sessionId) {
+    return sessionId
+  }
+  // If no session ID provided, generate a new UUID
+  return generateSessionId()
 }
 
 /**
@@ -312,12 +314,15 @@ export async function getAgentSessions(
   try {
     const supabase = createClient()
     
+    // Ensure UID is uppercase for consistency
+    const upperCaseUID = userId.toUpperCase()
+    
     // Get unique sessions with latest message for each
     const { data, error } = await supabase
       .from('agent_messages')
       .select('session_id, created_at, prompt, message')
       .eq('agent_id', agentId)
-      .eq('UID', userId)
+      .eq('UID', upperCaseUID)
       .not('session_id', 'is', null)
       .order('created_at', { ascending: false })
     

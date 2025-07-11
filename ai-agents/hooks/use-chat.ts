@@ -1,14 +1,15 @@
 "use client"
 
 import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/lib/supabase'
 import { 
   callAgentApi, 
   saveAgentMessages, 
   loadSessionMessages,
   generateSessionId,
-  generateMessageId 
+  generateMessageId,
+  validateSessionId
 } from '@/lib/ai-agent-utils'
+import { createClient } from '@/lib/supabase'
 import type { Agent, AgentMessage } from '@/lib/types'
 
 interface Message {
@@ -49,7 +50,7 @@ export function useChat({
 }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [sessionId] = useState(() => providedSessionId || generateSessionId())
+  const [sessionId] = useState(() => validateSessionId(providedSessionId))
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false)
   const [retryData, setRetryData] = useState<Map<string, { content: string; formData?: Record<string, any> }>>(new Map())
 
@@ -143,8 +144,10 @@ export function useChat({
           rawData: response.data
         })
         
-        // Save messages to Supabase
+        // Save messages to database
+        const supabase = createClient()
         const saveResult = await saveAgentMessages(
+          supabase,
           agent.id,
           sessionId,
           content,
