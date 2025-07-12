@@ -1,0 +1,58 @@
+---
+description: This page provides information on the /create-product-stripe page. Use the information in this file when making changes to or working with the /create-product-stripe page.
+alwaysApply: false
+---
+description:
+globs:
+alwaysApply: false
+---
+
+# /create-product-stripe Page
+
+## Purpose
+Enables **admins** to create a new Stripe product (subscription or one-time) through the shared `ProductForm` interface.
+
+## Route
+`/create-product-stripe`
+
+## Access Control
+* Server component (`app/create-product-stripe/page.tsx`) calls `requireAuth()` then `isAdmin()`.
+* Non-admins are redirected to `/dashboard`; unauthenticated users to `/login`.
+* Page is rendered on the server, so it automatically benefits from the session-hydration pattern—no header “flash”.
+* Also checks that `admin_settings` contains valid `stripe_secret` + `stripe_publishable_key`; otherwise redirects to `/settings?tab=stripe`.
+
+## Component Structure
+| File | Type | Responsibility |
+|------|------|----------------|
+| `app/create-product-stripe/page.tsx` | **Server page** | Auth & permission checks, Stripe-config check, renders `CreateProductClient`. |
+| `app/create-product-stripe/create-product-client.tsx` | **Client** | Hosts `ProductForm` in *create* mode and handles POST to `/api/stripe/create-product`. |
+
+## Data Flow
+1. **Server checks** – `requireAuth()` → `isAdmin()` → Stripe key presence.
+2. **Render** – `CreateProductClient` receives no initial data (creating fresh product).
+3. **Submit** – Client POSTs to `/api/stripe/create-product` with `ProductFormData`.
+4. **API Route** – Server route creates product & prices in Stripe; returns JSON.
+5. **Success** – Toast success, navigate to `/my-products`.
+
+## UI States
+* **Normal** – New product form with “Create Product” button.
+* **Submitting** – Button shows spinner via `isLoading` prop.
+* **Success** – Toast then redirect.
+* **Error** – Toast with error message.
+
+## Related API Routes
+* `app/api/stripe/create-product/route.ts` – Creates product & prices.
+
+## Future Enhancements
+* Add draft-save functionality.
+* Upload images directly to Supabase Storage.
+* Prefill defaults based on a template selector.
+
+description:
+globs:
+alwaysApply: false
+---
+description:
+globs:
+alwaysApply: false
+---

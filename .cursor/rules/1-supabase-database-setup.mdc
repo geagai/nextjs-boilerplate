@@ -1,0 +1,397 @@
+
+# Supabase Database Setup & Management Rules
+
+## Overview
+
+**All database setup, schema changes, migrations, and data operations for this application MUST be performed using the Supabase MCP server integration.**
+
+- ❌ Do NOT run direct SQL queries against the database outside the MCP server tools.
+- ❌ Do NOT make manual schema or data changes in the Supabase web dashboard.
+- ✅ ALWAYS use the provided MCP tools (e.g., `mcp_supabase_apply_migration`, `mcp_supabase_execute_sql`, etc.) for all database operations.
+- This ensures:
+  - Consistent schema management
+  - Auditability and reproducibility
+  - Proper integration with the application's task and rule system
+
+
+## Recreating the `user_data` Table and Policies (Live Schema)
+
+To recreate the `user_data` table, its Row Level Security (RLS) policies, and related functions/triggers, use the Supabase MCP server integration. **Do not run these statements directly or change the schema manually.**
+
+### Table Definition
+
+```sql
+CREATE TABLE IF NOT EXISTS user_data (
+  UID uuid PRIMARY KEY REFERENCES auth.users(id),
+  user_role text DEFAULT 'free subscriber',
+  display_name text,
+  email text,
+  phone text,
+  credits numeric DEFAULT 0,
+  stripe_id jsonb DEFAULT '[]',
+  api_keys jsonb DEFAULT '[]',
+  trial_credits_claimed boolean DEFAULT false,
+  affiliate_link_clicks integer DEFAULT 0,
+  referred_by text,
+  user_settings jsonb DEFAULT '[]',
+  created_at timestamptz DEFAULT timezone('utc'::text, now()),
+  updated_at timestamptz DEFAULT timezone('utc'::text, now())
+);
+```
+
+- **Primary Key:** UID
+- **Foreign Key:** UID → auth.users(id)
+
+### RLS Policies (as of current live database)
+
+- **Allow service_role full access on user_data**
+  - Role: `{service_role}`
+  - Qual: `true`
+  - With Check: `true`
+- **Users can access only their own data**
+  - Role: `{authenticated}`
+  - Qual: `"UID" = auth.uid()`
+  - With Check: `"UID" = auth.uid()`
+- **Users can update their own profile**
+  - Role: `{public}`
+  - Qual: `auth.uid() = "UID"`
+  - With Check: `null`
+
+### Triggers (as of current live database)
+
+- `RI_ConstraintTrigger_c_18444` (type: 5, enabled: O, function: RI_FKey_check_ins)
+- `RI_ConstraintTrigger_c_18445` (type: 17, enabled: O, function: RI_FKey_check_upd)
+
+These are referential integrity triggers for the foreign key constraint to `auth.users(id)`.
+
+### Functions (as of current live database)
+
+- **is_admin**
+
+```plpgsql
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM user_data
+    WHERE "UID" = auth.uid()
+      AND lower(user_role) = 'admin'
+  );
+END;
+```
+
+---
+
+**Note:**
+- All of the above must be executed using the MCP server's migration/apply tools (e.g., `mcp_supabase_apply_migration`).
+- Do NOT run these statements directly in the Supabase dashboard or via psql.
+- If you add or change triggers/functions in the future, update this documentation accordingly.
+
+
+## Recreating the `admin_settings` Table and Policies (Live Schema)
+
+To recreate the `admin_settings` table, its Row Level Security (RLS) policies, and all columns (including the newly added `dev_mode`), use the Supabase MCP server integration. **Do not run these statements directly or change the schema manually.**
+
+### Table Definition (as of current live database)
+
+```sql
+CREATE TABLE IF NOT EXISTS admin_settings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  stripe_publishable_key text,
+  stripe_secret text,
+  stripe_webhook_secret text,
+  show_header boolean DEFAULT true,
+  dev_mode boolean DEFAULT false
+);
+```
+
+- **Primary Key:** id
+
+**Note:** The `dev_mode` column was added via MCP migration (`ALTER TABLE admin_settings ADD COLUMN dev_mode boolean DEFAULT false;`).
+
+### RLS Policies (as of current live database)
+
+- **Admin access to create settings**
+  - Role: `{authenticated}`
+  - Qual: `null`
+  - With Check: `is_admin()`
+- **Admin access to delete settings**
+  - Role: `{authenticated}`
+  - Qual: `is_admin()`
+  - With Check: `null`
+- **Admin access to update settings**
+  - Role: `{authenticated}`
+  - Qual: `is_admin()`
+  - With Check: `null`
+- **Admin access to view settings**
+  - Role: `{authenticated}`
+  - Qual: `is_admin()`
+  - With Check: `null`
+- **Authenticated manage admin settings**
+  - Role: `{public}`
+  - Qual: `(auth.role() = 'authenticated'::text)`
+  - With Check: `(auth.role() = 'authenticated'::text)`
+
+---
+
+
+## Recreating the `agents` Table and Policies (Live Schema)
+
+To recreate the `agents` table, its Row Level Security (RLS) policies, and all columns, use the Supabase MCP server integration. **Do not run these statements directly or change the schema manually.**
+
+### Table Definition (as of current live database)
+
+```sql
+CREATE TABLE IF NOT EXISTS agents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UID uuid NOT NULL REFERENCES auth.users(id),
+  name text NOT NULL,
+  description text,
+  category text,
+  api_url text,
+  prompt text,
+  agent_role text,
+  is_public boolean DEFAULT false,
+  config jsonb
+);
+```
+
+- **Primary Key:** id
+- **Foreign Key:** UID → auth.users(id)
+- **Config:** JSONB field for agent configuration (headers, body fields, UI options)
+
+### RLS Policies (as of current live database)
+
+- **Enable Row Level Security**
+  ```sql
+  ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
+  ```
+- **Allow users to view their own agents and public agents**
+  ```sql
+  CREATE POLICY "Allow select own or public agents" ON agents FOR SELECT USING (
+    UID = auth.uid() OR is_public = true
+  );
+  ```
+- **Allow users to insert their own agents**
+  ```sql
+  CREATE POLICY "Allow insert own agents" ON agents FOR INSERT WITH CHECK (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to update their own agents**
+  ```sql
+  CREATE POLICY "Allow update own agents" ON agents FOR UPDATE USING (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to delete their own agents**
+  ```sql
+  CREATE POLICY "Allow delete own agents" ON agents FOR DELETE USING (
+    UID = auth.uid()
+  );
+  ```
+
+---
+
+## Recreating the `agent_messages` Table and Policies (Live Schema)
+
+To recreate the `agent_messages` table, its Row Level Security (RLS) policies, and all columns, use the Supabase MCP server integration. **Do not run these statements directly or change the schema manually.**
+
+### Table Definition (as of current live database)
+
+```sql
+CREATE TABLE IF NOT EXISTS agent_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id uuid,
+  created_at timestamptz DEFAULT now(),
+  UID uuid REFERENCES auth.users(id),
+  agent_id uuid REFERENCES agents(id),
+  prompt text,
+  message text,
+  post_id text
+);
+```
+
+- **Primary Key:** id
+- **Foreign Keys:** UID → auth.users(id), agent_id → agents(id)
+- **Session ID:** Used for conversation threading
+
+### RLS Policies (as of current live database)
+
+- **Enable Row Level Security**
+  ```sql
+  ALTER TABLE agent_messages ENABLE ROW LEVEL SECURITY;
+  ```
+- **Allow users to insert their own messages**
+  ```sql
+  CREATE POLICY "Allow insert own messages" ON agent_messages FOR INSERT WITH CHECK (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to update their own messages**
+  ```sql
+  CREATE POLICY "Allow update own messages" ON agent_messages FOR UPDATE USING (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to delete their own messages**
+  ```sql
+  CREATE POLICY "Allow delete own messages" ON agent_messages FOR DELETE USING (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to select (read) their own messages**
+  ```sql
+  CREATE POLICY "Allow select own messages" ON agent_messages FOR SELECT USING (
+    UID = auth.uid()
+  );
+  ```
+- **Allow users to select (read) messages from public agents**
+  ```sql
+  CREATE POLICY "Allow select public agent messages" ON agent_messages FOR SELECT USING (
+    agent_id IN (SELECT id FROM agents WHERE is_public = true)
+  );
+  ```
+
+### Real-Time Enablement
+
+- To enable real-time subscriptions for the `agent_messages` table, ensure that RLS is enabled and the above policies are in place. Supabase real-time will respect these policies for all connected clients.
+
+---
+
+**Note:**
+- All of the above must be executed using the MCP server's migration/apply tools (e.g., `mcp_supabase_apply_migration`).
+- Do NOT run these statements directly in the Supabase dashboard or via psql.
+- If you add or change policies in the future, update this documentation accordingly.
+
+
+## Recreating the `subscriptions` Table and Policies (Live Schema)
+
+### Table Definition (as of current live database)
+
+```sql
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "UID" uuid NOT NULL REFERENCES auth.users(id),
+  customer_id text NOT NULL,
+  subscription_id text NOT NULL,
+  cost numeric NOT NULL,
+  billing_term text NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  status text DEFAULT 'active' CHECK (status = ANY (ARRAY['active', 'canceled', 'past_due', 'unpaid', 'trialing', 'incomplete', 'incomplete_expired', 'paused']))
+);
+```
+
+- **Primary Key:** id
+- **Foreign Key:** UID → auth.users(id)
+
+### RLS Policies
+
+- **Admins can create any subscription**
+  - Roles: {public}
+  - With Check: (EXISTS (SELECT 1 FROM user_data WHERE (subscriptions."UID" = auth.uid()) AND (user_data.user_role = 'ADMIN')))
+- **Admins can delete any subscription**
+  - Roles: {public}
+  - Qualifier: (EXISTS (SELECT 1 FROM user_data WHERE (subscriptions."UID" = auth.uid()) AND (user_data.user_role = 'ADMIN')))
+- **Admins can update any subscription**
+  - Roles: {public}
+  - Qualifier: (EXISTS (SELECT 1 FROM user_data WHERE (subscriptions."UID" = auth.uid()) AND (user_data.user_role = 'ADMIN')))
+- **Admins can view all subscriptions**
+  - Roles: {public}
+  - Qualifier: (EXISTS (SELECT 1 FROM user_data WHERE (subscriptions."UID" = auth.uid()) AND (user_data.user_role = 'ADMIN')))
+- **Users can create own subscriptions**
+  - Roles: {public}
+  - With Check: (auth.uid() = "UID")
+- **Users can update own subscriptions**
+  - Roles: {public}
+  - Qualifier: (auth.uid() = "UID")
+- **Users can view own subscriptions**
+  - Roles: {public}
+  - Qualifier: (auth.uid() = "UID")
+
+
+## User Data Onboarding (Trigger & Default)
+
+When a new account is created in **auth.users**, we automatically insert a matching row into `public.user_data` with the default role `user` (lower-case). Keep this in sync with application expectations.
+
+```sql
+-- Column default
+ALTER TABLE user_data ALTER COLUMN user_role SET DEFAULT 'user';
+
+-- Function
+CREATE OR REPLACE FUNCTION public.init_user_data()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_data ("UID", user_role, email, created_at, updated_at)
+  VALUES (NEW.id, 'user', NEW.email, timezone('utc', now()), timezone('utc', now()))
+  ON CONFLICT ("UID") DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.init_user_data();
+```
+
+**Note:** execute the above with `mcp_supabase_apply_migration` – do **not** run manually in the dashboard. Update this section if the default role or trigger logic ever changes.
+
+
+## Recreating the `pages` Table and Policies (Live Schema)
+
+To recreate the `pages` table and its Row Level Security (RLS) policies, use the Supabase MCP server integration. **Do not run these statements directly or change the schema manually.**
+
+### Table Definition (as of current live database)
+
+```sql
+CREATE TABLE IF NOT EXISTS pages (
+  id serial PRIMARY KEY,
+  terms_service text,
+  privacy_policy text,
+  contact_us text
+);
+```
+
+- **Primary Key:** id
+
+### RLS Policies (as of current live database)
+
+- **Enable Row Level Security**
+  ```sql
+  ALTER TABLE pages ENABLE ROW LEVEL SECURITY;
+  ```
+- **Allow all users to select (read) from pages**
+  ```sql
+  CREATE POLICY "Allow all select on pages" ON pages FOR SELECT USING (true);
+  ```
+- **Allow all users to insert into pages**
+  ```sql
+  CREATE POLICY "Allow all insert on pages" ON pages FOR INSERT WITH CHECK (true);
+  ```
+- **Allow all users to update pages**
+  ```sql
+  CREATE POLICY "Allow all update on pages" ON pages FOR UPDATE USING (true);
+  ```
+
+**Note:**
+- All of the above must be executed using the MCP server's migration/apply tools (e.g., `mcp_supabase_apply_migration`).
+- Do NOT run these statements directly in the Supabase dashboard or via psql.
+- If you add or change policies in the future, update this documentation accordingly.
+
+
+
+**Note:** execute the above with `mcp_supabase_apply_migration` – do **not** run manually in the dashboard. Update this section if the default role or trigger logic ever changes.
+
+
+
+
+**Note:** execute the above with `mcp_supabase_apply_migration` – do **not** run manually in the dashboard. Update this section if the default role or trigger logic ever changes.
+
+

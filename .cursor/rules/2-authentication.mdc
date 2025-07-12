@@ -1,0 +1,920 @@
+---
+description: This file provides information on the authentication setup for this application with Supabase. Use this file and the information when creating new pages and functionality that utilizes the authentication.
+alwaysApply: false
+---
+# Authentication & Authorization Rules
+
+## Overview
+This application uses **Supabase Auth** exclusively for authentication. NextAuth is disabled and should not be used.
+
+## Authentication Architecture
+
+### 1. Supabase Auth Configuration
+```typescript
+// ✅ Always use Supabase helpers in lib/supabase.ts
+//  • createClient()  – browser/client components (uses createBrowserClient)
+//  • createServerClient(cookieStore) – server components / API routes (uses createServerClient)
+
+import { createClient } from '@/lib/supabase'   // <- browser
+import { createServerClient } from '@/lib/supabase' // <- server
+
+// Browser usage
+const supabase = createClient()
+
+// Server usage
+import { cookies } from 'next/headers'
+const supabaseServer = createServerClient(cookies())
+```
+
+### 2. Environment Variables
+```env
+# ✅ Required - Only use anon key, never service role key in client
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Authentication Patterns
+
+### 1. Client-Side Authentication
+```typescript
+// ✅ Sign up pattern
+const handleSignUp = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`
+    }
+  })
+  
+  if (error) {
+    throw new Error(error.message)
+  }
+  
+  return data
+}
+
+// ✅ Sign in pattern
+const handleSignIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+  
+  if (error) {
+    throw new Error(error.message)
+  }
+  
+  return data
+}
+
+// ✅ Sign out pattern
+const handleSignOut = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) {
+    console.error('Sign out error:', error)
+  }
+}
+```
+
+### 2. Server-Side Authentication
+```typescript
+// ✅ Use auth helpers from lib/auth.ts
+import { getServerSession, requireAuth } from '@/lib/auth'
+
+// For optional authentication
+const sessionData = await getServerSession()
+if (sessionData) {
+  const { user, session } = sessionData
+  // Handle authenticated user
+}
+
+// For required authentication (redirects if not authenticated)
+const { user, session } = await requireAuth()
+```
+
+### 3. Client-Side Session Management
+```typescript
+// ✅ Use AuthProvider for session state
+import { useAuth } from '@/components/auth-provider'
+
+function Component() {
+  const { user, loading, signOut } = useAuth()
+  
+  if (loading) return <div>Loading...</div>
+  
+  return user ? (
+    <div>Welcome, {user.email}</div>
+  ) : (
+    <div>Please sign in</div>
+  )
+}
+```
+
+## Authorization Patterns
+
+### 1. Role-Based Access Control
+```typescript
+// ✅ Use helper functions from lib/auth.ts
+import { isAdmin, hasValidSubscription } from '@/lib/auth'
+
+// Check admin status
+if (isAdmin(user)) {
+  // Admin-only functionality
+}
+
+// Check subscription status
+if (hasValidSubscription(user)) {
+  // Premium features
+}
+```
+
+### 2. User Roles
+```typescript
+// ✅ Supported roles (lower-case strings)
+type UserRole = 'user' | 'admin'
+
+// Role assignment in user metadata
+const user: AuthUser = {
+  ...session.user,
+  role: session.user.user_metadata?.role || 'USER'
+}
+
+```
+
+### 4.1 Hydrate AuthProvider to avoid auth “flash”
+
+Send the current session from the *server component* (e.g. `app/layout.tsx`) into `AuthProvider` so the header renders with the correct user immediately.
+
+#### Root layout pattern
+```tsx
+import { getServerSession } from '@/lib/auth'
+import { Providers } from '@/components/providers'
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const sessionData = await getServerSession()
+  return (
+    <html lang="en">
+      <body>
+        <Providers
+          initialUser={sessionData?.user}
+          initialSession={sessionData?.session}
+        >
+          {children}
+        </Providers>
+      </body>
+    </html>
+  )
+}
+```
+
+#### AuthProvider signature
+```tsx
+export function AuthProvider({ children, initialUser = null, initialSession = null }) {
+  const [user, setUser] = useState(initialUser)
+  const [session, setSession] = useState(initialSession)
+  const [loading, setLoading] = useState(!initialSession)
+  ...
+}
+```
+
+With this pattern the first paint is already authenticated, eliminating the Sign-In / Get-Started flash on protected pages (`/my-products`, `/edit-product-stripe`).
+
+## Route Protection
+
+### 1. Middleware Protection
+```typescript
+// ✅ Protect routes with middleware
+export async function middleware(request: NextRequest) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard')
+  
+  if (isProtectedRoute && !session) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+}
+```
+
+### 2. Page-Level Protection
+```typescript
+// ✅ Protect pages with requireAuth
+export default async function ProtectedPage() {
+  const { user } = await requireAuth()
+  
+  return (
+    <div>
+      <h1>Welcome, {user.email}!</h1>
+      {/* Protected content */}
+    </div>
+  )
+}
+```
+
+### 3. API Route Protection
+```typescript
+// ✅ Protect API routes
+export async function GET(request: Request) {
+  const sessionData = await getServerSession()
+  
+  if (!sessionData) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+  
+  const { user } = sessionData
+  
+  // Handle authenticated request
+  return Response.json({ user })
+}
+```
+
+## Error Handling
+
+### 1. Authentication Errors
+```typescript
+// ✅ Handle common auth errors
+function handleAuthError(error: Error): string {
+  if (error.message.includes('Invalid login credentials')) {
+    return 'Invalid email or password'
+  }
+  if (error.message.includes('Email not confirmed')) {
+    return 'Please check your email and click the confirmation link'
+  }
+  if (error.message.includes('Too many requests')) {
+    return 'Too many attempts. Please try again later'
+  }
+  return 'An unexpected error occurred'
+}
+```
+
+### 2. Session Errors
+```typescript
+// ✅ Handle session errors gracefully
+try {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+} catch (error) {
+  console.error('Session error:', error)
+  return null
+}
+```
+
+## Security Best Practices
+
+### 1. Row Level Security (RLS)
+```sql
+-- ✅ Always enable RLS on user tables
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- ✅ Create policies for user data access
+CREATE POLICY "Users can view own profile" ON user_profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own profile" ON user_profiles
+  FOR UPDATE USING (auth.uid() = user_id);
+```
+
+### 2. Email Verification
+```typescript
+// ✅ Require email verification
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}/auth/callback`
+  }
+})
+```
+
+### 3. Password Requirements
+```typescript
+// ✅ Enforce strong passwords
+const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number')
+```
+
+## Testing Authentication
+
+### 1. Test User Flows
+```typescript
+// ✅ Test authentication flows
+describe('Authentication', () => {
+  it('should sign up new user', async () => {
+    // Test sign up flow
+  })
+  
+  it('should sign in existing user', async () => {
+    // Test sign in flow
+  })
+  
+  it('should protect routes', async () => {
+    // Test route protection
+  })
+})
+```
+
+### 2. Mock Authentication in Tests
+```typescript
+// ✅ Mock Supabase auth in tests
+jest.mock('@/lib/supabase', () => ({
+  createClient: () => ({
+    auth: {
+      getSession: () => ({ data: { session: mockSession } })
+    }
+  })
+}))
+```
+
+## Common Anti-Patterns
+
+### ❌ Don't Use NextAuth
+```typescript
+// ❌ NextAuth is disabled - don't use
+import NextAuth from 'next-auth'
+```
+
+### ❌ Don't Use Service Role Key in Client
+```typescript
+// ❌ Never use service role key in client-side code
+const supabase = createClient(url, serviceRoleKey)
+```
+
+### ❌ Don't Store Passwords
+```typescript
+// ❌ Never store or handle passwords directly
+const user = { email, password } // Don't do this
+```
+
+### ❌ Don't Skip Authentication Checks
+```typescript
+// ❌ Always validate authentication
+function AdminPanel() {
+  // Don't assume user is authenticated
+  return <div>Admin content</div>
+}
+```
+
+## Admin User Role Setup & Checks
+
+### 1. User Role Storage
+- User roles are stored in the `user_data` table in the `user_role` column (e.g., 'admin', 'ADMIN', 'user').
+- The user's UID (from Supabase Auth) is the primary key for this table.
+
+### 2. Fetching User Role
+- **Server-side:**
+  - In `lib/auth.ts`, the `getServerSession` function fetches the user's role from the `user_data` table using the Supabase server client:
+    ```typescript
+    const { data: userData } = await supabase
+      .from('user_data')
+      .select('user_role')
+      .eq('UID', session.user.id)
+      .single();
+    const role = userData?.user_role || 'USER';
+    ```
+  - This ensures that the server always has the latest role from the database for access control and page protection.
+- **Client-side:**
+  - The `AuthProvider` component fetches the user's role from the `user_data` table after authentication and updates the context accordingly.
+
+### 3. Admin Check Helper
+- Use the `isAdmin` helper from `lib/auth.ts`:
+  ```typescript
+  export function isAdmin(user: AuthUser | null): boolean {
+    return user?.role === 'ADMIN' || user?.role === 'admin';
+  }
+  ```
+- This allows for both 'admin' and 'ADMIN' (case-insensitive check is recommended for robustness).
+
+### 4. Example Usage
+- **Server-side page protection:**
+  ```typescript
+  const { user } = await requireAuth();
+  if (!isAdmin(user)) {
+    redirect('/dashboard');
+  }
+  ```
+- **Client-side context:**
+  ```typescript
+  const { user } = useAuth();
+  if (isAdmin(user)) {
+    // Show admin UI
+  }
+  ```
+
+### 5. Best Practices
+- Always fetch the role from the database for critical access checks.
+- Keep the role in sync between client and server by using the same DB source.
+- Consider normalizing roles to lowercase in the DB and in checks for consistency.
+
+## 4. Server-side vs Client-side Auth – **DO THIS FOR PROTECTED PAGES**
+
+> TL;DR – If the route should only be visible to authenticated or admin users, the **page entry file must be a SERVER component** (no `'use client'`) and must call `requireAuth()` right away. Do not rely on client-only checks.
+
+**Why?**
+• When a page is marked `'use client'`, the HTML is rendered without a session, the header shows public buttons, and any redirect/guard logic flashes or fails during hydration (exact bug seen on `/my-products` & `/edit-product-stripe`).
+• A server component can read the Supabase cookies, run `requireAuth()`, and either render the protected HTML or redirect before any bytes reach the browser – no flash, no auth-state mismatch.
+
+### ✅ Correct pattern (server component)
+```tsx
+// app/admin-settings/page.tsx (excerpt)
+import { requireAuth, isAdmin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+
+export default async function AdminSettingsPage() {
+  const { user } = await requireAuth()
+  if (!isAdmin(user)) redirect('/dashboard')
+  return <AdminSettingsClient />
+}
+```
+
+### ❌ Anti-pattern (client component)
+```tsx
+// DON’T put 'use client' at the top of a protected route
+'use client'
+...
+const { data:{user} } = await supabase.auth.getUser() // runs late – page already rendered unauthenticated
+```
+
+### Migration steps when you hit this bug
+1. Remove `'use client'` from the page file.
+2. Move heavy data fetching & interactivity into a child **client component** and pass props from the server component.
+3. Keep the auth/permission checks in the server component with `requireAuth()` / role helpers.
+
+Following this rule ensures future pages will not reproduce the login “flash” or missing-session errors observed on `/my-products` and `/edit-product-stripe`.
+# Authentication & Authorization Rules
+
+## Overview
+This application uses **Supabase Auth** exclusively for authentication. NextAuth is disabled and should not be used.
+
+## Authentication Architecture
+
+### 1. Supabase Auth Configuration
+```typescript
+// ✅ Always use Supabase helpers in lib/supabase.ts
+//  • createClient()  – browser/client components (uses createBrowserClient)
+//  • createServerClient(cookieStore) – server components / API routes (uses createServerClient)
+
+import { createClient } from '@/lib/supabase'   // <- browser
+import { createServerClient } from '@/lib/supabase' // <- server
+
+// Browser usage
+const supabase = createClient()
+
+// Server usage
+import { cookies } from 'next/headers'
+const supabaseServer = createServerClient(cookies())
+```
+
+### 2. Environment Variables
+```env
+# ✅ Required - Only use anon key, never service role key in client
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Authentication Patterns
+
+### 1. Client-Side Authentication
+```typescript
+// ✅ Sign up pattern
+const handleSignUp = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`
+    }
+  })
+  
+  if (error) {
+    throw new Error(error.message)
+  }
+  
+  return data
+}
+
+// ✅ Sign in pattern
+const handleSignIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+  
+  if (error) {
+    throw new Error(error.message)
+  }
+  
+  return data
+}
+
+// ✅ Sign out pattern
+const handleSignOut = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) {
+    console.error('Sign out error:', error)
+  }
+}
+```
+
+### 2. Server-Side Authentication
+```typescript
+// ✅ Use auth helpers from lib/auth.ts
+import { getServerSession, requireAuth } from '@/lib/auth'
+
+// For optional authentication
+const sessionData = await getServerSession()
+if (sessionData) {
+  const { user, session } = sessionData
+  // Handle authenticated user
+}
+
+// For required authentication (redirects if not authenticated)
+const { user, session } = await requireAuth()
+```
+
+### 3. Client-Side Session Management
+```typescript
+// ✅ Use AuthProvider for session state
+import { useAuth } from '@/components/auth-provider'
+
+function Component() {
+  const { user, loading, signOut } = useAuth()
+  
+  if (loading) return <div>Loading...</div>
+  
+  return user ? (
+    <div>Welcome, {user.email}</div>
+  ) : (
+    <div>Please sign in</div>
+  )
+}
+```
+
+## Authorization Patterns
+
+### 1. Role-Based Access Control
+```typescript
+// ✅ Use helper functions from lib/auth.ts
+import { isAdmin, hasValidSubscription } from '@/lib/auth'
+
+// Check admin status
+if (isAdmin(user)) {
+  // Admin-only functionality
+}
+
+// Check subscription status
+if (hasValidSubscription(user)) {
+  // Premium features
+}
+```
+
+### 2. User Roles
+```typescript
+// ✅ Supported roles (lower-case strings)
+type UserRole = 'user' | 'admin'
+
+// Role assignment in user metadata
+const user: AuthUser = {
+  ...session.user,
+  role: session.user.user_metadata?.role || 'USER'
+}
+
+```
+
+### 4.1 Hydrate AuthProvider to avoid auth “flash”
+
+Send the current session from the *server component* (e.g. `app/layout.tsx`) into `AuthProvider` so the header renders with the correct user immediately.
+
+#### Root layout pattern
+```tsx
+import { getServerSession } from '@/lib/auth'
+import { Providers } from '@/components/providers'
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const sessionData = await getServerSession()
+  return (
+    <html lang="en">
+      <body>
+        <Providers
+          initialUser={sessionData?.user}
+          initialSession={sessionData?.session}
+        >
+          {children}
+        </Providers>
+      </body>
+    </html>
+  )
+}
+```
+
+#### AuthProvider signature
+```tsx
+export function AuthProvider({ children, initialUser = null, initialSession = null }) {
+  const [user, setUser] = useState(initialUser)
+  const [session, setSession] = useState(initialSession)
+  const [loading, setLoading] = useState(!initialSession)
+  ...
+}
+```
+
+With this pattern the first paint is already authenticated, eliminating the Sign-In / Get-Started flash on protected pages (`/my-products`, `/edit-product-stripe`).
+
+## Route Protection
+
+### 1. Middleware Protection
+```typescript
+// ✅ Protect routes with middleware
+export async function middleware(request: NextRequest) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard')
+  
+  if (isProtectedRoute && !session) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+}
+```
+
+### 2. Page-Level Protection
+```typescript
+// ✅ Protect pages with requireAuth
+export default async function ProtectedPage() {
+  const { user } = await requireAuth()
+  
+  return (
+    <div>
+      <h1>Welcome, {user.email}!</h1>
+      {/* Protected content */}
+    </div>
+  )
+}
+```
+
+### 3. API Route Protection
+```typescript
+// ✅ Protect API routes
+export async function GET(request: Request) {
+  const sessionData = await getServerSession()
+  
+  if (!sessionData) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+  
+  const { user } = sessionData
+  
+  // Handle authenticated request
+  return Response.json({ user })
+}
+```
+
+## Error Handling
+
+### 1. Authentication Errors
+```typescript
+// ✅ Handle common auth errors
+function handleAuthError(error: Error): string {
+  if (error.message.includes('Invalid login credentials')) {
+    return 'Invalid email or password'
+  }
+  if (error.message.includes('Email not confirmed')) {
+    return 'Please check your email and click the confirmation link'
+  }
+  if (error.message.includes('Too many requests')) {
+    return 'Too many attempts. Please try again later'
+  }
+  return 'An unexpected error occurred'
+}
+```
+
+### 2. Session Errors
+```typescript
+// ✅ Handle session errors gracefully
+try {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+} catch (error) {
+  console.error('Session error:', error)
+  return null
+}
+```
+
+## Security Best Practices
+
+### 1. Row Level Security (RLS)
+```sql
+-- ✅ Always enable RLS on user tables
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- ✅ Create policies for user data access
+CREATE POLICY "Users can view own profile" ON user_profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own profile" ON user_profiles
+  FOR UPDATE USING (auth.uid() = user_id);
+```
+
+### 2. Email Verification
+```typescript
+// ✅ Require email verification
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}/auth/callback`
+  }
+})
+```
+
+### 3. Password Requirements
+```typescript
+// ✅ Enforce strong passwords
+const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number')
+```
+
+## Testing Authentication
+
+### 1. Test User Flows
+```typescript
+// ✅ Test authentication flows
+describe('Authentication', () => {
+  it('should sign up new user', async () => {
+    // Test sign up flow
+  })
+  
+  it('should sign in existing user', async () => {
+    // Test sign in flow
+  })
+  
+  it('should protect routes', async () => {
+    // Test route protection
+  })
+})
+```
+
+### 2. Mock Authentication in Tests
+```typescript
+// ✅ Mock Supabase auth in tests
+jest.mock('@/lib/supabase', () => ({
+  createClient: () => ({
+    auth: {
+      getSession: () => ({ data: { session: mockSession } })
+    }
+  })
+}))
+```
+
+## Common Anti-Patterns
+
+### ❌ Don't Use NextAuth
+```typescript
+// ❌ NextAuth is disabled - don't use
+import NextAuth from 'next-auth'
+```
+
+### ❌ Don't Use Service Role Key in Client
+```typescript
+// ❌ Never use service role key in client-side code
+const supabase = createClient(url, serviceRoleKey)
+```
+
+### ❌ Don't Store Passwords
+```typescript
+// ❌ Never store or handle passwords directly
+const user = { email, password } // Don't do this
+```
+
+### ❌ Don't Skip Authentication Checks
+```typescript
+// ❌ Always validate authentication
+function AdminPanel() {
+  // Don't assume user is authenticated
+  return <div>Admin content</div>
+}
+```
+
+## Admin User Role Setup & Checks
+
+### 1. User Role Storage
+- User roles are stored in the `user_data` table in the `user_role` column (e.g., 'admin', 'ADMIN', 'user').
+- The user's UID (from Supabase Auth) is the primary key for this table.
+
+### 2. Fetching User Role
+- **Server-side:**
+  - In `lib/auth.ts`, the `getServerSession` function fetches the user's role from the `user_data` table using the Supabase server client:
+    ```typescript
+    const { data: userData } = await supabase
+      .from('user_data')
+      .select('user_role')
+      .eq('UID', session.user.id)
+      .single();
+    const role = userData?.user_role || 'USER';
+    ```
+  - This ensures that the server always has the latest role from the database for access control and page protection.
+- **Client-side:**
+  - The `AuthProvider` component fetches the user's role from the `user_data` table after authentication and updates the context accordingly.
+
+### 3. Admin Check Helper
+- Use the `isAdmin` helper from `lib/auth.ts`:
+  ```typescript
+  export function isAdmin(user: AuthUser | null): boolean {
+    return user?.role === 'ADMIN' || user?.role === 'admin';
+  }
+  ```
+- This allows for both 'admin' and 'ADMIN' (case-insensitive check is recommended for robustness).
+
+### 4. Example Usage
+- **Server-side page protection:**
+  ```typescript
+  const { user } = await requireAuth();
+  if (!isAdmin(user)) {
+    redirect('/dashboard');
+  }
+  ```
+- **Client-side context:**
+  ```typescript
+  const { user } = useAuth();
+  if (isAdmin(user)) {
+    // Show admin UI
+  }
+  ```
+
+### 5. Best Practices
+- Always fetch the role from the database for critical access checks.
+- Keep the role in sync between client and server by using the same DB source.
+- Consider normalizing roles to lowercase in the DB and in checks for consistency.
+
+## 4. Server-side vs Client-side Auth – **DO THIS FOR PROTECTED PAGES**
+
+> TL;DR – If the route should only be visible to authenticated or admin users, the **page entry file must be a SERVER component** (no `'use client'`) and must call `requireAuth()` right away. Do not rely on client-only checks.
+
+**Why?**
+• When a page is marked `'use client'`, the HTML is rendered without a session, the header shows public buttons, and any redirect/guard logic flashes or fails during hydration (exact bug seen on `/my-products` & `/edit-product-stripe`).
+• A server component can read the Supabase cookies, run `requireAuth()`, and either render the protected HTML or redirect before any bytes reach the browser – no flash, no auth-state mismatch.
+
+### ✅ Correct pattern (server component)
+```tsx
+// app/admin-settings/page.tsx (excerpt)
+import { requireAuth, isAdmin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+
+export default async function AdminSettingsPage() {
+  const { user } = await requireAuth()
+  if (!isAdmin(user)) redirect('/dashboard')
+  return <AdminSettingsClient />
+}
+```
+
+### ❌ Anti-pattern (client component)
+```tsx
+// DON’T put 'use client' at the top of a protected route
+'use client'
+...
+const { data:{user} } = await supabase.auth.getUser() // runs late – page already rendered unauthenticated
+```
+
+### Migration steps when you hit this bug
+1. Remove `'use client'` from the page file.
+2. Move heavy data fetching & interactivity into a child **client component** and pass props from the server component.
+3. Keep the auth/permission checks in the server component with `requireAuth()` / role helpers.
+
+Following this rule ensures future pages will not reproduce the login “flash” or missing-session errors observed on `/my-products` and `/edit-product-stripe`.

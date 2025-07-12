@@ -1,0 +1,49 @@
+# /agents Page – Functionality & Usage
+
+## When to Use This File
+- When creating, updating, or refactoring the `/agents` page or its components.
+- When implementing or modifying logic for listing, displaying, or managing AI agents.
+- When ensuring UI/UX consistency for agent selection, filtering, or management actions.
+- When troubleshooting or enhancing the agent management experience.
+- When adding new features related to agent creation, editing, or deletion.
+
+## Overview
+The `/agents` page is the main interface for users to view, browse, and manage available AI agents. It is designed to:
+- Display a list of all available agents, including their names, descriptions, and key attributes.
+- Allow users to view agent details, select an agent for interaction, or navigate to agent-specific pages.
+- Provide management actions such as creating, editing, or deleting agents (if the user has appropriate permissions).
+- Support searching, filtering, or sorting agents based on relevant criteria (e.g., type, status, capabilities).
+
+## UI Structure
+- **Agent List**: A grid or list view showing all agents with summary information (name, avatar/icon, short description).
+- **Agent Details**: Clicking an agent shows more detailed information, such as capabilities, recent activity, or configuration.
+- **Management Actions**: Buttons or menus for creating new agents, editing existing ones, or deleting agents (admin or authorized users only).
+- **Search/Filter**: Input fields or dropdowns to filter agents by type, status, or other attributes.
+- **Responsive Design**: The page is fully responsive and accessible.
+
+## Key Implementation Details
+- **Data Fetching**: Agent data is fetched from the backend or a dedicated API endpoint, supporting pagination and filtering.
+- **Permissions**: Management actions (create, edit, delete) are only available to users with the appropriate role (e.g., admin).
+- **Navigation**: Selecting an agent navigates to the agent's detail page (e.g., `/agent/[id]`).
+- **Error Handling**: User-friendly errors are displayed for failed data loads or unauthorized actions.
+- **State Management**: Uses React state or context to manage agent list, selection, and UI state.
+
+## Best Practices
+- Keep agent data in sync with backend or source of truth.
+- Ensure all management actions are protected by proper authorization checks.
+- Provide clear feedback for user actions (e.g., success, error, loading states).
+- Ensure accessibility and mobile usability for all agent management UI.
+
+## Anti-Patterns
+- ❌ Never expose sensitive agent configuration or credentials in the client.
+- ❌ Do not allow unauthorized users to perform management actions.
+- ❌ Avoid duplicating agent data fetching logic across components.
+
+## Example Usage
+- When adding a new agent, ensure the agent list updates and the new agent is visible.
+- When updating agent details, ensure changes are reflected in both the list and detail views.
+- When troubleshooting agent management, check both frontend logic and backend API integration.
+description:
+globs:
+alwaysApply: false
+---
