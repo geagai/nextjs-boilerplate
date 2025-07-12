@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Menu, X, Code2, ChevronDown, Settings } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface NavigationProps {
   /**
@@ -25,6 +26,7 @@ interface NavigationProps {
 export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { user, loading, signOut } = useAuth()
+  const router = useRouter();
 
   // Navigation bar (show basic links even while loading)
   const baseClasses = 'z-50 border-b'
@@ -129,7 +131,11 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => signOut()}
+                onClick={async () => {
+                  await signOut();
+                  setIsOpen(false); // For mobile, ensure menu closes
+                  router.push('/login');
+                }}
               >
                 Sign Out
               </Button>
@@ -141,7 +147,7 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90">
                     Get Started
                   </Button>
                 </Link>
@@ -186,9 +192,10 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  signOut()
-                  setIsOpen(false)
+                onClick={async () => {
+                  await signOut();
+                  setIsOpen(false);
+                  router.push('/login');
                 }}
                 className="w-full"
               >
@@ -202,7 +209,7 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                   </Button>
                 </Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full">
+                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
                     Get Started
                   </Button>
                 </Link>

@@ -208,10 +208,10 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
 
       if (error) throw error;
 
-      toast({ title: "Settings saved" });
-      
-      // Clear cache and refresh with new data from database
+      // Clear and refresh the admin settings cache after save
+      await adminSettingsCache.clearCacheAndRefresh();
       await clearCacheAndRefresh();
+      toast({ title: "Settings saved successfully" });
     } catch (err) {
       console.error(err);
       toast({ title: "Failed to save settings", variant: "destructive" });

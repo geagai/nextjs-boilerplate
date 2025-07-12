@@ -19,6 +19,10 @@ interface AdminSettings {
   dark_paragraph_text_color?: string | null;
   background_color?: string | null;
   dark_background_color?: string | null;
+  link_color?: string | null;
+  link_hover_color?: string | null;
+  dark_link_color?: string | null;
+  dark_link_hover_color?: string | null;
 }
 
 interface ButtonStyles {
@@ -64,6 +68,10 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
           dark_paragraph_text_color: (cachedSettings as any).dark_paragraph_text_color ?? null,
           background_color: (cachedSettings as any).background_color ?? null,
           dark_background_color: (cachedSettings as any).dark_background_color ?? null,
+          link_color: (cachedSettings as any).link_color ?? null,
+          link_hover_color: (cachedSettings as any).link_hover_color ?? null,
+          dark_link_color: (cachedSettings as any).dark_link_color ?? null,
+          dark_link_hover_color: (cachedSettings as any).dark_link_hover_color ?? null,
         });
       }
     } catch (error) {
@@ -94,6 +102,10 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
           dark_paragraph_text_color: (freshSettings as any).dark_paragraph_text_color ?? null,
           background_color: (freshSettings as any).background_color ?? null,
           dark_background_color: (freshSettings as any).dark_background_color ?? null,
+          link_color: (freshSettings as any).link_color ?? null,
+          link_hover_color: (freshSettings as any).link_hover_color ?? null,
+          dark_link_color: (freshSettings as any).dark_link_color ?? null,
+          dark_link_hover_color: (freshSettings as any).dark_link_hover_color ?? null,
         });
       }
     } catch (error) {
@@ -133,6 +145,7 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
       const buttonColor = isDark 
         ? adminSettings?.dark_button_color || adminSettings?.button_color 
         : adminSettings?.button_color;
+      styles.backgroundColor = 'transparent'; // Always reset background for outline
       if (buttonColor) {
         styles.borderColor = buttonColor;
         styles.color = buttonColor;
