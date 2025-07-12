@@ -8,12 +8,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Plus, MessageSquare, X } from 'lucide-react'
 import { useAdminSettings } from '@/components/admin-settings-provider'
 import { toast } from '@/hooks/use-toast'
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 interface Session {
   id: string
   title: string
   created_at: string
   updated_at: string
+  prompt: string // full prompt for renaming
 }
 
 interface SessionSidebarProps {
@@ -38,6 +41,10 @@ export function SessionSidebar({
   const { getButtonStyles, getButtonHoverStyles } = useAdminSettings()
   const [sessions, setSessions] = useState<Session[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameSessionId, setRenameSessionId] = useState<string | null>(null);
+  const [renameLoading, setRenameLoading] = useState(false);
 
   useEffect(() => {
     // Load sessions from Supabase agent_messages table
@@ -64,7 +71,8 @@ export function SessionSidebar({
             id: row.session_id,
             title: (row.prompt || 'New Chat').slice(0, 50),
             created_at: row.created_at,
-            updated_at: row.created_at
+            updated_at: row.created_at,
+            prompt: row.prompt || 'New Chat',
           })
         }
         setSessions(Array.from(sessionMap.values()))
@@ -154,6 +162,45 @@ export function SessionSidebar({
     }
   };
 
+  // --- RENAME SESSION LOGIC ---
+  const openRenameModal = (session: Session) => {
+    setRenameSessionId(session.id);
+    setRenameValue(session.prompt);
+    setRenameModalOpen(true);
+  };
+  const closeRenameModal = () => {
+    setRenameModalOpen(false);
+    setRenameSessionId(null);
+    setRenameValue('');
+  };
+  const handleRenameSession = async () => {
+    if (!renameSessionId || !renameValue.trim()) return;
+    setRenameLoading(true);
+    try {
+      const supabase = createClient();
+      const user = await supabase.auth.getUser();
+      const UID = user.data.user?.id;
+      if (!UID) throw new Error('User not authenticated');
+      // Update prompt for all messages in this session
+      const { error } = await supabase
+        .from('agent_messages')
+        .update({ prompt: renameValue })
+        .eq('UID', UID)
+        .eq('agent_id', agentId)
+        .eq('session_id', renameSessionId);
+      if (error) throw error;
+      setSessions((prev) => prev.map((s) =>
+        s.id === renameSessionId ? { ...s, title: renameValue.slice(0, 50), prompt: renameValue } : s
+      ));
+      toast({ title: 'Session renamed', description: 'Session name updated.' });
+      closeRenameModal();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to rename session.' });
+    } finally {
+      setRenameLoading(false);
+    }
+  };
+
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
@@ -208,16 +255,28 @@ export function SessionSidebar({
                     </div>
                   </div>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive font-medium"
-                  style={{ marginTop: '15px' }}
-                  onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
-                  aria-label="Delete session"
-                >
-                  Delete
-                </Button>
+                {/* RENAME and DELETE BUTTONS */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2" style={{ marginTop: '15px' }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-blue-600 font-medium"
+                    style={{ padding: '0 6px' }}
+                    onClick={e => { e.stopPropagation(); openRenameModal(session); }}
+                    aria-label="Rename session"
+                  >
+                    Rename
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive font-medium"
+                    onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                    aria-label="Delete session"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
             ))
           )}
@@ -247,6 +306,31 @@ export function SessionSidebar({
       style={isOpen ? { width: 400, maxWidth: '95vw' } : { width: 0 }}
     >
       {isOpen && sidebarContent}
+      {/* Rename Modal */}
+      <Dialog open={renameModalOpen} onOpenChange={setRenameModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Session</DialogTitle>
+            <DialogDescription>Enter a new name for this session.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={e => setRenameValue(e.target.value)}
+            placeholder="Session name"
+            disabled={renameLoading}
+            maxLength={100}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button onClick={handleRenameSession} disabled={renameLoading || !renameValue.trim()}>
+              {renameLoading ? 'Saving...' : 'Submit'}
+            </Button>
+            <Button variant="ghost" onClick={closeRenameModal} disabled={renameLoading}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
