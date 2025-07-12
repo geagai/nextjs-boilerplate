@@ -38,6 +38,7 @@ Create a comprehensive task called "Agent Edit Page" with subtasks to implement 
 ### UI/UX Requirements
 - **Theme Integration**: For any new frontend components, integrate color theme options from the `admin_settings` table
 - **Theme Support**: Ensure compatibility with both light and dark mode themes
+- **New Components and Styling**: Check the application for existing components we can use before creating any new ones. For any newly created components that are front end facing we need to integrated the color options from the admin_settings page for both light and dark mode. A full breakdown of these options can be found in ../3-styling.mdc 
 
 ### Database Considerations
 - **RLS Policies**: Create any additional Row Level Security policies needed, but verify they don't already exist first

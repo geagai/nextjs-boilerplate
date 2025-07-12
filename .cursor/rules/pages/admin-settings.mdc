@@ -103,7 +103,7 @@ create table public.admin_settings (
 
   /*
    * Light-theme palette (hex #RRGGBB).  Any NULL falls back to design defaults
-   * defined in 3-styling.mdc.  Names map 1-to-1 to CSS vars in app/layout.tsx.
+   * defined in ../3-styling.mdc.  Names map 1-to-1 to CSS vars in app/layout.tsx.
    */
   primary_color            text,
   secondary_color          text,

@@ -50,6 +50,7 @@ interface AdminSettingsRow {
   dark_footer_background_color: string | null
   footer_text_color: string | null
   dark_footer_text_color: string | null
+  repo: string | null
 }
 
 export default async function AdminSettingsPage() {
@@ -119,6 +120,7 @@ export default async function AdminSettingsPage() {
     dark_footer_background_color: settings.dark_footer_background_color ?? null,
     footer_text_color: settings.footer_text_color ?? null,
     dark_footer_text_color: settings.dark_footer_text_color ?? null,
+    repo: settings.repo ?? null,
     id: settings.id,
     pricing_page_headline: settings.pricing_page_headline ?? null,
     pricing_page_description: settings.pricing_page_description ?? null,
@@ -164,6 +166,7 @@ export default async function AdminSettingsPage() {
     dark_footer_background_color: null,
     footer_text_color: null,
     dark_footer_text_color: null,
+    repo: null,
     pricing_page_headline: null,
     pricing_page_description: null,
     pricing_page_faq: null,

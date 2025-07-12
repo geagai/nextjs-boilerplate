@@ -87,11 +87,119 @@
             "testStrategy": "Verify security measures and run linting checks"
           }
         ]
+      },
+      {
+        "id": 2,
+        "title": "Deploy Guide Page Implementation",
+        "description": "Create a comprehensive deployment guide page that walks users through setting up and deploying the application with Vercel and Supabase, including automated setup scripts and clear step-by-step instructions.",
+        "details": "Implementation Steps:\n\n1. Page Structure:\n- Create new page component at pages/deploy-guide.tsx\n- Design a multi-step wizard interface with progress tracking\n- Implement responsive layout with clear section separation\n\n2. Setup Scripts:\n- Create Supabase setup script to automatically:\n  - Generate required database tables\n  - Configure RLS policies\n  - Create necessary functions and triggers\n  - Set up initial data structures\n- Implement verification checks for each setup step\n\n3. Integration Components:\n- Develop Vercel deployment integration\n  - Add \"Deploy to Vercel\" button component\n  - Create configuration template for environment variables\n  - Implement repository fork handling\n- Create Supabase project creation guide\n  - Add automated database URL and API key retrieval\n  - Include database schema visualization\n\n4. User Flow Implementation:\n- Create step-by-step progress tracker\n- Implement validation for each setup phase\n- Add error handling and recovery steps\n- Include skip options for already completed steps\n\n5. Documentation Integration:\n- Embed relevant documentation sections\n- Add tooltips and help text for complex steps\n- Include troubleshooting guide\n- Provide links to external resources\n\n6. Local Development Setup:\n- Create automated local environment setup script\n- Add development environment requirements checker\n- Implement .env file generator\n- Include development-specific configuration guide\n\nTechnical Considerations:\n- Use Next.js API routes for setup script execution\n- Implement proper error handling and logging\n- Ensure secure handling of credentials\n- Add rate limiting for API calls\n- Consider caching for repeated operations\n<info added on 2025-07-12T18:31:59.758Z>\nTechnical Implementation Notes:\n\nAll components and features will be integrated directly into the main application structure:\n\n- Deploy guide page component will be added to existing pages directory alongside other application routes\n- Setup scripts will be implemented as internal Next.js API routes under pages/api/deploy/*\n- Integration components will be created within the shared components directory following existing component patterns\n- Utility functions for deployment and setup will be placed in the utils/ directory\n- Database scripts and schema management will be handled through the existing database management structure\n- Environment configuration handling will use the established project configuration patterns\n- All styling will utilize the application's existing CSS/styling framework\n- State management for the deployment process will leverage the application's existing state management solution\n- Error handling will integrate with the main application's error boundary and logging systems\n- Documentation content will be stored in the application's content management system\n- Testing will be integrated into the main application's test suite\n\nFile structure alignment:\n- pages/deploy-guide.tsx\n- components/deploy-guide/*\n- lib/deploy/*\n- utils/deploy/*\n- api/deploy/*\n- styles/deploy-guide/*\n- tests/deploy-guide/*\n</info added on 2025-07-12T18:31:59.758Z>\n<info added on 2025-07-12T18:38:33.351Z>\nCross-Cutting Implementation Requirements:\n\n1. Component Reusability:\n- Audit existing component library before creating new components\n- Document any component extensions or modifications in the component registry\n- When extending existing components, maintain backward compatibility\n- Follow the established component composition patterns for modifications\n\n2. Theme Integration:\n- Implement all UI elements using the application's theme token system\n- Utilize semantic color classes from admin_settings:\n  - Primary: var(--color-primary)\n  - Secondary: var(--color-secondary)\n  - Background: var(--color-background)\n  - Text: var(--color-text)\n  - Accent: var(--color-accent)\n- Apply responsive dark/light mode classes using the theme-* prefix\n- Use opacity modifiers from the theme system for hover and active states\n- Ensure all components respond to theme changes without page reload\n\n3. Styling Guidelines:\n- Follow @3-styling.mdc conventions for all new CSS/Tailwind implementations\n- Use provided theme mixins for consistent styling across components\n- Implement color transitions using the application's transition system\n- Maintain WCAG 2.1 AA contrast requirements across all theme variations\n- Test all components against the full range of admin-configurable color schemes\n\n4. Component Documentation:\n- Document any theme-specific props or configuration options\n- Include theme compatibility notes in component stories\n- Add theme variation examples to component documentation\n- Provide theme override examples where applicable\n</info added on 2025-07-12T18:38:33.351Z>",
+        "testStrategy": "1. Functional Testing:\n- Verify each step of the deployment wizard works independently\n- Test automatic setup script execution\n- Validate environment variable configuration\n- Check database schema creation\n- Test repository forking process\n- Verify Vercel deployment integration\n- Validate Supabase project setup\n\n2. Integration Testing:\n- Complete end-to-end deployment process testing\n- Verify all external service integrations\n- Test error handling and recovery\n- Validate progress saving and restoration\n\n3. User Experience Testing:\n- Test responsive design across devices\n- Verify clear error messages and help text\n- Check accessibility compliance\n- Test with different user permission levels\n\n4. Security Testing:\n- Verify secure credential handling\n- Test rate limiting functionality\n- Validate access controls\n- Check for exposed sensitive information\n\n5. Performance Testing:\n- Measure page load times\n- Test setup script execution time\n- Verify handling of slow network conditions\n- Monitor resource usage during setup",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement Deploy Guide Page UI Structure",
+            "description": "Create the base UI components and layout for the deployment guide page, including the multi-step wizard interface and progress tracking.",
+            "dependencies": [],
+            "details": "Create pages/deploy-guide.tsx with a responsive layout using Grid/Flexbox. Implement StepWizard component with progress bar. Design mobile-friendly UI with clear section breaks. Use MaterialUI or similar for consistent styling.",
+            "status": "pending",
+            "testStrategy": "Visual regression testing for responsive layouts, component unit tests for wizard navigation"
+          },
+          {
+            "id": 2,
+            "title": "Implement Repository Fork Functionality",
+            "description": "Create the repository forking mechanism that allows users to clone the template repository into their own GitHub account.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use GitHub API to handle repository forking. Implement OAuth flow for GitHub authentication. Add loading states and error handling for fork process. Create success/failure notifications.",
+            "status": "pending",
+            "testStrategy": "Integration tests with GitHub API mocks, error scenario testing"
+          },
+          {
+            "id": 3,
+            "title": "Create Supabase Setup Automation Script",
+            "description": "Develop an automated script to initialize and configure Supabase project with required tables, policies, and functions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create SQL migration scripts for table creation. Implement RLS policy setup. Add database functions and triggers. Use Supabase Management API for automation. Include rollback capabilities.",
+            "status": "pending",
+            "testStrategy": "Unit tests for SQL scripts, integration tests with Supabase test instance"
+          },
+          {
+            "id": 4,
+            "title": "Integrate Vercel Deployment System",
+            "description": "Build the Vercel deployment integration including the deployment button and configuration handling.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement 'Deploy to Vercel' button component. Create deployment configuration template. Handle environment variable setup. Add deployment status checking and feedback.",
+            "status": "pending",
+            "testStrategy": "Integration tests with Vercel API, deployment flow testing"
+          },
+          {
+            "id": 5,
+            "title": "Develop Environment Variable Configuration Guide",
+            "description": "Create an interactive guide for setting up required environment variables in both Vercel and local development.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Create .env template generator. Add variable validation logic. Implement secure credential handling. Create step-by-step configuration wizard with validation.",
+            "status": "pending",
+            "testStrategy": "Unit tests for validation logic, usability testing for configuration flow"
+          },
+          {
+            "id": 6,
+            "title": "Implement Local Development Setup Assistant",
+            "description": "Create automated tools and guides for setting up local development environment.",
+            "dependencies": [
+              5
+            ],
+            "details": "Create development environment checker script. Implement automated local setup script. Add dependency verification. Create troubleshooting guide component.",
+            "status": "pending",
+            "testStrategy": "Integration tests for setup scripts, cross-platform testing"
+          },
+          {
+            "id": 7,
+            "title": "Create Comprehensive Documentation Components",
+            "description": "Develop in-page documentation components including tooltips, help text, and troubleshooting guides.",
+            "dependencies": [
+              1,
+              5,
+              6
+            ],
+            "details": "Implement tooltip system for complex steps. Create collapsible help sections. Add troubleshooting guide component. Integrate external documentation links.",
+            "status": "pending",
+            "testStrategy": "Content validation tests, accessibility testing for documentation components"
+          },
+          {
+            "id": 8,
+            "title": "Implement End-to-End Testing and Validation",
+            "description": "Create comprehensive testing suite for the entire deployment guide flow and all its components.",
+            "dependencies": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Implement E2E tests for complete deployment flow. Add integration tests for GitHub, Vercel, and Supabase interactions. Create automated validation suite for setup scripts.",
+            "status": "pending",
+            "testStrategy": "Cypress E2E tests, integration test suite, user flow validation"
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T20:48:35.105Z",
-      "updated": "2025-07-11T19:21:33.305Z",
+      "updated": "2025-07-12T18:21:09.508Z",
       "description": "Tasks for master context"
     }
   }

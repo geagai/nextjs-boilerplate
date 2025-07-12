@@ -12,6 +12,13 @@ interface AdminSettings {
   dark_button_color: string | null;
   dark_button_hover_color: string | null;
   dark_button_text_color: string | null;
+  header_background_color?: string | null;
+  dark_header_background_color?: string | null;
+  repo: string | null;
+  paragraph_text_color?: string | null;
+  dark_paragraph_text_color?: string | null;
+  background_color?: string | null;
+  dark_background_color?: string | null;
 }
 
 interface ButtonStyles {
@@ -40,10 +47,24 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
   const fetchAdminSettings = async () => {
     try {
       setLoading(true);
-      const cachedSettings = await adminSettingsCache.getThemeColors();
+      const cachedSettings = await adminSettingsCache.getSettings();
       
       if (cachedSettings) {
-        setAdminSettings(cachedSettings);
+        setAdminSettings({
+          button_color: (cachedSettings as any).button_color,
+          button_hover_color: (cachedSettings as any).button_hover_color,
+          button_text_color: (cachedSettings as any).button_text_color,
+          dark_button_color: (cachedSettings as any).dark_button_color,
+          dark_button_hover_color: (cachedSettings as any).dark_button_hover_color,
+          dark_button_text_color: (cachedSettings as any).dark_button_text_color,
+          header_background_color: (cachedSettings as any).header_background_color ?? null,
+          dark_header_background_color: (cachedSettings as any).dark_header_background_color ?? null,
+          repo: (cachedSettings as any).repo ?? null,
+          paragraph_text_color: (cachedSettings as any).paragraph_text_color ?? null,
+          dark_paragraph_text_color: (cachedSettings as any).dark_paragraph_text_color ?? null,
+          background_color: (cachedSettings as any).background_color ?? null,
+          dark_background_color: (cachedSettings as any).dark_background_color ?? null,
+        });
       }
     } catch (error) {
       console.error('Failed to fetch admin settings:', error);
@@ -60,12 +81,19 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
       if (freshSettings) {
         // Extract theme colors from the full settings
         setAdminSettings({
-          button_color: freshSettings.button_color,
-          button_hover_color: freshSettings.button_hover_color,
-          button_text_color: freshSettings.button_text_color,
-          dark_button_color: freshSettings.dark_button_color,
-          dark_button_hover_color: freshSettings.dark_button_hover_color,
-          dark_button_text_color: freshSettings.dark_button_text_color,
+          button_color: (freshSettings as any).button_color,
+          button_hover_color: (freshSettings as any).button_hover_color,
+          button_text_color: (freshSettings as any).button_text_color,
+          dark_button_color: (freshSettings as any).dark_button_color,
+          dark_button_hover_color: (freshSettings as any).dark_button_hover_color,
+          dark_button_text_color: (freshSettings as any).dark_button_text_color,
+          header_background_color: (freshSettings as any).header_background_color ?? null,
+          dark_header_background_color: (freshSettings as any).dark_header_background_color ?? null,
+          repo: (freshSettings as any).repo ?? null,
+          paragraph_text_color: (freshSettings as any).paragraph_text_color ?? null,
+          dark_paragraph_text_color: (freshSettings as any).dark_paragraph_text_color ?? null,
+          background_color: (freshSettings as any).background_color ?? null,
+          dark_background_color: (freshSettings as any).dark_background_color ?? null,
         });
       }
     } catch (error) {

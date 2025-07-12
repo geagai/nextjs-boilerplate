@@ -115,8 +115,15 @@ export function ResponseDisplay({
       return 'html'
     }
     
-    // Check if it has markdown-like formatting
-    if (/(\*\*|__|`|#|\-|\+|\*)\s/.test(trimmed) || /\[.*\]\(.*\)/.test(trimmed)) {
+    // Improved markdown detection: match **bold**, __bold__, `inline code`, # headers, -/+/* lists, [links](url)
+    if (
+      /\*\*.*?\*\*/.test(trimmed) ||      // **bold**
+      /__.*?__/.test(trimmed) ||            // __bold__
+      /`.*?`/.test(trimmed) ||              // `inline code`
+      /#+\s.*$/.test(trimmed) ||            // # Header
+      /^[-+*]\s+/m.test(trimmed) ||         // - list, + list, * list (at line start)
+      /\[.*?\]\(.*?\)/.test(trimmed)      // [link](url)
+    ) {
       return 'markdown'
     }
     

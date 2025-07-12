@@ -43,6 +43,7 @@ export interface AdminSettingsCache {
   site_name: string | null;
   footer_html_one: string | null;
   footer_html_two: string | null;
+  repo: string | null;
 }
 
 interface CacheEntry {

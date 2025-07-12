@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS admin_settings (
   stripe_webhook_secret text,
   show_header boolean DEFAULT true,
   dev_mode boolean DEFAULT false
+  repo text,
 );
 ```
 
@@ -388,10 +389,3 @@ CREATE TABLE IF NOT EXISTS pages (
 
 
 **Note:** execute the above with `mcp_supabase_apply_migration` – do **not** run manually in the dashboard. Update this section if the default role or trigger logic ever changes.
-
-
-
-
-**Note:** execute the above with `mcp_supabase_apply_migration` – do **not** run manually in the dashboard. Update this section if the default role or trigger logic ever changes.
-
-

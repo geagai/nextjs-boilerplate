@@ -84,14 +84,6 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
       ...agent.config?.headers || {}
     }
     
-    // Console log the complete API request for debugging
-    console.log('🚀 Agent API Request:', {
-      url: agent.api_url,
-      method: 'POST',
-      headers,
-      body: requestBody
-    })
-    
     // Make API call
     const response = await fetch(agent.api_url, {
       method: 'POST',
