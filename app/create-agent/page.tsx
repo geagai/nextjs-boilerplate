@@ -22,7 +22,6 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 export default function CreateAgentRoute() {
   let CreateAgentPage: React.ComponentType | null = null;
   try {
-    // @ts-ignore
     // eslint-disable-next-line
     const mod = require('../../ai-agents/create-agent/my-agents');
     CreateAgentPage = mod.default || mod.CreateAgentPage || null;

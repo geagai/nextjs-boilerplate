@@ -6,16 +6,13 @@ import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Removed unused: const supabase = createClient(...)
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = headers().get('stripe-signature')
 
-  let event: any
+  let event: unknown // TODO: Use Stripe.Event type
 
   try {
     if (!stripe) {
@@ -40,36 +37,39 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  console.log('📡 Received webhook event:', event.type)
+  // Type assertion for event
+  const stripeEvent = event as any;
+
+  console.log('📡 Received webhook event:', stripeEvent.type)
 
   try {
-    switch (event.type) {
+    switch (stripeEvent.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object)
+        await handleCheckoutCompleted(stripeEvent.data.object)
         break
       
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object)
+        await handleSubscriptionCreated(stripeEvent.data.object)
         break
       
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object)
+        await handleSubscriptionUpdated(stripeEvent.data.object)
         break
       
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object)
+        await handleSubscriptionDeleted(stripeEvent.data.object)
         break
       
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object)
+        await handlePaymentSucceeded(stripeEvent.data.object)
         break
       
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object)
+        await handlePaymentFailed(stripeEvent.data.object)
         break
       
       default:
-        console.log(`🤷‍♂️ Unhandled event type: ${event.type}`)
+        console.log(`🤷‍♂️ Unhandled event type: ${stripeEvent.type}`)
     }
 
     return NextResponse.json({ received: true })
@@ -82,54 +82,40 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(session: any) {
-  console.log('✅ Checkout session completed:', session.id)
-  
-  const { userId, plan } = session.metadata || {}
-  
+// TODO: Use proper Stripe types for session, subscription, and invoice
+async function handleCheckoutCompleted(session: unknown) {
+  const s = session as any;
+  console.log('✅ Checkout session completed:', s.id)
+  const { userId, plan } = s.metadata || {}
   if (!userId || !plan) {
     console.error('❌ Missing metadata in checkout session')
     return
   }
-
   // Update user subscription status in database
-  // Note: This would typically update a subscriptions table
   console.log(`🎉 User ${userId} subscribed to ${plan} plan`)
-  
-  // You could update user metadata or a subscriptions table here
-  // For now, we'll just log the successful subscription
 }
 
-async function handleSubscriptionCreated(subscription: any) {
-  console.log('📝 Subscription created:', subscription.id)
-  
-  // Handle new subscription creation
-  // Update user's subscription status
+async function handleSubscriptionCreated(subscription: unknown) {
+  const s = subscription as any;
+  console.log('📝 Subscription created:', s.id)
 }
 
-async function handleSubscriptionUpdated(subscription: any) {
-  console.log('🔄 Subscription updated:', subscription.id)
-  
-  // Handle subscription changes (plan upgrades/downgrades)
+async function handleSubscriptionUpdated(subscription: unknown) {
+  const s = subscription as any;
+  console.log('🔄 Subscription updated:', s.id)
 }
 
-async function handleSubscriptionDeleted(subscription: any) {
-  console.log('❌ Subscription cancelled:', subscription.id)
-  
-  // Handle subscription cancellation
-  // Update user to free plan
+async function handleSubscriptionDeleted(subscription: unknown) {
+  const s = subscription as any;
+  console.log('❌ Subscription cancelled:', s.id)
 }
 
-async function handlePaymentSucceeded(invoice: any) {
-  console.log('💰 Payment succeeded:', invoice.id)
-  
-  // Handle successful payment
-  // Could send confirmation email, update billing history, etc.
+async function handlePaymentSucceeded(invoice: unknown) {
+  const i = invoice as any;
+  console.log('💰 Payment succeeded:', i.id)
 }
 
-async function handlePaymentFailed(invoice: any) {
-  console.log('💸 Payment failed:', invoice.id)
-  
-  // Handle failed payment
-  // Could send notification email, suspend account, etc.
+async function handlePaymentFailed(invoice: unknown) {
+  const i = invoice as any;
+  console.log('💸 Payment failed:', i.id)
 }
