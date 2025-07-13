@@ -70,20 +70,14 @@ interface AdminSettingsRow {
 
 interface AdminSettingsClientProps {
   initialSettings: AdminSettingsRow
-  initialPageContent: {
-    terms_service: string | null
-    privacy_policy: string | null
-    contact_us: string | null
-  }
 }
 
-export function AdminSettingsClient({ initialSettings, initialPageContent }: AdminSettingsClientProps) {
+export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProps) {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<AdminSettingsRow>(initialSettings);
-  const [pageContent, setPageContent] = useState(initialPageContent);
   const [clearingCache, setClearingCache] = useState(false);
   const supabase = createClient();
-  const { refreshSettings, clearCacheAndRefresh } = useAdminSettings();
+  const { clearCacheAndRefresh } = useAdminSettings();
 
   // Debug: check admin status on mount
   useEffect(() => {

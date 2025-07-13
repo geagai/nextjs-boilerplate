@@ -1,6 +1,5 @@
 import { requireAuth, isAdmin } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase";
 import { AdminSettingsClient } from "./admin-settings-client";
 import { cookies } from "next/headers";
 import { createServerClient } from "@/lib/supabase";
@@ -73,13 +72,6 @@ export default async function AdminSettingsPage() {
   const { data: settings } = await supabase
     .from("admin_settings")
     .select("*")
-    .limit(1)
-    .maybeSingle();
-
-  // Also fetch page content
-  const { data: pageContent } = await supabase
-    .from("pages")
-    .select("terms_service, privacy_policy, contact_us")
     .limit(1)
     .maybeSingle();
 
@@ -176,8 +168,5 @@ export default async function AdminSettingsPage() {
     pricing_page_faq: null,
   };
 
-  return <AdminSettingsClient 
-    initialSettings={initialSettings} 
-    initialPageContent={pageContent || { terms_service: null, privacy_policy: null, contact_us: null }}
-  />;
+  return <AdminSettingsClient initialSettings={initialSettings} />;
 } 

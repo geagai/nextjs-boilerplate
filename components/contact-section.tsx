@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Mail, MessageSquare, Send } from 'lucide-react'
+import { Loader2, MessageSquare, Send } from 'lucide-react'
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

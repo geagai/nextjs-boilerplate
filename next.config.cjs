@@ -13,7 +13,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  images: { unoptimized: true },
+  images: {
+    unoptimized: true,
+    domains: ['i.pinimg.com']
+  },
 };
 
 // Monkey-patch console.warn to trace Supabase session warning on the server

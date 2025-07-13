@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 import { createSupabaseServerClient } from '@/lib/db'
 import SubmissionsClient from './submissions-client'
 import { requireAuth } from '@/lib/auth'
@@ -11,8 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminSubmissionsPage() {
-  const { user } = await requireAuth()
-  const cookieStore = cookies()
+  await requireAuth()
   const supabase = createSupabaseServerClient()
 
   if (!supabase) throw new Error('Database connection failed');
