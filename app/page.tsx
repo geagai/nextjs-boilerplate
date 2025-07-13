@@ -1,3 +1,4 @@
+// Small change for commit demonstration
 
 import { Hero } from '@/components/hero'
 import { TechStack } from '@/components/tech-stack'
