@@ -4,7 +4,6 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { SubscriptionCard } from '@/components/dashboard/subscription-card'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,9 +18,12 @@ export default async function DashboardPage() {
 
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
+  if (!supabase) {
+    redirect('/login')
+  }
   let userDataTableExists = true
   try {
-    const { data: tableData, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('user_data')
       .select('UID')
       .limit(1)

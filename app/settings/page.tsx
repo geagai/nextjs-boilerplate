@@ -22,6 +22,7 @@ export default async function SettingsPage() {
   // Fetch display_name and email from user_data table
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
+  if (!supabase) return null;
   let dbDisplayName = null
   let dbEmail = null
   try {

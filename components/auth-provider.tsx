@@ -100,7 +100,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     getInitialSession();
 
     // Listen for auth changes (with DB role fetch)
-    let subscription: any = null;
+    let subscription: ReturnType<typeof supabase.auth.onAuthStateChange>["data"]["subscription"] | null = null;
     if (supabase) {
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {

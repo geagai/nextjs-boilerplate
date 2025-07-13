@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { useTheme } from 'next-themes';
-import { adminSettingsCache, AdminSettingsCache } from '@/lib/admin-settings-cache';
+import { adminSettingsCache } from '@/lib/admin-settings-cache';
 
 interface AdminSettings {
   button_color: string | null;
@@ -55,23 +55,23 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
       
       if (cachedSettings) {
         setAdminSettings({
-          button_color: (cachedSettings as any).button_color,
-          button_hover_color: (cachedSettings as any).button_hover_color,
-          button_text_color: (cachedSettings as any).button_text_color,
-          dark_button_color: (cachedSettings as any).dark_button_color,
-          dark_button_hover_color: (cachedSettings as any).dark_button_hover_color,
-          dark_button_text_color: (cachedSettings as any).dark_button_text_color,
-          header_background_color: (cachedSettings as any).header_background_color ?? null,
-          dark_header_background_color: (cachedSettings as any).dark_header_background_color ?? null,
-          repo: (cachedSettings as any).repo ?? null,
-          paragraph_text_color: (cachedSettings as any).paragraph_text_color ?? null,
-          dark_paragraph_text_color: (cachedSettings as any).dark_paragraph_text_color ?? null,
-          background_color: (cachedSettings as any).background_color ?? null,
-          dark_background_color: (cachedSettings as any).dark_background_color ?? null,
-          link_color: (cachedSettings as any).link_color ?? null,
-          link_hover_color: (cachedSettings as any).link_hover_color ?? null,
-          dark_link_color: (cachedSettings as any).dark_link_color ?? null,
-          dark_link_hover_color: (cachedSettings as any).dark_link_hover_color ?? null,
+          button_color: (cachedSettings as AdminSettings).button_color,
+          button_hover_color: (cachedSettings as AdminSettings).button_hover_color,
+          button_text_color: (cachedSettings as AdminSettings).button_text_color,
+          dark_button_color: (cachedSettings as AdminSettings).dark_button_color,
+          dark_button_hover_color: (cachedSettings as AdminSettings).dark_button_hover_color,
+          dark_button_text_color: (cachedSettings as AdminSettings).dark_button_text_color,
+          header_background_color: (cachedSettings as AdminSettings).header_background_color ?? null,
+          dark_header_background_color: (cachedSettings as AdminSettings).dark_header_background_color ?? null,
+          repo: (cachedSettings as AdminSettings).repo ?? null,
+          paragraph_text_color: (cachedSettings as AdminSettings).paragraph_text_color ?? null,
+          dark_paragraph_text_color: (cachedSettings as AdminSettings).dark_paragraph_text_color ?? null,
+          background_color: (cachedSettings as AdminSettings).background_color ?? null,
+          dark_background_color: (cachedSettings as AdminSettings).dark_background_color ?? null,
+          link_color: (cachedSettings as AdminSettings).link_color ?? null,
+          link_hover_color: (cachedSettings as AdminSettings).link_hover_color ?? null,
+          dark_link_color: (cachedSettings as AdminSettings).dark_link_color ?? null,
+          dark_link_hover_color: (cachedSettings as AdminSettings).dark_link_hover_color ?? null,
         });
       }
     } catch (error) {
@@ -89,23 +89,23 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
       if (freshSettings) {
         // Extract theme colors from the full settings
         setAdminSettings({
-          button_color: (freshSettings as any).button_color,
-          button_hover_color: (freshSettings as any).button_hover_color,
-          button_text_color: (freshSettings as any).button_text_color,
-          dark_button_color: (freshSettings as any).dark_button_color,
-          dark_button_hover_color: (freshSettings as any).dark_button_hover_color,
-          dark_button_text_color: (freshSettings as any).dark_button_text_color,
-          header_background_color: (freshSettings as any).header_background_color ?? null,
-          dark_header_background_color: (freshSettings as any).dark_header_background_color ?? null,
-          repo: (freshSettings as any).repo ?? null,
-          paragraph_text_color: (freshSettings as any).paragraph_text_color ?? null,
-          dark_paragraph_text_color: (freshSettings as any).dark_paragraph_text_color ?? null,
-          background_color: (freshSettings as any).background_color ?? null,
-          dark_background_color: (freshSettings as any).dark_background_color ?? null,
-          link_color: (freshSettings as any).link_color ?? null,
-          link_hover_color: (freshSettings as any).link_hover_color ?? null,
-          dark_link_color: (freshSettings as any).dark_link_color ?? null,
-          dark_link_hover_color: (freshSettings as any).dark_link_hover_color ?? null,
+          button_color: (freshSettings as AdminSettings).button_color,
+          button_hover_color: (freshSettings as AdminSettings).button_hover_color,
+          button_text_color: (freshSettings as AdminSettings).button_text_color,
+          dark_button_color: (freshSettings as AdminSettings).dark_button_color,
+          dark_button_hover_color: (freshSettings as AdminSettings).dark_button_hover_color,
+          dark_button_text_color: (freshSettings as AdminSettings).dark_button_text_color,
+          header_background_color: (freshSettings as AdminSettings).header_background_color ?? null,
+          dark_header_background_color: (freshSettings as AdminSettings).dark_header_background_color ?? null,
+          repo: (freshSettings as AdminSettings).repo ?? null,
+          paragraph_text_color: (freshSettings as AdminSettings).paragraph_text_color ?? null,
+          dark_paragraph_text_color: (freshSettings as AdminSettings).dark_paragraph_text_color ?? null,
+          background_color: (freshSettings as AdminSettings).background_color ?? null,
+          dark_background_color: (freshSettings as AdminSettings).dark_background_color ?? null,
+          link_color: (freshSettings as AdminSettings).link_color ?? null,
+          link_hover_color: (freshSettings as AdminSettings).link_hover_color ?? null,
+          dark_link_color: (freshSettings as AdminSettings).dark_link_color ?? null,
+          dark_link_hover_color: (freshSettings as AdminSettings).dark_link_hover_color ?? null,
         });
       }
     } catch (error) {

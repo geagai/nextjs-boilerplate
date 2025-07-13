@@ -7,8 +7,6 @@ import { useTheme } from "next-themes";
 import { useAdminSettings } from "@/components/admin-settings-provider";
 import { createClient } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { readFileSync } from "fs";
-import { missingEnvVars } from '@/lib/checkEnv'
 
 const steps = [
   {

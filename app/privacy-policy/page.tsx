@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 
 export default async function PrivacyPolicyPage() {
   const supabase = createClient()
+  if (!supabase) return null;
   
   // Fetch the current privacy policy content
   const { data } = await supabase
