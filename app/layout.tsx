@@ -9,6 +9,8 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { hexToHsl } from '@/lib/utils'
 import { getServerSession } from '@/lib/auth'
+import { missingEnvVars } from '@/lib/checkEnv'
+import { headers } from 'next/headers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -45,84 +47,93 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  const missing = missingEnvVars();
+  const path = headers().get('x-invoke-path') || '';
+  const isDeployGuide = path.startsWith('/deploy-guide');
 
-  const { data: settings } = await supabase
-    .from('admin_settings')
-    .select('*')
-    .limit(1)
-    .maybeSingle()
+  let settings = null;
+  let sessionData = null;
+  let showHeader = true;
+  let stickyHeader = true;
+  let siteName = 'NextGeag BP';
+  let footerBgLight = '#F7F9FB';
+  let footerTextLight = '#33363B';
+  let footerLinkLight = '#3A72BB';
+  let footerBgDark = '#0D0D0D';
+  let footerTextDark = '#EDEDED';
+  let footerLinkDark = '#3A72BB';
+  let footerHtmlOne = null;
+  let footerHtmlTwo = null;
+  let vars = {
+    '--background': hexToHsl('#F7F9FB'),
+    '--primary': hexToHsl('#3A72BB'),
+    '--secondary': hexToHsl('#33363B'),
+    '--link': hexToHsl('#33363B'),
+    '--link-hover': hexToHsl('#3872BB'),
+    '--header-bg': hexToHsl('#F7F9FB'),
+    '--headline': hexToHsl('#3A72BB'),
+  };
+  let darkVars = {
+    '--background': hexToHsl('#0D0D0D'),
+    '--primary': hexToHsl('#3A72BB'),
+    '--secondary': hexToHsl('#2C2C2C'),
+    '--link': hexToHsl('#FFFFFF'),
+    '--link-hover': hexToHsl('#3872BB'),
+    '--header-bg': hexToHsl('#0D0D0D'),
+    '--foreground': hexToHsl('#EDEDED'),
+    '--headline': hexToHsl('#3A72BB'),
+  };
 
-  const showHeader = settings?.show_header ?? true
-  const stickyHeader = settings?.sticky_header ?? true
-
-  const vars: Record<string, string> = {
-    '--background': hexToHsl(settings?.background_color ?? '#F7F9FB'),
-    '--primary': hexToHsl(settings?.primary_color ?? '#3A72BB'),
-    '--secondary': hexToHsl(settings?.secondary_color ?? '#33363B'),
-    '--link': hexToHsl(settings?.link_color ?? '#33363B'),
-    '--link-hover': hexToHsl(settings?.link_hover_color ?? '#3872BB'),
-    '--header-bg': hexToHsl(settings?.header_background_color ?? '#F7F9FB'),
-    '--headline': hexToHsl(settings?.headline_text_color ?? '#3A72BB'),
+  if (!missing.length && !isDeployGuide) {
+    const cookieStore = cookies();
+    const supabase = createServerClient(cookieStore);
+    if (supabase) {
+      const dbSettings = await supabase
+        .from('admin_settings')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+      settings = dbSettings.data;
+      showHeader = settings?.show_header ?? true;
+      stickyHeader = settings?.sticky_header ?? true;
+      siteName = settings?.site_name ?? 'NextGeag BP';
+      footerBgLight = settings?.footer_background_color ?? '#F7F9FB';
+      footerTextLight = settings?.footer_text_color ?? '#33363B';
+      footerLinkLight = settings?.footer_link_color ?? '#3A72BB';
+      footerBgDark = settings?.dark_footer_background_color ?? footerBgLight;
+      footerTextDark = settings?.dark_footer_text_color ?? footerTextLight;
+      footerLinkDark = settings?.dark_footer_link_color ?? footerLinkLight;
+      footerHtmlOne = settings?.footer_html_one ?? null;
+      footerHtmlTwo = settings?.footer_html_two ?? null;
+      vars = {
+        '--background': hexToHsl(settings?.background_color ?? '#F7F9FB'),
+        '--primary': hexToHsl(settings?.primary_color ?? '#3A72BB'),
+        '--secondary': hexToHsl(settings?.secondary_color ?? '#33363B'),
+        '--link': hexToHsl(settings?.link_color ?? '#33363B'),
+        '--link-hover': hexToHsl(settings?.link_hover_color ?? '#3872BB'),
+        '--header-bg': hexToHsl(settings?.header_background_color ?? '#F7F9FB'),
+        '--headline': hexToHsl(settings?.headline_text_color ?? '#3A72BB'),
+      };
+      darkVars = {
+        '--background': hexToHsl(settings?.dark_background_color ?? '#0D0D0D'),
+        '--primary': hexToHsl(settings?.dark_primary_color ?? '#3A72BB'),
+        '--secondary': hexToHsl(settings?.dark_secondary_color ?? '#2C2C2C'),
+        '--link': hexToHsl(settings?.dark_link_color ?? '#FFFFFF'),
+        '--link-hover': hexToHsl(settings?.dark_link_hover_color ?? '#3872BB'),
+        '--header-bg': hexToHsl(settings?.dark_header_background_color ?? '#0D0D0D'),
+        '--foreground': hexToHsl(settings?.dark_paragraph_text_color ?? '#EDEDED'),
+        '--headline': hexToHsl(settings?.dark_headline_text_color ?? '#3A72BB'),
+      };
+      sessionData = await getServerSession();
+    }
   }
 
-  const cssVars = Object.entries(vars)
-    .map(([k, v]) => `${k}: ${v};`)
-    .join(' ')
-
-  const darkVars: Record<string, string> = {
-    '--background': hexToHsl(settings?.dark_background_color ?? '#0D0D0D'),
-    '--primary': hexToHsl(settings?.dark_primary_color ?? '#3A72BB'),
-    '--secondary': hexToHsl(settings?.dark_secondary_color ?? '#2C2C2C'),
-    '--link': hexToHsl(settings?.dark_link_color ?? '#FFFFFF'),
-    '--link-hover': hexToHsl(settings?.dark_link_hover_color ?? '#3872BB'),
-    '--header-bg': hexToHsl(settings?.dark_header_background_color ?? '#0D0D0D'),
-    '--foreground': hexToHsl(settings?.dark_paragraph_text_color ?? '#EDEDED'),
-    '--headline': hexToHsl(settings?.dark_headline_text_color ?? '#3A72BB'),
-  }
-  const darkCssVars = Object.entries(darkVars).map(([k,v])=>`${k}: ${v};`).join(' ');
-
-  const footerBg = settings?.footer_background_color ?? '#F7F9FB'
-  const footerText = settings?.footer_text_color ?? '#33363B'
-  const footerLink = settings?.footer_link_color ?? '#3A72BB'
-  const footerHtmlOne = settings?.footer_html_one ?? null
-  const footerHtmlTwo = settings?.footer_html_two ?? null
-  const siteName = settings?.site_name ?? 'NextGeag BP'
-
-  const sessionData = await getServerSession()
-
-  if (typeof window !== 'undefined') {
-    const originalWarn = console.warn;
-    console.warn = function (...args) {
-      if (
-        typeof args[0] === 'string' &&
-        args[0].includes('Do not use the user object from getSession() or onAuthStateChange() for authentication or authorization')
-      ) {
-        originalWarn.apply(console, args);
-        console.trace('Supabase session warning stack trace:');
-      } else {
-        originalWarn.apply(console, args);
-      }
-    };
-  }
-
-  // Footer color logic
-  const isDarkMode = typeof window !== 'undefined' ? document.documentElement.classList.contains('dark') : false;
-  // Always compute both sets for SSR/CSR
-  const footerBgLight = settings?.footer_background_color ?? '#F7F9FB';
-  const footerTextLight = settings?.footer_text_color ?? '#33363B';
-  const footerLinkLight = settings?.footer_link_color ?? '#3A72BB';
-  const footerBgDark = settings?.dark_footer_background_color ?? footerBgLight;
-  const footerTextDark = settings?.dark_footer_text_color ?? footerTextLight;
-  const footerLinkDark = settings?.dark_footer_link_color ?? footerLinkLight;
-
-  // Use CSS prefers-color-scheme for SSR, fallback to light
-  // We'll pass both sets and ConditionalFooter can pick based on theme
+  const cssVars = Object.entries(vars).map(([k, v]) => `${k}: ${v};`).join(' ');
+  const darkCssVars = Object.entries(darkVars).map(([k, v]) => `${k}: ${v};`).join(' ');
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>{/* Dynamic color variables */}
+      <head>
         <style>{`:root { ${cssVars} } html.dark { ${darkCssVars} }`}</style>
       </head>
       <body className={inter.className}>
@@ -130,20 +141,20 @@ export default async function RootLayout({
           <div className="min-h-screen bg-background text-foreground">
             {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
             <main>{children}</main>
-            <ConditionalFooter 
-              siteName={siteName} 
-              bgColor={footerBgLight} 
-              textColor={footerTextLight} 
-              linkColor={footerLinkLight} 
+            <ConditionalFooter
+              siteName={siteName}
+              bgColor={footerBgLight}
+              textColor={footerTextLight}
+              linkColor={footerLinkLight}
               bgColorDark={footerBgDark}
               textColorDark={footerTextDark}
               linkColorDark={footerLinkDark}
-              htmlOne={footerHtmlOne} 
-              htmlTwo={footerHtmlTwo} 
+              htmlOne={footerHtmlOne}
+              htmlTwo={footerHtmlTwo}
             />
           </div>
         </Providers>
       </body>
     </html>
-  )
+  );
 }

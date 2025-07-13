@@ -2,8 +2,16 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { missingEnvVars } from '@/lib/checkEnv'
 
 export async function middleware(request: NextRequest) {
+  // Redirect to /deploy-guide if required env vars are missing, except on /deploy-guide
+  const missing = missingEnvVars();
+  const isDeployGuide = request.nextUrl.pathname.startsWith('/deploy-guide');
+  if (missing.length > 0 && !isDeployGuide) {
+    return NextResponse.redirect(new URL('/deploy-guide', request.url));
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -48,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/settings/:path*', '/create-product-stripe/:path*', '/edit-product-stripe/:path*', '/agent/:path*']
+  matcher: ['/((?!deploy-guide).*)'], // Apply to all routes except /deploy-guide
 }

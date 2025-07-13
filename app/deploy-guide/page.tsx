@@ -8,6 +8,7 @@ import { useAdminSettings } from "@/components/admin-settings-provider";
 import { createClient } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { readFileSync } from "fs";
+import { missingEnvVars } from '@/lib/checkEnv'
 
 const steps = [
   {
@@ -29,11 +30,17 @@ const steps = [
   {
     title: "Local Development Setup",
     description: "Clone your forked repository, set up environment variables, and install dependencies."
+  },
+  {
+    title: "Join Our Community",
+    description: "Subscribe to our YouTube channel and join our Skool community to level up your AI & Software Development journey."
   }
 ];
 
 export default function DeployGuidePage() {
   const [currentStep, setCurrentStep] = useState(0);
+  // const missing = missingEnvVars();
+  // Remove fallback: always render the normal stepper
   const { theme } = useTheme();
   const { adminSettings } = useAdminSettings();
   const [repoBackup, setRepoBackup] = useState<string | null>(null);
@@ -48,6 +55,7 @@ export default function DeployGuidePage() {
       (async () => {
         try {
           const supabase = createClient();
+          if (!supabase) return; // Skip if env vars are missing
           const { data } = await supabase
             .from("admin_settings")
             .select("repo")
@@ -267,8 +275,9 @@ export default function DeployGuidePage() {
             <div className="font-semibold mb-1">How to get these values:</div>
             <ol className="list-decimal ml-6 space-y-1">
               <li>Go to your <a href="https://app.supabase.com/" target="_blank" rel="noopener noreferrer" className="underline">Supabase dashboard</a> and select your project.</li>
-              <li>Click <b>Settings</b> → <b>API</b> in the sidebar.</li>
+              <li>Click <b>Project Settings</b> → <b>Data API</b> in the sidebar.</li>
               <li>Copy the <b>Project URL</b> for <span className="font-mono">NEXT_PUBLIC_SUPABASE_URL</span>.</li>
+              <li>Click <b>API Keys</b> link in the sidebar.</li>
               <li>Copy the <b>anon public</b> key for <span className="font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>.</li>
             </ol>
           </div>
@@ -350,16 +359,120 @@ export default function DeployGuidePage() {
             </li>
           </ol>
         </div>
+        <div className="w-full text-left" style={{ color: cardText }}>
+          <div className="text-base font-semibold mb-2">Run the Application</div>
+          <ol className="list-decimal ml-6 space-y-2 text-sm" style={{ fontWeight: 400 }}>
+            <li>
+              To start the development server, run:<br />
+              <span className="font-mono bg-muted px-2 py-1 rounded block mt-1 mb-1">pnpm dev</span>
+            </li>
+            <li>
+              To build the application for production, run:<br />
+              <span className="font-mono bg-muted px-2 py-1 rounded block mt-1 mb-1">pnpm build</span>
+            </li>
+            <li>
+              To start the production server, run:<br />
+              <span className="font-mono bg-muted px-2 py-1 rounded block mt-1 mb-1">pnpm start</span>
+            </li>
+          </ol>
+        </div>
       </div>
     );
   }
 
+  function StepCommunity() {
+    // Page background color for light mode
+    const pageBackground = isDark 
+      ? "transparent" 
+      : adminSettings?.header_background_color || "#fff";
+    
+    return (
+      <div className="w-full flex flex-col items-center gap-6" style={{ 
+        padding: "16px", 
+        borderRadius: "8px",
+        backgroundColor: pageBackground
+      }}>
+        <div className="w-full text-left" style={{ 
+          color: cardText,
+          backgroundColor: pageBackground,
+          padding: "16px",
+          borderRadius: "8px"
+        }}>
+          <div className="text-base font-semibold mb-4">Level Up Your AI & Software Journey</div>
+          <div className="space-y-4">
+            <div className="text-sm">
+              <p className="mb-2">Subscribe to our YouTube channel to learn more about Software Development and AI Vibe Coding:</p>
+              <Button
+                onClick={() => window.open("https://www.youtube.com/@GeagAI", "_blank", "noopener,noreferrer")}
+                className="w-full"
+                style={{
+                  backgroundColor: isDark 
+                    ? adminSettings?.dark_button_color || "#23272f"
+                    : adminSettings?.button_color || "#f3f4f6",
+                  color: isDark 
+                    ? adminSettings?.dark_button_text_color || "#fff"
+                    : adminSettings?.button_text_color || "#18181b",
+                  borderColor: isDark 
+                    ? adminSettings?.dark_button_color || "#23272f"
+                    : adminSettings?.button_color || "#f3f4f6"
+                }}
+              >
+                Subscribe on YouTube
+              </Button>
+            </div>
+            <div className="text-sm">
+              <p className="mb-2">Join our Skool Community to get daily business startup ideas and learn more about AI Software Development:</p>
+              <Button
+                onClick={() => window.open("https://www.skool.com/daily-business-startup-ideas-4055/about", "_blank", "noopener,noreferrer")}
+                className="w-full"
+                style={{
+                  backgroundColor: isDark 
+                    ? adminSettings?.dark_button_color || "#23272f"
+                    : adminSettings?.button_color || "#f3f4f6",
+                  color: isDark 
+                    ? adminSettings?.dark_button_text_color || "#fff"
+                    : adminSettings?.button_text_color || "#18181b",
+                  borderColor: isDark 
+                    ? adminSettings?.dark_button_color || "#23272f"
+                    : adminSettings?.button_color || "#f3f4f6"
+                }}
+              >
+                Join the Community
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="w-full flex justify-center mt-4" style={{ 
+          backgroundColor: pageBackground,
+          padding: "16px",
+          borderRadius: "8px"
+        }}>
+          <div style={{ width: '100%', maxWidth: 560 }}>
+            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%' }}>
+              <iframe
+                src="https://www.youtube.com/embed/2ESZJyLUBVE?si=oYYIOmgMwwTFmTNp"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Add StepCommunity to the stepComponents array as the last step
   const stepComponents = [
     StepWelcome,
     StepForkRepo,
     StepSupabaseSetup,
     StepVercelDeploy,
     StepLocalDevSetup,
+    StepCommunity,
   ];
 
   return (
