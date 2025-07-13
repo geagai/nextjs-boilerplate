@@ -32,6 +32,8 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
   const baseClasses = 'z-50 border-b'
   const positionClass = sticky ? 'sticky top-0' : 'relative'
 
+  const aiAgentsHref = (!loading && user) ? '/agents' : '/ai-agents'
+
   return (
     <nav className={`${positionClass} ${baseClasses}`} style={{ backgroundColor: 'hsl(var(--header-bg))', backdropFilter: 'blur(12px)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,15 +48,9 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             <Link href="/" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Home
             </Link>
-            {(!loading && user) ? (
-              <Link href="/agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-                AI Agents
-              </Link>
-            ) : (!loading && !user) ? (
-              <Link href="/ai-agents" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-                AI Agents
-              </Link>
-            ) : null}
+            <Link href={aiAgentsHref} className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              AI Agents
+            </Link>
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
             </Link>
@@ -174,6 +170,9 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                 Admin
               </Link>
             )}
+            <Link href={aiAgentsHref} onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              AI Agents
+            </Link>
             {!loading && user && (
               <>
                 <Link href="/dashboard" onClick={() => setIsOpen(false)}>
