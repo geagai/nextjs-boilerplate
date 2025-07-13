@@ -1,9 +1,6 @@
 
 'use client'
 
-import { motion } from 'framer-motion'
-import { Crown, Zap, Users } from 'lucide-react'
-
 interface PricingHeroProps {
   headline?: string | null
   description?: string | null

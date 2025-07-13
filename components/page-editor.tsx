@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
+import { Editor } from '@tiptap/core';
 
 // Dynamically import the Tiptap-based editor to avoid SSR issues
-const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false });
+// (Unused variable removed)
 
 interface PageEditorProps {
   /** Column name in the `pages` table to read/write, e.g. `terms_service` */
@@ -91,7 +92,7 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
   }
 
   // --- Toolbar for text alignment ---
-  function AlignmentToolbar({ editor }: { editor: any }) {
+  function AlignmentToolbar({ editor }: { editor: Editor | null }) {
     if (!editor) return null;
     return (
       <div className="flex gap-1 mb-2">
@@ -110,11 +111,17 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
     const StarterKit = (await import("@tiptap/starter-kit")).default;
     const Link = (await import("@tiptap/extension-link")).default;
     const TextAlign = (await import("@tiptap/extension-text-align")).default;
-    return function EditorWithAlignment(props: any) {
+    return function EditorWithAlignment(props: {
+      value: string;
+      onChange: (html: string) => void;
+      className?: string;
+      placeholder?: string;
+      minHeight?: number;
+    }) {
       const editor = useEditor({
         extensions: [StarterKit, Link, TextAlign.configure({ types: ["heading", "paragraph"] })],
         content: props.value || "",
-        onUpdate({ editor }: any) {
+        onUpdate({ editor }: { editor: Editor }) {
           props.onChange(editor.getHTML());
         },
         editorProps: {
@@ -127,7 +134,7 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
       return (
         <>
           <AlignmentToolbar editor={editor} />
-          <mod.default {...props} editor={editor} />
+          <mod.default {...props} />
         </>
       );
     };

@@ -54,29 +54,8 @@ export const productFormSchema = z.object({
   taxBehavior: z.enum(['inclusive', 'exclusive', 'unspecified']),
   credits: z.number().min(0).optional(),
   creditsRollover: z.boolean().optional(),
-  redirectUrl: z.string().url('Invalid redirect URL').optional().or(z.literal('')),
-  mostPopular: z.boolean().optional().default(false)
-}).refine((data) => {
-  // Exactly one pricing option must be default
-  const defaultPrices = data.pricing.filter(p => p.isDefault)
-  return defaultPrices.length === 1
-}, {
-  message: 'Exactly one pricing option must be set as default',
-  path: ['pricing']
-}).refine((data) => {
-  // At least one pricing option must be active
-  const activePrices = data.pricing.filter(p => p.active)
-  return activePrices.length >= 1
-}, {
-  message: 'At least one pricing option must be active',
-  path: ['pricing']
-}).refine((data) => {
-  // The default price must be active
-  const defaultPrice = data.pricing.find(p => p.isDefault)
-  return defaultPrice?.active === true
-}, {
-  message: 'The default pricing option must be active',
-  path: ['pricing']
+  redirectUrl: z.string().url('Invalid redirect URL'),
+  mostPopular: z.boolean(),
 })
 
 export type ProductFormData = z.infer<typeof productFormSchema>

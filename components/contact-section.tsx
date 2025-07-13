@@ -86,7 +86,7 @@ export function ContactSection() {
             Get in Touch
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have questions about NextGeag BP? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions about NextGeag BP? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
           </p>
         </motion.div>
 
@@ -103,7 +103,7 @@ export function ContactSection() {
                 Send us a Message
               </CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you within 24 hours.
+                Fill out the form below and we&apos;ll get back to you within 24 hours.
               </CardDescription>
             </CardHeader>
             <CardContent>

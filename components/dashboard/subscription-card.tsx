@@ -2,10 +2,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Crown, ExternalLink, Loader2 } from 'lucide-react'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Crown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface SubscriptionCardProps {
@@ -34,61 +32,7 @@ interface SubscriptionCardProps {
 }
 
 export function SubscriptionCard({ subscription, subscriptions = [], purchases = [], isPurchasesBlock = false, className }: SubscriptionCardProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
-
-  const handleManageSubscription = async () => {
-    if (!subscription?.stripeCustomerId) {
-      toast({
-        title: 'No Subscription',
-        description: 'Please upgrade to a paid plan to manage your subscription.',
-        variant: 'destructive'
-      })
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST'
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        window.open(data.url, '_blank')
-      } else {
-        throw new Error(data.error || 'Failed to create portal session')
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to open customer portal. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'N/A'
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'inactive': return 'bg-gray-100 text-gray-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      case 'past_due': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+  // Removed unused variables and imports per lint errors
 
   return (
     <Card className={className}>

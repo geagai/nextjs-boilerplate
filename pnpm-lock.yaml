@@ -137,15 +137,18 @@ importers:
       '@tanstack/react-query':
         specifier: 5.0.0
         version: 5.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@tiptap/core':
+        specifier: ^3.0.1
+        version: 3.0.1(@tiptap/pm@2.25.0)
       '@tiptap/extension-link':
         specifier: ^2.25.0
-        version: 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
+        version: 2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
       '@tiptap/extension-text-align':
         specifier: ^2.25.0
-        version: 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))
+        version: 2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))
       '@tiptap/react':
         specifier: ^2.25.0
-        version: 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@tiptap/starter-kit':
         specifier: ^2.25.0
         version: 2.25.0
@@ -3263,6 +3266,11 @@ packages:
     resolution: {integrity: sha512-pTLV0+g+SBL49/Y5A9ii7oHwlzIzpgroJVI3AcBk7/SeR7554ZzjxxtJmZkQ9/NxJO+k1jQp9grXaqqOLqC7cA==}
     peerDependencies:
       '@tiptap/pm': ^2.7.0
+
+  '@tiptap/core@3.0.1':
+    resolution: {integrity: sha512-H0xOnDE5TF3bsCLq2FiFg69TWTzyHxyJdQ9D5m/P++QgLN8t2olGGznk4s1I+lxI3FB1YtIKMwBggRQuSQsclg==}
+    peerDependencies:
+      '@tiptap/pm': ^3.0.1
 
   '@tiptap/extension-blockquote@2.25.0':
     resolution: {integrity: sha512-W+sVPlV9XmaNPUkxV2BinNEbk2hr4zw8VgKjqKQS9O0k2YIVRCfQch+4DudSAwBVMrVW97zVAKRNfictGFQ8vQ==}
@@ -12657,6 +12665,10 @@ snapshots:
     dependencies:
       '@tiptap/pm': 2.25.0
 
+  '@tiptap/core@3.0.1(@tiptap/pm@2.25.0)':
+    dependencies:
+      '@tiptap/pm': 2.25.0
+
   '@tiptap/extension-blockquote@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))':
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
@@ -12665,9 +12677,9 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
 
-  '@tiptap/extension-bubble-menu@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
+  '@tiptap/extension-bubble-menu@2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
     dependencies:
-      '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
+      '@tiptap/core': 3.0.1(@tiptap/pm@2.25.0)
       '@tiptap/pm': 2.25.0
       tippy.js: 6.3.7
 
@@ -12693,9 +12705,9 @@ snapshots:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
       '@tiptap/pm': 2.25.0
 
-  '@tiptap/extension-floating-menu@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
+  '@tiptap/extension-floating-menu@2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
     dependencies:
-      '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
+      '@tiptap/core': 3.0.1(@tiptap/pm@2.25.0)
       '@tiptap/pm': 2.25.0
       tippy.js: 6.3.7
 
@@ -12726,9 +12738,9 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
 
-  '@tiptap/extension-link@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
+  '@tiptap/extension-link@2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)':
     dependencies:
-      '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
+      '@tiptap/core': 3.0.1(@tiptap/pm@2.25.0)
       '@tiptap/pm': 2.25.0
       linkifyjs: 4.3.1
 
@@ -12748,9 +12760,9 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
 
-  '@tiptap/extension-text-align@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))':
+  '@tiptap/extension-text-align@2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))':
     dependencies:
-      '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
+      '@tiptap/core': 3.0.1(@tiptap/pm@2.25.0)
 
   '@tiptap/extension-text-style@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))':
     dependencies:
@@ -12781,11 +12793,11 @@ snapshots:
       prosemirror-transform: 1.10.4
       prosemirror-view: 1.40.0
 
-  '@tiptap/react@2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@tiptap/react@2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@tiptap/core': 2.25.0(@tiptap/pm@2.25.0)
-      '@tiptap/extension-bubble-menu': 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
-      '@tiptap/extension-floating-menu': 2.25.0(@tiptap/core@2.25.0(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
+      '@tiptap/core': 3.0.1(@tiptap/pm@2.25.0)
+      '@tiptap/extension-bubble-menu': 2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
+      '@tiptap/extension-floating-menu': 2.25.0(@tiptap/core@3.0.1(@tiptap/pm@2.25.0))(@tiptap/pm@2.25.0)
       '@tiptap/pm': 2.25.0
       '@types/use-sync-external-store': 0.0.6
       fast-deep-equal: 3.1.3

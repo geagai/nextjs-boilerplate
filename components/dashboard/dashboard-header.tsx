@@ -17,19 +17,12 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
-  const planColors = {
-    FREE: 'bg-gray-100 text-gray-800',
-    STARTER: 'bg-blue-100 text-blue-800',
-    PRO: 'bg-purple-100 text-purple-800',
-    ELITE: 'bg-gold-100 text-gold-800'
-  }
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Welcome back, {user.name || 'User'}!</h1>
         <p className="text-muted-foreground mt-2">
-          Here's what's happening with your NextGeag BP account today.
+          Here&apos;s what&apos;s happening with your NextGeag BP account today.
         </p>
       </div>
 

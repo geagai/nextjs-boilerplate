@@ -11,7 +11,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import type Stripe from 'stripe'
 
 interface PricingCardsProps {
-  session: any
+  session: unknown
   products: (Stripe.Product & { prices: Stripe.Price[] })[]
   publishableKey?: string
   columns?: 3 | 4 // number of columns for grid, default 4
@@ -187,7 +187,7 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
                     <div>
                       <h4 className="font-semibold mb-3">What's included:</h4>
                       <ul className="space-y-2">
-                        {JSON.parse(product.metadata.marketing_features).slice(0, 8).map((feat: any, idx: number) => (
+                        {JSON.parse(product.metadata.marketing_features).slice(0, 8).map((feat: { title: string }, idx: number) => (
                           <li key={idx} className="flex items-start">
                             <Check className="h-4 w-4 text-primary mt-0.5 mr-3 flex-shrink-0" />
                             <span className="text-sm">{feat.title}</span>

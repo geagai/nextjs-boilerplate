@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,9 +58,9 @@ export function ProductForm({
       taxBehavior: 'unspecified',
       credits: 0,
       creditsRollover: false,
-      redirectUrl: '',
-      mostPopular: false,
-      ...initialData
+      ...initialData,
+      mostPopular: initialData.mostPopular ?? false,
+      redirectUrl: initialData.redirectUrl ?? '',
     }
   })
 
@@ -70,7 +70,7 @@ export function ProductForm({
   const watchedMarketingFeatures = watch('marketingFeatures')
   const watchedPricing = watch('pricing')
 
-  const handleFormSubmit = async (data: ProductFormData) => {
+  const handleFormSubmit: import('react-hook-form').SubmitHandler<ProductFormData> = async (data) => {
     try {
       setIsSubmitting(true)
       await onSubmit(data)
@@ -144,7 +144,7 @@ export function ProductForm({
               <p className="text-sm text-red-500">{errors.statementDescriptor.message}</p>
             )}
             <p className="text-sm text-muted-foreground">
-              This text will appear on your customers' credit card statements
+              This text will appear on your customers&apos; credit card statements
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export function ProductForm({
           <SortableMarketingFeatures
             features={watchedMarketingFeatures}
             onChange={(features) => setValue('marketingFeatures', features)}
-            errors={errors.marketingFeatures as any}
+            errors={errors.marketingFeatures as Array<{ title?: string; description?: string }> | undefined}
           />
         </CardContent>
       </Card>
@@ -193,7 +193,7 @@ export function ProductForm({
           <SortablePricingOptions
             pricing={watchedPricing}
             onChange={(pricing) => setValue('pricing', pricing)}
-            errors={errors.pricing as any}
+            errors={errors.pricing as Array<{ [key: string]: string }> | undefined}
           />
           {errors.pricing?.message && (
             <p className="text-sm text-red-500 mt-2">{errors.pricing.message}</p>
