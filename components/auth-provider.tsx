@@ -44,6 +44,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
 
   // Fetch user role from user_data table
   const getUserRole = async (sessionUser: User): Promise<string> => {
+    if (!supabase) return 'user';
     try {
       const { data, error } = await supabase
         .from('user_data')
@@ -79,6 +80,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     }
 
     const getInitialSession = async () => {
+      if (!supabase) return;
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -98,39 +100,43 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     getInitialSession();
 
     // Listen for auth changes (with DB role fetch)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        try {
-          if (event === 'SIGNED_IN') {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const authUser = await createAuthUserWithRole(user);
-              setUser(authUser);
-              // Optionally, fetch session if needed
-              const { data: { session } } = await supabase.auth.getSession();
-              setSession(session);
-            } else {
+    let subscription: any = null;
+    if (supabase) {
+      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          try {
+            if (event === 'SIGNED_IN') {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                const authUser = await createAuthUserWithRole(user);
+                setUser(authUser);
+                // Optionally, fetch session if needed
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+              } else {
+                setUser(null);
+                setSession(null);
+              }
+              setLoading(false);
+            } else if (event === 'SIGNED_OUT') {
               setUser(null);
               setSession(null);
+              setLoading(false); // <-- moved here
+              router.push('/login');
             }
-            setLoading(false);
-          } else if (event === 'SIGNED_OUT') {
+          } catch (error) {
+            console.error('Error in auth state change:', error);
             setUser(null);
             setSession(null);
             setLoading(false); // <-- moved here
-            router.push('/login');
           }
-        } catch (error) {
-          console.error('Error in auth state change:', error);
-          setUser(null);
-          setSession(null);
-          setLoading(false); // <-- moved here
+          // setLoading(false) removed from here
         }
-        // setLoading(false) removed from here
-      }
-    );
+      );
+      subscription = authSubscription;
+    }
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, [supabase, router]);
 
   useEffect(() => {
@@ -141,6 +147,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
   }, [loading, user]);
 
   const signOut = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut()
   }
 

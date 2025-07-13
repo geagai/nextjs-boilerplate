@@ -15,6 +15,8 @@ export default async function AdminSubmissionsPage() {
   const cookieStore = cookies()
   const supabase = createSupabaseServerClient()
 
+  if (!supabase) throw new Error('Database connection failed');
+
   // Check admin status (replace with your admin check logic)
   // Example: check user.role or use a DB RPC
   const { data: isAdminData } = await supabase.rpc('is_admin')

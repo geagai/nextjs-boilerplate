@@ -36,6 +36,8 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
   
+  if (!supabase) throw new Error('Database connection failed');
+  
   try {
     // FIX: Use getSession() for hydration
     const { data: { session }, error } = await supabase.auth.getSession()
@@ -77,6 +79,8 @@ export async function requireAuth(): Promise<{ user: AuthUser; session: Session 
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
 
+  if (!supabase) throw new Error('Database connection failed');
+
   try {
     // Use getUser() for secure authentication
     const { data: { user: baseUser }, error } = await supabase.auth.getUser()
@@ -116,6 +120,8 @@ export async function requireAuth(): Promise<{ user: AuthUser; session: Session 
 export async function signOut() {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
+  
+  if (!supabase) return;
   
   try {
     await supabase.auth.signOut()

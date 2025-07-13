@@ -39,6 +39,9 @@ export async function middleware(request: NextRequest) {
     )
 
     // Refresh session if needed
+    if (!supabase) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
     const { data: { user }, error } = await supabase.auth.getUser()
 
     const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 

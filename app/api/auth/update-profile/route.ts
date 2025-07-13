@@ -15,6 +15,10 @@ export async function POST(request: Request) {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
 
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+
     // Update user_data table
     const { error: updateError } = await supabase
       .from('user_data')

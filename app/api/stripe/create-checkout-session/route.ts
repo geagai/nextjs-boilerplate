@@ -12,8 +12,17 @@ export async function POST(request: Request) {
   try {
     console.log('🔄 Creating checkout session...')
     
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+    
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
+    
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+    
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {

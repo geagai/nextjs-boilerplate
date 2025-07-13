@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const supabase = createClient()
   
+  if (!supabase) throw new Error('Database connection failed');
+  
   // Fetch the current contact us content
   const { data } = await supabase
     .from('pages')

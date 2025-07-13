@@ -28,6 +28,7 @@ export default function SubmissionsClient({ initialSubmissions }: SubmissionsCli
   const supabase = createClient()
 
   const deleteSubmission = async (id: string) => {
+    if (!supabase) return;
     setLoading(id)
     try {
       const { error } = await supabase

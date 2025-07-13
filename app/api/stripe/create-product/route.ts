@@ -45,6 +45,10 @@ export async function POST(request: Request) {
   try {
     const supabase = createServerClient(cookies())
     
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+    
     // Check admin role
     const { data: userData, error: userError } = await supabase
       .from('user_data')

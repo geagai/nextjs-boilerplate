@@ -18,6 +18,10 @@ export async function POST(request: NextRequest) {
   let event: any
 
   try {
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+    
     if (!process.env.STRIPE_WEBHOOK_SECRET) {
       console.log('⚠️ Webhook secret not configured, skipping signature verification')
       event = JSON.parse(body)

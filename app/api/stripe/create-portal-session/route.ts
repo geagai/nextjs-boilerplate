@@ -17,6 +17,10 @@ export async function POST(request: Request) {
     )
   }
 
+  if (!stripe) {
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+  }
+
   const stripeCustomerId = user.user_metadata?.stripeCustomerId
 
   if (!stripeCustomerId) {

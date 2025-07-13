@@ -29,20 +29,26 @@ export async function getStripeProductsCached() {
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
-    const { data: settings } = await supabase
-      .from('admin_settings')
-      .select('stripe_secret')
-      .limit(1)
-      .maybeSingle()
+    if (supabase) {
+      const { data: settings } = await supabase
+        .from('admin_settings')
+        .select('stripe_secret')
+        .limit(1)
+        .maybeSingle()
 
-    if (settings?.stripe_secret) {
-      secretFromSettings = settings.stripe_secret as string
+      if (settings?.stripe_secret) {
+        secretFromSettings = settings.stripe_secret as string
+      }
     }
   } catch (_) {/* ignore */}
 
   const stripe = secretFromSettings
     ? new Stripe(secretFromSettings, { apiVersion: '2025-05-28.basil' })
     : envStripe // fallback global instance (env var)
+
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
 
   // Fetch active products
   const productsResp = await stripe.products.list({ limit: 100, active: true })

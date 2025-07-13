@@ -32,6 +32,7 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
   // Check admin status on mount
   useEffect(() => {
     (async () => {
+      if (!supabase) return;
       const { data, error } = await supabase.rpc("is_admin");
       if (!error) setIsAdmin(!!data);
     })();
@@ -43,6 +44,7 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
   }, [content, codeView]);
 
   const handleSave = async () => {
+    if (!supabase) return;
     setSaving(true);
     // Check if a row exists in the pages table
     const { data: existingRows, error: fetchError } = await supabase

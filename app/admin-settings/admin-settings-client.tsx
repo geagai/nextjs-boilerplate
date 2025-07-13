@@ -88,6 +88,7 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
   // Debug: check admin status on mount
   useEffect(() => {
     async function checkAdminStatus() {
+      if (!supabase) return;
       const { data, error } = await supabase.rpc('is_admin');
       if (error) {
         console.error('is_admin RPC error:', error);
@@ -138,6 +139,8 @@ export function AdminSettingsClient({ initialSettings, initialPageContent }: Adm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    if (!supabase) return;
 
     try {
       const payload = {

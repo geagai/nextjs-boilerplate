@@ -46,6 +46,7 @@ export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
 
       // Upload to Supabase Storage
+      if (!supabase) return;
       const { data, error } = await supabase.storage
         .from('product-images')
         .upload(fileName, file, {
@@ -58,6 +59,7 @@ export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
       }
 
       // Get public URL
+      if (!supabase) return;
       const { data: urlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(data.path)

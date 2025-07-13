@@ -66,6 +66,10 @@ export default async function AdminSettingsPage() {
   const cookieStore = cookies();
   const supabase = createServerClient(cookieStore);
   
+  if (!supabase) {
+    throw new Error('Unable to initialize Supabase client')
+  }
+  
   const { data: settings } = await supabase
     .from("admin_settings")
     .select("*")

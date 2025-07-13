@@ -11,6 +11,11 @@ export async function GET(request: Request) {
   const { user } = await requireAuth()
   try {
     const supabase = createServerClient(cookies())
+    
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+    
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('id')
 

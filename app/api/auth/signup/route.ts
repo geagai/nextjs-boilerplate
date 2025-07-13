@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
 
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+
     // Create user with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: validatedData.email,
