@@ -1,13 +1,11 @@
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { cookies } from 'next/headers'
 import { requireAuth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: Request) {
+export async function POST() {
   const { user } = await requireAuth()
 
   if (!user) {
