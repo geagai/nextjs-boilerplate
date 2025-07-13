@@ -14,6 +14,7 @@ interface PricingCardsProps {
   session: any
   products: (Stripe.Product & { prices: Stripe.Price[] })[]
   publishableKey?: string
+  columns?: 3 | 4 // number of columns for grid, default 4
 }
 
 // Mapping helper to pick price for interval/type
@@ -51,7 +52,7 @@ function showNoCardText(price: Stripe.Price) {
   return hasTrial && !requiresCardMeta
 }
 
-export function PricingCards({ session, products, publishableKey }: PricingCardsProps) {
+export function PricingCards({ session, products, publishableKey, columns = 4 }: PricingCardsProps) {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
   const { toast } = useToast()
@@ -108,9 +109,11 @@ export function PricingCards({ session, products, publishableKey }: PricingCards
     return `${(amount / 100).toFixed(0)}`
   }
 
+  const gridColsClass = columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
+
   return (
-    <div className="mb-16">
-      {/* Tabs */}
+    <div className="mb-16 max-w-[1200px] mx-auto">
+      {/* Tabs (full width, centered) */}
       <div className="flex justify-center gap-4 mb-5 pt-5">
         {([
           { key: 'monthly', label: 'Monthly' },
@@ -130,8 +133,8 @@ export function PricingCards({ session, products, publishableKey }: PricingCards
           </button>
         ))}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Only the cards are in a grid */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-8`}>
         {filteredProducts.map((product, index) => {
           const price = getPriceForTab(product.prices, activeTab)
           if (!price) return null

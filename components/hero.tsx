@@ -129,13 +129,13 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <Link href="/signup">
+            <Link href="/deploy-guide">
               <Button size="lg" className="text-lg px-8 py-3 btn-glow group">
                 Get Started
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="https://github.com" target="_blank">
+            <Link href="https://github.com/geagai/nextjs-boilerplate" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="lg" className="text-lg px-8 py-3">
                 <Github className="mr-2 h-5 w-5" />
                 View on GitHub
