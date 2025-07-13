@@ -10,11 +10,10 @@ import { useToast } from '@/hooks/use-toast'
 import { loadStripe } from '@stripe/stripe-js'
 import type Stripe from 'stripe'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
 interface PricingCardsProps {
   session: any
   products: (Stripe.Product & { prices: Stripe.Price[] })[]
+  publishableKey?: string
 }
 
 // Mapping helper to pick price for interval/type
@@ -52,7 +51,7 @@ function showNoCardText(price: Stripe.Price) {
   return hasTrial && !requiresCardMeta
 }
 
-export function PricingCards({ session, products }: PricingCardsProps) {
+export function PricingCards({ session, products, publishableKey }: PricingCardsProps) {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
   const { toast } = useToast()
@@ -71,6 +70,15 @@ export function PricingCards({ session, products }: PricingCardsProps) {
       return
     }
 
+    if (!publishableKey) {
+      toast({
+        title: 'Payment Processing Unavailable',
+        description: 'Stripe is not configured. Please contact support.',
+        variant: 'destructive'
+      })
+      return
+    }
+
     setLoadingPriceId(priceId)
 
     try {
@@ -81,7 +89,8 @@ export function PricingCards({ session, products }: PricingCardsProps) {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to create session')
-      const stripe = await stripePromise
+      
+      const stripe = await loadStripe(publishableKey)
       await stripe?.redirectToCheckout({ sessionId: data.sessionId })
     } catch (error) {
       toast({

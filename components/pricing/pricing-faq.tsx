@@ -61,6 +61,8 @@ export function PricingFAQ({ faqs, headerBackgroundColor, darkHeaderBackgroundCo
 
   return (
     <section className="mt-24">
+      {/* Only set margin-top: 0 for h3.flex in this section */}
+      <style>{`section.mt-24 h3.flex { margin-top: 0 !important; }`}</style>
       <div className="max-w-3xl mx-auto">
         <h2 className="text-4xl font-bold text-center mb-8 text-headline">
           Frequently Asked Questions
