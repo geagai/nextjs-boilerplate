@@ -73,12 +73,18 @@ export function TechStack() {
             >
               <div className="bg-background rounded-xl p-6 border shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                 <div className="relative w-16 h-16 mx-auto mb-4 bg-muted rounded-lg overflow-hidden">
-                  <Image
-                    src={tech.logo}
-                    alt={`${tech.name} logo`}
-                    fill
-                    className="object-contain p-2"
-                  />
+                  {tech.logo ? (
+                    <Image
+                      src={tech.logo}
+                      alt={`${tech.name} logo`}
+                      fill
+                      className="object-contain p-2"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      {tech.name[0]}
+                    </div>
+                  )}
                 </div>
                 <h3 className="font-semibold text-lg mb-2">{tech.name}</h3>
                 <p className="text-sm text-muted-foreground">{tech.description}</p>

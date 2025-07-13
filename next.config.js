@@ -1,3 +1,4 @@
+console.log('*** NEXT CONFIG JS LOADED ***');
 const path = require('path');
 
 /** @type {import('next').NextConfig} */
@@ -15,7 +16,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['i.pinimg.com']
+    domains: ['i.pinimg.com', 'logospng.org', 'static.vecteezy.com']
   },
 };
 
@@ -35,4 +36,4 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
   };
 }
 
-module.exports = nextConfig;
+module.exports = nextConfig; 
