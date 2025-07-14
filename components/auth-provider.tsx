@@ -42,9 +42,9 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
   const router = useRouter()
   const supabase = createClient()
 
-  // Fetch user role from user_data table
-  const getUserRole = async (sessionUser: User): Promise<string> => {
-    if (!supabase) return 'user';
+  // Create auth user with role (fetch from DB)
+  const createAuthUserWithRole = useCallback(async (sessionUser: User): Promise<AuthUser> => {
+    if (!supabase) return { ...sessionUser, role: 'user' };
     try {
       const { data, error } = await supabase
         .from('user_data')
@@ -53,24 +53,18 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
         .single();
       if (error) {
         console.error('Error fetching user role:', error);
-        return 'user';
+        return { ...sessionUser, role: 'user' };
       }
-      return data?.user_role || 'user';
+      return {
+        ...sessionUser,
+        subscription: sessionUser.user_metadata?.subscription || null,
+        role: data?.user_role || 'user'
+      };
     } catch (err) {
       console.error('Error fetching user role:', err);
-      return 'user';
+      return { ...sessionUser, role: 'user' };
     }
-  };
-
-  // Create auth user with role (fetch from DB)
-  const createAuthUserWithRole = useCallback(async (sessionUser: User): Promise<AuthUser> => {
-    const role = await getUserRole(sessionUser);
-    return {
-      ...sessionUser,
-      subscription: sessionUser.user_metadata?.subscription || null,
-      role: role
-    };
-  }, [getUserRole]);
+  }, [supabase]);
 
   useEffect(() => {
     // If we already have initial session, skip extra fetch
@@ -87,8 +81,8 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
           const authUser = await createAuthUserWithRole(user);
           setUser(authUser);
           // Optionally, get session if needed
-          const { data: { session } } = await supabase.auth.getSession();
-          setSession(session);
+          const { data: { session: sessionData } } = await supabase.auth.getSession();
+          setSession(sessionData);
         }
       } catch (error) {
         console.error('Error getting initial user:', error);
@@ -105,8 +99,9 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     }
     let subscription: ReturnType<typeof supabase.auth.onAuthStateChange>["data"]["subscription"] | null = null;
     if (supabase) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event) => {
           try {
             if (event === 'SIGNED_IN') {
               const { data: { user } } = await supabase.auth.getUser();
@@ -114,8 +109,8 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
                 const authUser = await createAuthUserWithRole(user);
                 setUser(authUser);
                 // Optionally, fetch session if needed
-                const { data: { session } } = await supabase.auth.getSession();
-                setSession(session);
+                const { data: { session: sessionData } } = await supabase.auth.getSession();
+                setSession(sessionData);
               } else {
                 setUser(null);
                 setSession(null);

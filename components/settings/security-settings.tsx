@@ -35,7 +35,8 @@ export function SecuritySettings() {
     resolver: zodResolver(passwordSchema)
   })
 
-  const onSubmit = async (data: PasswordFormData) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onSubmit = async (_data: PasswordFormData) => {
     setIsLoading(true)
 
     try {
