@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = signupSchema.parse(body)
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(cookieStore)
 
     if (!supabase) {

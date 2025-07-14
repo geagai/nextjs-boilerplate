@@ -48,7 +48,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const missing = missingEnvVars();
-  const path = headers().get('x-invoke-path') || '';
+  const headersList = await headers();
+  const path = headersList.get('x-invoke-path') || '';
   const isDeployGuide = path.startsWith('/deploy-guide');
 
   let settings = null;
@@ -85,7 +86,7 @@ export default async function RootLayout({
   };
 
   if (!missing.length && !isDeployGuide) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(cookieStore);
     if (supabase) {
       const dbSettings = await supabase

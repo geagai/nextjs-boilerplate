@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
   const { user } = sessionData
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   if (!supabase) {
     redirect('/login')

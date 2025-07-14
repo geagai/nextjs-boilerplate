@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 export default async function PricingPage() {
   const sessionData = await getServerSession()
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
   if (!supabase) {

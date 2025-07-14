@@ -19,7 +19,7 @@ export default async function CreateProductStripePage() {
   }
 
   // Check Stripe config server-side
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   if (!supabase) {
     return (

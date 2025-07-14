@@ -43,7 +43,7 @@ interface ProductData {
 export async function POST(request: Request) {
   const { user } = await requireAuth()
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = createServerClient(await cookies())
     
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })

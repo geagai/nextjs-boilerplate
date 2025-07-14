@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 
 // Supabase database utilities
 export function createSupabaseServerClient() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

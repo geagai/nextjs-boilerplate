@@ -11,7 +11,7 @@ export default async function EditProductStripePage() {
   const userIsAdmin = isAdmin(user)
 
   // Check Stripe configuration
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
   if (!supabase) {

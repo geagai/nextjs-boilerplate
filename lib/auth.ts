@@ -33,15 +33,15 @@ if (typeof process !== 'undefined' && process?.versions?.node) {
 
 // Get current session on server side
 export async function getServerSession(): Promise<{ user: AuthUser; session: Session | null } | null> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
   if (!supabase) throw new Error('Database connection failed');
   
   try {
     // FIX: Use getSession() for hydration
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (error || !session?.user) {
+    const { data: { user: baseUser }, error } = await supabase.auth.getUser();
+    if (error || !baseUser) {
       return null
     }
 
@@ -51,7 +51,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
       const { data: userData, error: userDataError } = await supabase
         .from('user_data')
         .select('user_role')
-        .eq('UID', session.user.id)
+        .eq('UID', baseUser.id)
         .single();
       if (!userDataError && userData?.user_role) {
         dbRole = userData.user_role;
@@ -62,12 +62,12 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
 
     // Get additional user data from user_metadata or app_metadata
     const user: AuthUser = {
-      ...session.user,
-      subscription: session.user.user_metadata?.subscription || null,
-      role: dbRole || session.user.user_metadata?.role || 'user'
+      ...baseUser,
+      subscription: baseUser.user_metadata?.subscription || null,
+      role: dbRole || baseUser.user_metadata?.role || 'user'
     }
 
-    return { user, session }
+    return { user, session: null }
   } catch (error) {
     console.error('Error getting session:', error)
     return null
@@ -76,7 +76,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
 
 // Require authentication - redirect if not logged in
 export async function requireAuth(): Promise<{ user: AuthUser; session: Session | null }> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   if (!supabase) throw new Error('Database connection failed');
@@ -118,7 +118,7 @@ export async function requireAuth(): Promise<{ user: AuthUser; session: Session 
 
 // Sign out helper
 export async function signOut() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
   if (!supabase) return;

@@ -17,7 +17,7 @@ import { ContactSection } from '@/components/contact-section'
 export default async function HomePage() {
   // --- Pricing Section logic (copied from /pricing/page.tsx, but only for this section) ---
   const sessionData = await getServerSession()
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   let settings = null;
   if (supabase) {

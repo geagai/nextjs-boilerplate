@@ -8,7 +8,7 @@ interface CreditsProps {
 }
 
 export default async function Credits({ userId }: CreditsProps) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   let credits = 0
   try {

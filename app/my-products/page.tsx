@@ -11,7 +11,7 @@ export default async function MyProductsPage() {
   await requireAuth()
 
   // Get Stripe secret & dev mode flag from admin_settings
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   if (!supabase) {
     return (

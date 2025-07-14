@@ -27,7 +27,7 @@ export async function getStripeProductsCached() {
   // Determine which Stripe secret to use: admin_settings first, else env
   let secretFromSettings: string | undefined
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(cookieStore)
     if (supabase) {
       const { data: settings } = await supabase

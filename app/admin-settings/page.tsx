@@ -62,7 +62,7 @@ export default async function AdminSettingsPage() {
   }
 
   // Fetch settings server-side
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(cookieStore);
   
   if (!supabase) {

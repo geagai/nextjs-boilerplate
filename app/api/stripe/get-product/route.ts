@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   const { user } = await requireAuth()
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = createServerClient(await cookies())
     
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
