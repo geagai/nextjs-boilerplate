@@ -17,16 +17,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = contactSchema.parse(body)
 
-    const supabase = createSupabaseServerClient()
+    const supabaseClient = await createSupabaseServerClient()
     
     // First, get the contact email from admin settings
-    const { data: adminSettings } = await supabase
+    const { data: adminSettings } = await supabaseClient
       .from('admin_settings')
       .select('email')
       .limit(1)
       .maybeSingle()
     
-    const { data: submission, error } = await supabase
+    const { data: submission, error } = await supabaseClient
       .from('submissions')
       .insert({
         name: validatedData.name,

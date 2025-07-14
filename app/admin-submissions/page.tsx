@@ -11,19 +11,19 @@ export const metadata: Metadata = {
 
 export default async function AdminSubmissionsPage() {
   await requireAuth()
-  const supabase = createSupabaseServerClient()
+  const supabaseClient = await createSupabaseServerClient()
 
-  if (!supabase) throw new Error('Database connection failed');
+  if (!supabaseClient) throw new Error('Database connection failed');
 
   // Check admin status (replace with your admin check logic)
   // Example: check user.role or use a DB RPC
-  const { data: isAdminData } = await supabase.rpc('is_admin')
+  const { data: isAdminData } = await supabaseClient.rpc('is_admin')
   if (!isAdminData) {
     redirect('/')
   }
 
   // Fetch submissions
-  const { data: submissions, error } = await supabase
+  const { data: submissions, error } = await supabaseClient
     .from('submissions')
     .select('*')
     .order('created_at', { ascending: false })
