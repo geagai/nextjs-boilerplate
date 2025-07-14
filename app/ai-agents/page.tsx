@@ -1,4 +1,4 @@
-import React from 'react';
+import dynamic from 'next/dynamic';
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -20,13 +20,7 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 );
 
 export default function AIAgentsRoute() {
-  let AIAgentsPage: React.ComponentType | null = null;
-  try {
-    const mod = require('../../ai-agents/page');
-    AIAgentsPage = mod.default || mod.AIAgentsPage || null;
-  } catch (e) {
-    AIAgentsPage = null;
-  }
+  const AIAgentsPage = dynamic(() => import('../../ai-agents/page'), { ssr: false });
 
   if (!AIAgentsPage) {
     return (

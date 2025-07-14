@@ -106,6 +106,9 @@ class AdminSettingsCacheManager {
     try {
       console.log('Admin Settings Requested: true');
       const supabase = createClient();
+      if (!supabase) {
+        throw new Error('Supabase client is not initialized');
+      }
       const { data, error } = await supabase
         .from('admin_settings')
         .select('*')

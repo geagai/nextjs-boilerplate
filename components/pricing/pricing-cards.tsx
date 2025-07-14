@@ -34,7 +34,8 @@ function getPriceForTab(prices: Stripe.Price[], tab: string) {
 // Helper: determine CTA button label based on pricing rules
 function getButtonLabel(price: Stripe.Price, activeTab: 'monthly' | 'yearly' | 'one_time') {
   // Free trial => "Start Trial"
-  const trialDays = (price as any).trial_period_days as number | undefined
+  // trial_period_days is not a standard property on Stripe.Price; check for its existence
+  const trialDays = 'trial_period_days' in price ? (price as any).trial_period_days as number | undefined : undefined
   if (trialDays && trialDays > 0) {
     return 'Start Trial'
   }
@@ -46,7 +47,8 @@ function getButtonLabel(price: Stripe.Price, activeTab: 'monthly' | 'yearly' | '
 
 // Helper: decide whether to show "No Credit Card Required" note
 function showNoCardText(price: Stripe.Price) {
-  const trialDays = (price as any).trial_period_days as number | undefined
+  // trial_period_days is not a standard property on Stripe.Price; check for its existence
+  const trialDays = 'trial_period_days' in price ? (price as any).trial_period_days as number | undefined : undefined
   const hasTrial = trialDays && trialDays > 0
   const requiresCardMeta = price.metadata?.trial_requires_payment_method === 'true'
   return hasTrial && !requiresCardMeta

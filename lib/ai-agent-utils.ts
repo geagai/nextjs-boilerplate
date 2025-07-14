@@ -171,6 +171,9 @@ export async function loadSessionMessages(
   try {
     const supabase = createClient()
     
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
     // Use UID as-is (do not uppercase)
     const { data, error } = await supabase
       .from('agent_messages')
@@ -206,6 +209,9 @@ export async function loadAgent(
   try {
     const supabase = createClient()
     
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
     const { data, error } = await supabase
       .from('agents')
       .select('*')
@@ -316,6 +322,9 @@ export async function getAgentSessions(
   try {
     const supabase = createClient()
     
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
     // Use UID as-is (do not uppercase)
     // Get unique sessions with latest message for each
     const { data, error } = await supabase

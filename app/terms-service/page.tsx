@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 export default async function TermsServicePage() {
   const supabase = createClient()
   
+  if (!supabase) {
+    throw new Error('Supabase client is not initialized');
+  }
   // Fetch the current terms of service content
   const { data } = await supabase
     .from('pages')

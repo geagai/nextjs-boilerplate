@@ -12,6 +12,9 @@ export default async function Credits({ userId }: CreditsProps) {
   const supabase = createServerClient(cookieStore)
   let credits = 0
   try {
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
     const { data, error } = await supabase
       .from('user_data')
       .select('credits')
