@@ -22,8 +22,6 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 export default function EditAgentRoute() {
   let EditAgentPage: React.ComponentType | null = null;
   try {
-    // @ts-ignore
-    // eslint-disable-next-line
     const mod = require('@/ai-agents/edit-agent/[id]/page');
     EditAgentPage = mod.default || mod.EditAgentPage || null;
   } catch (e) {

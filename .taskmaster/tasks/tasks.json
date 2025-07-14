@@ -7,7 +7,7 @@
         "description": "Create a comprehensive /edit-agent page that mirrors the functionality of the /create-agent page, allowing users to modify existing agent configurations through a dynamic form interface with Supabase integration.",
         "details": "Implementation Steps:\n\n1. Component Structure:\n- Create EditAgentPage component in pages/edit-agent/[id].tsx\n- Implement form layout matching create-agent page structure\n- Utilize existing form components and theme providers\n\n2. Data Fetching:\n- Add getAgent query function to fetch agent data by ID\n- Implement useQuery hook for initial data loading\n- Handle loading and error states appropriately\n\n3. Form Implementation:\n- Initialize form with react-hook-form\n- Create controlled inputs for all agent fields\n- Add dynamic field arrays for header/body parameters\n- Implement JSON config field handling\n- Add form validation matching create-agent rules\n\n4. Supabase Integration:\n- Create updateAgent mutation function\n- Implement optimistic updates\n- Handle success/error responses\n- Add proper type safety with TypeScript\n\n5. UX Considerations:\n- Add loading indicators during submission\n- Implement proper error handling and display\n- Add success confirmation and redirect\n- Ensure responsive design across breakpoints\n\nCode Structure:\n```typescript\ninterface EditAgentProps {\n  agentId: string;\n}\n\nconst EditAgentPage: React.FC<EditAgentProps> = ({ agentId }) => {\n  const form = useForm<AgentFormData>();\n  const { data, isLoading } = useQuery(['agent', agentId], getAgent);\n  \n  const updateMutation = useMutation(updateAgent, {\n    onSuccess: () => {\n      // Handle success\n    }\n  });\n\n  // Form submission handler\n  const onSubmit = async (data: AgentFormData) => {\n    // Transform and submit data\n  };\n\n  return (\n    <Form onSubmit={handleSubmit(onSubmit)}>\n      // Form fields implementation\n    </Form>\n  );\n};\n```",
         "testStrategy": "1. Unit Testing:\n- Verify form initialization with mock agent data\n- Test all form field interactions and validations\n- Validate JSON config transformation\n- Test error handling scenarios\n\n2. Integration Testing:\n- Test complete form submission flow\n- Verify Supabase update operations\n- Check loading states and error handling\n- Test navigation and redirects\n\n3. E2E Testing:\n- Navigate to edit page with existing agent\n- Modify all field types (text, arrays, JSON)\n- Submit form and verify database updates\n- Verify success/error scenarios\n\n4. Manual Testing Checklist:\n- Load existing agent data correctly\n- Edit all field types\n- Validate form submissions\n- Check responsive design\n- Verify theme consistency\n- Test error scenarios\n- Confirm success flows",
-        "status": "done",
+        "status": "pending",
         "dependencies": [],
         "priority": "medium",
         "subtasks": [
@@ -195,11 +195,117 @@
             "testStrategy": "Cypress E2E tests, integration test suite, user flow validation"
           }
         ]
+      },
+      {
+        "id": 3,
+        "title": "Comprehensive Codebase Lint and Type Error Resolution",
+        "description": "Fix all current lint and TypeScript errors across the codebase as reported by 'npx next lint' and 'npx tsc --noEmit', ensuring each fix resolves both lint and type errors without introducing new issues. Focus on proper, production-quality fixes that use specific types.",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2
+        ],
+        "priority": "medium",
+        "details": "Implementation Steps:\n\n1. Initial Error Assessment:\n- Run 'npx next lint' and save output\n- Run 'npx tsc --noEmit' and save output\n- Create tracking spreadsheet of all errors by file\n- For each file, document both lint and type errors together\n- Prioritize files by error count and severity\n\n2. Code Cleanup:\n- Remove all unused variables and imports\n- Remove unused components\n- Replace all require() with import statements\n- Verify each cleanup doesn't introduce new type errors\n- Document any significant removals in Git history\n\n3. TypeScript Comment Cleanup:\n- Add descriptions to all @ts-expect-error comments\n- Remove unnecessary @ts-expect-error and @ts-ignore\n- Replace @ts-ignore with proper type fixes\n- Verify lint rules aren't violated by type fixes\n\n4. Type System Improvements:\n- Replace all explicit 'any' types with specific, correct types\n- For unknown types, implement type guards or add documented TODOs\n- Never use 'unknown' type without proper type narrowing\n- Install missing @types packages for third-party modules\n- Add proper type declarations where needed\n- Implement null checks for supabase instances\n\n5. React-Specific Fixes:\n- Address all React hook dependency warnings\n- Fix useEffect dependency arrays\n- Escape all unescaped entities in JSX\n- Update component props to match current APIs\n- Ensure type fixes don't violate React lint rules\n\n6. Component-Specific Fixes:\n- Resolve rich text editor type errors\n- Update component implementations to match library APIs\n- Fix type errors in custom components\n- Verify fixes maintain lint compliance\n- Test functionality after each fix\n\n7. File-by-File Verification:\n- Address both lint and type errors in each file before moving on\n- Only mark files as complete when both lint and type checks pass\n- Document any patterns found for future prevention\n- Create regression tests where appropriate",
+        "testStrategy": "1. Error Resolution Verification:\n- Run both 'npx next lint' and 'npx tsc --noEmit' after each file fix\n- Verify no new errors of either type introduced\n- Document any error interdependencies found\n\n2. Component Testing:\n- Test affected components after type fixes\n- Verify rich text editor functionality\n- Test supabase integration points\n- Ensure lint-compliant implementations\n\n3. Integration Testing:\n- Run full application build\n- Test key user flows\n- Verify no runtime errors\n- Check both lint and type compliance\n\n4. Documentation Review:\n- Verify all @ts-expect-error comments have descriptions\n- Review type definitions for completeness\n- Check null handling implementation\n- Verify all TODOs are properly documented\n- Ensure no 'unknown' types are used without guards",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Error Assessment and Tracking Setup",
+            "description": "Run initial error checks and create tracking system that maps interdependencies between lint and type errors",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Run 'npx next lint' and 'npx tsc --noEmit'. Create spreadsheet to track all errors by file, noting both lint and type errors together. Map any dependencies between errors. Prioritize files based on total error count and severity.",
+            "testStrategy": "Verify all current errors are captured, categorized correctly, and interdependencies are documented"
+          },
+          {
+            "id": 2,
+            "title": "Unused Code and Import Cleanup",
+            "description": "Remove all unused variables, imports, and components while maintaining type safety",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Remove unused variables and imports flagged by lint. Replace require() with import statements. Remove unused components. Verify each removal doesn't introduce type errors. Document removals in Git commits.",
+            "testStrategy": "Run both lint and type checks after removals to verify no new errors introduced"
+          },
+          {
+            "id": 3,
+            "title": "TypeScript Comment Resolution",
+            "description": "Fix and document all TypeScript suppression comments without introducing lint errors",
+            "status": "pending",
+            "dependencies": [
+              2
+            ],
+            "details": "Add descriptions to @ts-expect-error comments. Remove unnecessary suppressions. Replace @ts-ignore with proper fixes that maintain lint compliance.",
+            "testStrategy": "Verify all remaining suppression comments are necessary, documented, and don't mask lint errors"
+          },
+          {
+            "id": 4,
+            "title": "Third-Party Type Installation",
+            "description": "Install missing type definitions for external modules",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Install @types packages for third-party modules. Add type declarations for modules without @types packages. Verify type compatibility and lint rule compliance.",
+            "testStrategy": "Run both type and lint checks to verify no errors remain"
+          },
+          {
+            "id": 5,
+            "title": "Explicit Type Replacement",
+            "description": "Replace all 'any' types with proper type definitions, using guards where needed",
+            "status": "pending",
+            "dependencies": [
+              4
+            ],
+            "details": "Replace all 'any' types with specific, correct types. Implement type guards for complex cases. Add documented TODOs where type cannot be determined. Never use 'unknown' without proper narrowing. Add null checks for supabase instances.",
+            "testStrategy": "Run type check to verify no 'any' or unsafe 'unknown' types remain"
+          },
+          {
+            "id": 6,
+            "title": "React Hook and JSX Fixes",
+            "description": "Resolve React-specific lint and type errors together",
+            "status": "pending",
+            "dependencies": [
+              2
+            ],
+            "details": "Fix React hook dependency warnings. Escape unescaped entities in JSX. Update component implementations to match current APIs. Ensure type fixes maintain lint compliance.",
+            "testStrategy": "Run both lint and type checks to verify no React-specific issues remain"
+          },
+          {
+            "id": 7,
+            "title": "Rich Text Editor Type Resolution",
+            "description": "Fix all type errors in rich text editor implementation while maintaining lint compliance",
+            "status": "pending",
+            "dependencies": [
+              5
+            ],
+            "details": "Update rich text editor code to match library APIs. Fix type errors in editor components. Verify editor functionality. Ensure fixes don't introduce lint errors.",
+            "testStrategy": "Test editor functionality and run both lint and type checks after fixes"
+          },
+          {
+            "id": 8,
+            "title": "Final Error Resolution Verification",
+            "description": "Verify all lint and type errors are resolved without introducing new issues",
+            "status": "pending",
+            "dependencies": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Run final lint and type checks. Verify all files pass both checks. Document any remaining suppressions with clear explanations.",
+            "testStrategy": "Complete full lint and type check runs. Verify no errors of either type remain."
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-07-04T20:48:35.105Z",
-      "updated": "2025-07-12T18:21:09.508Z",
+      "updated": "2025-07-14T00:07:57.667Z",
       "description": "Tasks for master context"
     }
   }

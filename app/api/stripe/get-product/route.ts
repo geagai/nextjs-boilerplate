@@ -66,11 +66,15 @@ export async function GET(request: Request) {
         prices: prices.data
       })
 
-    } catch (stripeError: any) {
-      if (stripeError.statusCode === 404) {
-        return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    } catch (stripeError: unknown) {
+      if (stripeError && typeof stripeError === 'object' && 'statusCode' in stripeError) {
+        const err = stripeError as { statusCode?: number; message?: string };
+        if (err.statusCode === 404) {
+          return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+        }
+        return NextResponse.json({ error: err.message || 'Unknown error' }, { status: 500 })
       }
-      throw stripeError
+      return NextResponse.json({ error: 'Unknown error' }, { status: 500 })
     }
 
   } catch (error) {

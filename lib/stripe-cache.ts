@@ -57,7 +57,7 @@ export async function getStripeProductsCached() {
   const productsWithPrices = await Promise.all(
     productsResp.data.map(async (product) => {
       const prices = await stripe.prices.list({ product: product.id, active: true, limit: 100 })
-      // @ts-ignore – augmenting product with prices for convenience
+      // @ts-expect-error - dynamic import for stripe cache, type not statically known
       product.prices = prices.data
       return product as Stripe.Product & { prices: Stripe.Price[] }
     })

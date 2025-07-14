@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { stripe, SUBSCRIPTION_PLANS } from '@/lib/stripe'
 import { cookies } from 'next/headers'
 import { requireAuth } from '@/lib/auth'
+import type Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     const { plan, priceId } = body
     if (priceId) {
       // Fetch price information
-      let price: any
+      let price: Stripe.Price | undefined
       try {
         price = await stripe.prices.retrieve(priceId)
       } catch (err) {
