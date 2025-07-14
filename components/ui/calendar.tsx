@@ -9,7 +9,7 @@ import { buttonVariants } from '@/components/ui/button';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar() {
+function Calendar(props: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={true}
@@ -52,7 +52,7 @@ function Calendar() {
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
-      {...{}}
+      {...props}
     />
   );
 }
