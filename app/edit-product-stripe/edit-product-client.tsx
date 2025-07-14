@@ -26,7 +26,7 @@ export default function EditProductClient({ isAdmin, hasStripeConfig }: EditProd
   
   const router = useRouter()
   const searchParams = useSearchParams()
-  const productId = searchParams.get('id')
+  const productId = searchParams?.get('id') ?? null
   const supabase = createClient()
 
   const fetchProductData = useCallback(async () => {
