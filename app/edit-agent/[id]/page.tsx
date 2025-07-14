@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -20,18 +20,22 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 );
 
 export default function EditAgentRoute() {
-  let EditAgentPage: React.ComponentType | null = null;
-  function getEditAgentPage() {
-    try {
-      const mod = require('@/ai-agents/edit-agent/[id]/page');
-      return mod.default || mod.EditAgentPage || null;
-    } catch (e) {
-      return null;
-    }
-  }
-  EditAgentPage = getEditAgentPage();
+  const [EditAgentPage, setEditAgentPage] = useState<React.ComponentType | null>(null);
+  useEffect(() => {
+    let isMounted = true;
+    import('@/ai-agents/edit-agent/[id]/page')
+      .then(mod => {
+        if (isMounted) {
+          setEditAgentPage(mod.default || null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setEditAgentPage(null);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
-  if (!EditAgentPage) {
+  if (EditAgentPage === null) {
     return (
       <AddonMissing
         addonName="AI Agents"
@@ -39,6 +43,8 @@ export default function EditAgentRoute() {
       />
     );
   }
-
+  if (!EditAgentPage) {
+    return <div>Loading...</div>;
+  }
   return <EditAgentPage />;
 } 

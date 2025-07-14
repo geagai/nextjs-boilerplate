@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -20,15 +20,22 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 );
 
 export default function MyAgentsRoute() {
-  let MyAgentsPage: React.ComponentType | null = null;
-  try {
-    import('../../ai-agents/my-agents/my-agents');
-    MyAgentsPage = mod.default || mod.MyAgentsPage || null;
-  } catch (e) {
-    MyAgentsPage = null;
-  }
+  const [MyAgentsPage, setMyAgentsPage] = useState<React.ComponentType | null>(null);
+  useEffect(() => {
+    let isMounted = true;
+    import('@/ai-agents/my-agents/my-agents')
+      .then(mod => {
+        if (isMounted) {
+          setMyAgentsPage(mod.default || null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setMyAgentsPage(null);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
-  if (!MyAgentsPage) {
+  if (MyAgentsPage === null) {
     return (
       <AddonMissing
         addonName="AI Agents"
@@ -36,6 +43,8 @@ export default function MyAgentsRoute() {
       />
     );
   }
-
+  if (!MyAgentsPage) {
+    return <div>Loading...</div>;
+  }
   return <MyAgentsPage />;
 } 
