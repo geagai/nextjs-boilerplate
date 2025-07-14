@@ -1,4 +1,3 @@
-console.log('*** NEXT CONFIG JS LOADED ***');
 const path = require('path');
 
 /** @type {import('next').NextConfig} */

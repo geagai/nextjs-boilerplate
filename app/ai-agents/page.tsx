@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic';
+import AIAgentsPage from '../../ai-agents/page';
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -20,16 +20,5 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 );
 
 export default function AIAgentsRoute() {
-  const AIAgentsPage = dynamic(() => import('../../ai-agents/page'), { ssr: false });
-
-  if (!AIAgentsPage) {
-    return (
-      <AddonMissing
-        addonName="AI Agents"
-        purchaseUrl="https://www.geag.ai/ai-agents-addon"
-      />
-    );
-  }
-
   return <AIAgentsPage />;
 } 
