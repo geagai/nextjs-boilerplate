@@ -1,52 +1,26 @@
-'use client'
+import { requireAuth, isAdmin } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import MyAgentsTable from '@/ai-agents/my-agents/my-agents-table';
 
-import React, { useEffect, useState } from 'react';
+export default async function MyAgentsPage() {
+  const { user } = await requireAuth();
+  if (!isAdmin(user)) {
+    redirect('/dashboard');
+  }
 
-const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
-    <div className="max-w-md mx-auto text-center py-16">
-      <h3 className="text-xl font-semibold mb-2">{addonName} Add-on Not Installed</h3>
-      <p className="text-muted-foreground mb-6">
-        You need to purchase and install the {addonName} add-on to use this feature.
-      </p>
-      <a
-        href={purchaseUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition"
-      >
-        Purchase {addonName} Add-on
-      </a>
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1 pr-32">
+            <h1 className="text-3xl font-bold text-primary mb-2">My Agents</h1>
+            <p className="text-muted-foreground">
+              View and manage all agents in the system. Only admins can access this page.
+            </p>
+          </div>
+        </div>
+      </div>
+      <MyAgentsTable />
     </div>
-  </div>
-);
-
-export default function MyAgentsRoute() {
-  const [MyAgentsPage, setMyAgentsPage] = useState<React.ComponentType | null>(null);
-  useEffect(() => {
-    let isMounted = true;
-    import('@/ai-agents/my-agents/my-agents')
-      .then(mod => {
-        if (isMounted) {
-          setMyAgentsPage(mod.default || null);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setMyAgentsPage(null);
-      });
-    return () => { isMounted = false; };
-  }, []);
-
-  if (MyAgentsPage === null) {
-    return (
-      <AddonMissing
-        addonName="AI Agents"
-        purchaseUrl="https://www.geag.ai/ai-agents-addon"
-      />
-    );
-  }
-  if (!MyAgentsPage) {
-    return <div>Loading...</div>;
-  }
-  return <MyAgentsPage />;
+  );
 } 
