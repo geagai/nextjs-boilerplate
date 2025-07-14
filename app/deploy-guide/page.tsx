@@ -280,6 +280,16 @@ export default function DeployGuidePage() {
             </ol>
           </div>
         </div>
+        {/* Admin User Setup Instructions */}
+        <div className="w-full mt-8 text-left p-4 rounded bg-muted" style={{ color: cardText, fontSize: '95%' }}>
+          <div className="text-base font-semibold mb-2">Create an Admin User</div>
+          <ol className="list-decimal ml-6 space-y-2 text-sm">
+            <li>When your application has been launched, click on the <b>Get Started</b> button and register a user.</li>
+            <li>This user will be automatically inserted into the <span className="font-mono">user_data</span> table.</li>
+            <li>Change the <span className="font-mono">user_role</span> column value to <b>admin</b> for this user (in Supabase dashboard or SQL).</li>
+          </ol>
+          <div className="mt-2 text-sm">Now this user will have full admin privileges.</div>
+        </div>
       </div>
     );
   }
