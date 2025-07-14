@@ -1,7 +1,6 @@
 
 'use client'
 
-import { useState } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -20,7 +19,6 @@ import {
 import {
   useSortable,
 } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -61,7 +59,7 @@ function SortablePricingItem({
   } = useSortable({ id: pricing.id })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: typeof transform === 'string' ? transform : undefined,
     transition,
   }
 

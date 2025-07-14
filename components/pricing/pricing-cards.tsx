@@ -35,7 +35,8 @@ function getPriceForTab(prices: Stripe.Price[], tab: string) {
 function getButtonLabel(price: Stripe.Price, activeTab: 'monthly' | 'yearly' | 'one_time') {
   // Free trial => "Start Trial"
   // trial_period_days is not a standard property on Stripe.Price; check for its existence
-  const trialDays = 'trial_period_days' in price ? (price as any).trial_period_days as number | undefined : undefined
+  // 'trial_period_days' is not in Stripe.Price type; using type assertion as Stripe.Price & { trial_period_days?: number }
+  const trialDays = 'trial_period_days' in price ? (price as Stripe.Price & { trial_period_days?: number }).trial_period_days : undefined
   if (trialDays && trialDays > 0) {
     return 'Start Trial'
   }
@@ -48,7 +49,8 @@ function getButtonLabel(price: Stripe.Price, activeTab: 'monthly' | 'yearly' | '
 // Helper: decide whether to show "No Credit Card Required" note
 function showNoCardText(price: Stripe.Price) {
   // trial_period_days is not a standard property on Stripe.Price; check for its existence
-  const trialDays = 'trial_period_days' in price ? (price as any).trial_period_days as number | undefined : undefined
+  // 'trial_period_days' is not in Stripe.Price type; using type assertion as Stripe.Price & { trial_period_days?: number }
+  const trialDays = 'trial_period_days' in price ? (price as Stripe.Price & { trial_period_days?: number }).trial_period_days : undefined
   const hasTrial = trialDays && trialDays > 0
   const requiresCardMeta = price.metadata?.trial_requires_payment_method === 'true'
   return hasTrial && !requiresCardMeta
@@ -106,7 +108,7 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
     }
   }
 
-  const formatAmount = (amount?: number | null, currency?: string) => {
+  const formatAmount = (amount?: number | null) => {
     if (!amount) return ''
     return `${(amount / 100).toFixed(0)}`
   }
@@ -163,7 +165,7 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
                   <CardTitle className="text-2xl">{product.name}</CardTitle>
                   <CardDescription className="text-base">{product.description}</CardDescription>
                   <div className="pt-4">
-                    <span className="text-4xl font-bold">${formatAmount(price.unit_amount, price.currency)}</span>
+                    <span className="text-4xl font-bold">${formatAmount(price.unit_amount)}</span>
                     {activeTab !== 'one_time' && (
                       <span className="text-muted-foreground">/{activeTab === 'monthly' ? 'month' : 'year'}</span>
                     )}
@@ -187,7 +189,7 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
                   {/* Marketing features from metadata */}
                   {product.metadata?.marketing_features && (
                     <div>
-                      <h4 className="font-semibold mb-3">What's included:</h4>
+                      <h4 className="font-semibold mb-3">What&rsquo;s included:</h4>
                       <ul className="space-y-2">
                         {JSON.parse(product.metadata.marketing_features).slice(0, 8).map((feat: { title: string }, idx: number) => (
                           <li key={idx} className="flex items-start">

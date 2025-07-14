@@ -7,7 +7,6 @@ import { getStripeProductsCached } from '@/lib/stripe-cache'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { AlertTriangle } from 'lucide-react'
-import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 

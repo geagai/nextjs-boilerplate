@@ -97,14 +97,14 @@ export interface Session {
 export interface ApiCallOptions {
   agent: Agent
   userMessage: string
-  formData: Record<string, any>
+  formData: Record<string, unknown> // TODO: Replace 'unknown' with a more specific type if possible
   sessionId?: string
   userId: string
 }
 
 export interface ApiResponse {
   success: boolean
-  data?: any
+  data?: unknown // TODO: Replace 'unknown' with a more specific type if possible
   message?: string
   error?: string
 }

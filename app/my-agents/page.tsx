@@ -22,7 +22,7 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 export default function MyAgentsRoute() {
   let MyAgentsPage: React.ComponentType | null = null;
   try {
-    const mod = require('../../ai-agents/my-agents/my-agents');
+    import('../../ai-agents/my-agents/my-agents');
     MyAgentsPage = mod.default || mod.MyAgentsPage || null;
   } catch (e) {
     MyAgentsPage = null;

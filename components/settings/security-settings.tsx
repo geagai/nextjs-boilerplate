@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Shield, Loader2, Lock } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),

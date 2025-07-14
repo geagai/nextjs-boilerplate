@@ -91,7 +91,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
       }
     }
     checkAdminStatus();
-  }, []);
+  }, [supabase]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

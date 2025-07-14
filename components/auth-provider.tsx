@@ -1,11 +1,11 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
-interface AuthUser extends User {
+export interface AuthUser extends User {
   subscription?: {
     id: string
     plan: string
@@ -63,14 +63,14 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
   };
 
   // Create auth user with role (fetch from DB)
-  const createAuthUserWithRole = async (sessionUser: User): Promise<AuthUser> => {
+  const createAuthUserWithRole = useCallback(async (sessionUser: User): Promise<AuthUser> => {
     const role = await getUserRole(sessionUser);
     return {
       ...sessionUser,
       subscription: sessionUser.user_metadata?.subscription || null,
       role: role
     };
-  };
+  }, [supabase]);
 
   useEffect(() => {
     // If we already have initial session, skip extra fetch
@@ -134,13 +134,14 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
             setLoading(false); // <-- moved here
           }
           // setLoading(false) removed from here
-        }
+        },
+        { createAuthUserWithRole }
       );
       subscription = authSubscription;
     }
 
     return () => subscription?.unsubscribe();
-  }, [supabase, router]);
+  }, [supabase, router, initialSession, createAuthUserWithRole]);
 
   useEffect(() => {
     if (!loading) {

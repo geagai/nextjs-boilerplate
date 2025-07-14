@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { 
   Agent, 
   AgentMessage, 
@@ -13,22 +14,32 @@ import type {
  */
 export function processFormFields(bodyFields: BodyField[]): FormField[] {
   return bodyFields.map(field => {
-    // Handle different JSON structure patterns
-    const fieldType = field.type || (field as any).input || 'text'
-    const fieldLabel = field.label || (field as any).input_label || 'Field'
-    const fieldName = field.name || Object.keys(field).find(key => 
-      !['type', 'input', 'label', 'input_label', 'required', 'placeholder', 'options', 'default_value'].includes(key)
-    ) || 'field'
-    
+    // Use type guards for possible alternative field structures
+    const fieldType = field.type
+      || (typeof ((field as unknown) as { input?: unknown }).input === 'string' ? ((field as unknown) as { input: string }).input : undefined)
+      || 'text';
+    const fieldLabel = field.label
+      || (typeof ((field as unknown) as { input_label?: unknown }).input_label === 'string' ? ((field as unknown) as { input_label: string }).input_label : undefined)
+      || 'Field';
+    const fieldName = field.name
+      || Object.keys(field).find(key =>
+        !['type', 'input', 'label', 'input_label', 'required', 'placeholder', 'options', 'default_value'].includes(key)
+      )
+      || 'field';
+    let value = field.default_value;
+    if (value === undefined && fieldName in field) {
+      const v = ((field as unknown) as Record<string, unknown>)[fieldName];
+      value = typeof v === 'string' ? v : '';
+    }
     return {
       name: fieldName,
       type: fieldType,
-      label: fieldLabel,
+      label: typeof fieldLabel === 'string' ? fieldLabel : 'Field',
       required: field.required || false,
       placeholder: field.placeholder,
       options: field.options,
-      value: field.default_value || (field as any)[fieldName] || ''
-    }
+      value: typeof value === 'string' ? value : ''
+    };
   })
 }
 
@@ -37,15 +48,22 @@ export function processFormFields(bodyFields: BodyField[]): FormField[] {
  */
 export function validateFormData(
   formFields: FormField[], 
-  formData: Record<string, any>
+  formData: Record<string, unknown>
 ): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
   
   formFields.forEach(field => {
-    if (field.required && (!formData[field.name] || formData[field.name].toString().trim() === '')) {
-      errors.push(`${field.label} is required`)
+    const value = formData[field.name];
+    let isEmpty = false;
+    if (typeof value === 'string') {
+      isEmpty = value.trim() === '';
+    } else if (value == null) {
+      isEmpty = true;
     }
-  })
+    if (field.required && isEmpty) {
+      errors.push(`${field.label} is required`);
+    }
+  });
   
   return {
     isValid: errors.length === 0,
@@ -65,7 +83,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     }
     
     // Build request body following AI Agents repository pattern
-    const requestBody: Record<string, any> = {
+    const requestBody: Record<string, unknown> = {
       query: userMessage,
       agent_role: agent.agent_role || '',
       prompt: agent.prompt || '',
@@ -125,7 +143,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
  * Save user prompt and assistant response to Supabase agent_messages table
  */
 export async function saveAgentMessages(
-  supabase: any,
+  supabase: SupabaseClient,
   agentId: string,
   sessionId: string,
   userPrompt: string,
@@ -271,7 +289,7 @@ export function generateMessageId(): string {
 /**
  * Debounce helper for search and input fields
  */
-export function debounce<T extends (...args: any[]) => void>(fn: T, delay = 300) {
+export function debounce<T extends (...args: unknown[]) => void>(fn: T, delay = 300) {
   let timeout: NodeJS.Timeout
   return (...args: Parameters<T>) => {
     clearTimeout(timeout)
@@ -315,10 +333,11 @@ export function formatMessageContent(content: string): string {
 /**
  * Get agent sessions for sidebar display
  */
+// TODO: Replace 'unknown[]' with a more specific type if possible
 export async function getAgentSessions(
   agentId: string,
   userId: string
-): Promise<{ success: boolean; sessions?: any[]; error?: string }> {
+): Promise<{ success: boolean; sessions?: unknown[]; error?: string }> {
   try {
     const supabase = createClient()
     

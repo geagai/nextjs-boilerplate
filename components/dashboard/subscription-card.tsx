@@ -1,10 +1,8 @@
 
 'use client'
 
-import { useState } from 'react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Crown } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 
 interface SubscriptionCardProps {
   subscription?: {
@@ -31,7 +29,7 @@ interface SubscriptionCardProps {
   className?: string
 }
 
-export function SubscriptionCard({ subscription, subscriptions = [], purchases = [], isPurchasesBlock = false, className }: SubscriptionCardProps) {
+export function SubscriptionCard({ subscriptions = [], purchases = [], isPurchasesBlock = false, className }: SubscriptionCardProps) {
   // Removed unused variables and imports per lint errors
 
   return (

@@ -59,10 +59,22 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
         title: 'Profile Updated',
         description: 'Your profile information has been updated successfully.'
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let message = 'Failed to update profile. Please try again.';
+      function isErrorWithMessage(err: unknown): err is { message: string } {
+        return (
+          typeof err === 'object' &&
+          err !== null &&
+          'message' in err &&
+          typeof (err as { message: unknown }).message === 'string'
+        );
+      }
+      if (isErrorWithMessage(error)) {
+        message = error.message;
+      }
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update profile. Please try again.',
+        description: message,
         variant: 'destructive'
       })
     } finally {

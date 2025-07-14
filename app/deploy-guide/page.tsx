@@ -41,7 +41,6 @@ export default function DeployGuidePage() {
   // Remove fallback: always render the normal stepper
   const { theme } = useTheme();
   const { adminSettings } = useAdminSettings();
-  const [repoBackup, setRepoBackup] = useState<string | null>(null);
   const [checkingRepo, setCheckingRepo] = useState(false);
   const [showSqlModal, setShowSqlModal] = useState(false);
   const [sqlScript, setSqlScript] = useState<string | null>(null);
@@ -54,12 +53,12 @@ export default function DeployGuidePage() {
         try {
           const supabase = createClient();
           if (!supabase) return; // Skip if env vars are missing
-          const { data } = await supabase
+          await supabase
             .from("admin_settings")
             .select("repo")
             .limit(1)
             .maybeSingle();
-          setRepoBackup(data?.repo ?? null);
+          // setRepoBackup(data?.repo ?? null); // Removed unused variable
         } finally {
           setCheckingRepo(false);
         }
@@ -118,11 +117,11 @@ export default function DeployGuidePage() {
   }
 
   function StepForkRepo() {
-    const repoUrl = adminSettings?.repo || repoBackup;
+    // const repoUrl = adminSettings?.repo || repoBackup;
     if (checkingRepo) {
       return <span className="text-sm text-muted-foreground">Checking repository URL...</span>;
     }
-    if (!repoUrl) {
+    if (!adminSettings?.repo) {
       return (
         <div className="flex flex-col items-center text-center gap-2">
           <span className="text-sm text-red-500 font-medium">Repository URL is not set.</span>
@@ -142,11 +141,12 @@ export default function DeployGuidePage() {
           padding: 16,
         }}
       >
-        <span className="text-sm break-all" style={{ color: cardText }}>
-          Repository: <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="underline text-primary" style={{ color: cardText }}>{repoUrl}</a>
-        </span>
+          {/* Lint: repoUrl is unused, so this block is commented out */}
+          {/* <span className="text-sm break-all" style={{ color: cardText }}>
+            Repository: <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="underline text-primary" style={{ color: cardText }}>{repoUrl}</a>
+          </span> */}
         <a
-          href={`${repoUrl}/fork`}
+          href={`${adminSettings.repo}/fork`}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -202,7 +202,7 @@ export default function DeployGuidePage() {
                 Copy and paste this script into the SQL editor of your new Supabase project.
               </DialogDescription>
             </DialogHeader>
-            <pre className="overflow-x-auto bg-muted p-4 rounded text-xs" style={{ maxHeight: 400 }}>{sqlScript || "Loading..."}</pre>
+            <pre className="bg-muted p-4 rounded text-xs overflow-x-auto whitespace-pre-wrap" style={{ maxHeight: 400 }}>&quot;{sqlScript}&quot;</pre>
             <div className="flex justify-end mt-2">
               <Button
                 variant="default"
@@ -285,7 +285,7 @@ export default function DeployGuidePage() {
   }
 
   function StepLocalDevSetup() {
-    const repoUrl = adminSettings?.repo || repoBackup || 'https://github.com/your-username/your-forked-repo';
+    // const repoUrl = adminSettings?.repo || repoBackup || 'https://github.com/your-username/your-forked-repo';
     return (
       <div
         className="w-full flex flex-col items-center gap-6"
@@ -332,7 +332,7 @@ export default function DeployGuidePage() {
             </li>
             <li>
               To push changes and trigger a rebuild on Vercel, use:<br />
-              <span className="font-mono bg-muted px-2 py-1 rounded block mt-1 mb-1">git add .<br />git commit -m "Your commit message"<br />git push origin main</span>
+              <span className="font-mono bg-muted px-2 py-1 rounded block mt-1 mb-1">git add .<br />git commit -m &quot;Your commit message&quot;<br />git push origin main</span>
             </li>
           </ol>
         </div>

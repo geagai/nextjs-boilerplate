@@ -8,7 +8,7 @@ import { AlertTriangle } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export default async function MyProductsPage() {
-  const { user } = await requireAuth()
+  await requireAuth()
 
   // Get Stripe secret & dev mode flag from admin_settings
   const cookieStore = cookies()

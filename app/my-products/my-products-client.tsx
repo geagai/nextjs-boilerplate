@@ -16,7 +16,7 @@ interface ProductRow {
   id: string
   name: string
   image: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown> // TODO: Replace 'unknown' with a more specific type if possible
   prices: PriceInfo[]
 }
 
@@ -29,7 +29,7 @@ export default function MyProductsClient({ products, devMode }: Props) {
   const formattedProducts = useMemo(() => {
     return products.map((p) => ({
       ...p,
-      credits: p.metadata?.credits || '0',
+      credits: Number(p.metadata?.credits ?? 0),
     }))
   }, [products])
 
@@ -62,11 +62,13 @@ export default function MyProductsClient({ products, devMode }: Props) {
             {formattedProducts.map((product) => (
               <tr key={product.id} className="border-t">
                 <td className="px-4 py-2">
-                  {product.image ? (
-                    <Image src={product.image} alt={product.name} width={64} height={64} className="object-cover rounded" />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
+                  <Image
+                    src={product.image || '/icon-white.png'}
+                    alt={product.name}
+                    width={64}
+                    height={64}
+                    className="object-cover rounded"
+                  />
                 </td>
                 <td className="px-4 py-2 font-medium">{product.name}</td>
                 <td className="px-4 py-2 space-y-1">
