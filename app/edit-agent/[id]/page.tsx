@@ -21,12 +21,15 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 
 export default function EditAgentRoute() {
   let EditAgentPage: React.ComponentType | null = null;
-  try {
-    const mod = require('@/ai-agents/edit-agent/[id]/page');
-    EditAgentPage = mod.default || mod.EditAgentPage || null;
-  } catch (e) {
-    EditAgentPage = null;
+  function getEditAgentPage() {
+    try {
+      const mod = require('@/ai-agents/edit-agent/[id]/page');
+      return mod.default || mod.EditAgentPage || null;
+    } catch (e) {
+      return null;
+    }
   }
+  EditAgentPage = getEditAgentPage();
 
   if (!EditAgentPage) {
     return (

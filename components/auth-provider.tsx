@@ -70,7 +70,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
       subscription: sessionUser.user_metadata?.subscription || null,
       role: role
     };
-  }, [supabase]);
+  }, [getUserRole]);
 
   useEffect(() => {
     // If we already have initial session, skip extra fetch
@@ -134,8 +134,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
             setLoading(false); // <-- moved here
           }
           // setLoading(false) removed from here
-        },
-        { createAuthUserWithRole }
+        }
       );
       subscription = authSubscription;
     }
