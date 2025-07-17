@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { useAdminSettings } from '@/components/admin-settings-provider'
 import { Loader2, Mail, Lock, User } from 'lucide-react'
 
 const signupSchema = z.object({
@@ -25,6 +26,12 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { adminSettings } = useAdminSettings()
+
+  // Custom style for Create Account button - default to white text when no admin setting
+  const createAccountButtonStyle = {
+    color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
+  }
 
   const {
     register,
@@ -131,7 +138,7 @@ export default function SignupPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading} style={createAccountButtonStyle}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

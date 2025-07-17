@@ -95,10 +95,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
     
     const Comp = asChild ? Slot : "button"
-    if (adminSettingsLoading) {
-      // Optionally, render a skeleton or nothing while loading
-      return <div className={cn(buttonVariants({ variant, size, className }), "opacity-0")}></div>;
-    }
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}

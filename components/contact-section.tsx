@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { useAdminSettings } from '@/components/admin-settings-provider'
 import { Loader2, MessageSquare, Send } from 'lucide-react'
 
 const contactSchema = z.object({
@@ -24,6 +25,12 @@ type ContactFormData = z.infer<typeof contactSchema>
 export function ContactSection() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { adminSettings } = useAdminSettings()
+
+  // Custom style for Send Message button - default to white text when no admin setting
+  const sendMessageButtonStyle = {
+    color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
+  }
 
   const {
     register,
@@ -153,7 +160,7 @@ export function ContactSection() {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading} style={sendMessageButtonStyle}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

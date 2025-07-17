@@ -126,7 +126,7 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
     const isDark = theme === 'dark';
     const styles: ButtonStyles = {};
     // Defaults
-    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#383838';
+    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#ffffff';
     // Apply custom colors for primary/default buttons
     if (variant === 'default' || variant === 'primary') {
       const buttonColor = isDark 
@@ -161,7 +161,7 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
     const isDark = theme === 'dark';
     // Defaults
     const defaultButtonHoverColor = isDark ? '#D6D6D6' : '#B6B6B6';
-    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#383838';
+    const defaultButtonTextColor = isDark ? '#FFFFFF' : '#ffffff';
     const hoverColor = isDark 
       ? adminSettings?.dark_button_hover_color || adminSettings?.button_hover_color || defaultButtonHoverColor
       : adminSettings?.button_hover_color || defaultButtonHoverColor;

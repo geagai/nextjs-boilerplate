@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS agents (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  UID uuid NOT NULL REFERENCES auth.users(id),
+  "UID" uuid NOT NULL REFERENCES auth.users(id),
   name text NOT NULL,
   description text,
   api_url text,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS agent_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id text,
   created_at timestamptz DEFAULT now(),
-  UID text,
+  "UID" text,
   agent_id text,
   prompt text,
   message text
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS agent_messages (
 -- Table: subscriptions
 CREATE TABLE IF NOT EXISTS subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  UID uuid NOT NULL REFERENCES auth.users(id),
+  "UID" uuid NOT NULL REFERENCES auth.users(id),
   customer_id text NOT NULL,
   subscription_id text NOT NULL,
   cost numeric NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 
 -- Table: user_data (full live schema)
 CREATE TABLE IF NOT EXISTS user_data (
-  UID uuid PRIMARY KEY REFERENCES auth.users(id),
+  "UID" uuid PRIMARY KEY REFERENCES auth.users(id),
   user_role text DEFAULT 'user',
   display_name text,
   email text,

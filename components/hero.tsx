@@ -4,9 +4,16 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useAdminSettings } from '@/components/admin-settings-provider'
 import { ArrowRight, Github, Zap, Shield, Smartphone } from 'lucide-react'
 
 export function Hero() {
+  const { adminSettings } = useAdminSettings()
+
+  // Custom style for Get Started button - default to white text when no admin setting
+  const getStartedButtonStyle = {
+    color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
+  }
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
       {/* Background Pattern */}
@@ -130,7 +137,7 @@ export function Hero() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link href="/deploy-guide">
-              <Button size="lg" className="text-lg px-8 py-3 btn-glow group">
+              <Button size="lg" className="text-lg px-8 py-3 btn-glow group" style={getStartedButtonStyle}>
                 Get Started
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>

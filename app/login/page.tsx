@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { useAdminSettings } from '@/components/admin-settings-provider'
 import { Loader2, Mail, Lock } from 'lucide-react'
 
 const loginSchema = z.object({
@@ -25,7 +26,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { adminSettings } = useAdminSettings()
   const supabase = createClient()
+
+  // Custom style for Sign In button - default to white text when no admin setting
+  const signInButtonStyle = {
+    color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
+  }
 
   const {
     register,
@@ -113,7 +120,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading} style={signInButtonStyle}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

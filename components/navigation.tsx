@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/components/auth-provider'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { useAdminSettings } from '@/components/admin-settings-provider'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ interface NavigationProps {
 export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { user, loading, signOut } = useAuth()
+  const { adminSettings } = useAdminSettings()
   const router = useRouter();
 
   // Navigation bar (show basic links even while loading)
@@ -33,6 +35,11 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
   const positionClass = sticky ? 'sticky top-0' : 'relative'
 
   const aiAgentsHref = (!loading && user) ? '/agents' : '/ai-agents'
+
+  // Custom style for Get Started button - default to white text when no admin setting
+  const getStartedButtonStyle = {
+    color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
+  }
 
   return (
     <nav className={`${positionClass} ${baseClasses}`} style={{ backgroundColor: 'hsl(var(--header-bg))', backdropFilter: 'blur(12px)' }}>
@@ -143,7 +150,7 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="bg-primary hover:bg-primary/90">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90" style={getStartedButtonStyle}>
                     Get Started
                   </Button>
                 </Link>
@@ -208,7 +215,7 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
                   </Button>
                 </Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
+                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90" style={getStartedButtonStyle}>
                     Get Started
                   </Button>
                 </Link>
