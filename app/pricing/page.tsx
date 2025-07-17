@@ -62,6 +62,7 @@ export default async function PricingPage() {
               session={sessionData} 
               products={await getStripeProductsCached() ?? []} 
               publishableKey={publishableKey}
+              categoryFilter={undefined} // Show all categories
             />
           </>
         )}

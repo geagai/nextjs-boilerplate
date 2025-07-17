@@ -32,6 +32,7 @@ export default async function NextjsBoilerplatePage() {
           products={await getStripeProductsCached() ?? []} 
           publishableKey={publishableKey}
           columns={3}
+          categoryFilter="Software" // Only show Software category products
         />
       ) : (
         <div className="text-center py-16">

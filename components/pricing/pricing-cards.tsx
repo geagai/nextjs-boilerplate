@@ -15,6 +15,7 @@ interface PricingCardsProps {
   products: (Stripe.Product & { prices: Stripe.Price[] })[]
   publishableKey?: string
   columns?: 3 | 4 // number of columns for grid, default 4
+  categoryFilter?: string // optional category filter
 }
 
 // Mapping helper to pick price for interval/type
@@ -98,14 +99,23 @@ function getMarketingFeatures(product: Stripe.Product): string[] {
   return features
 }
 
-export function PricingCards({ session, products, publishableKey, columns = 4 }: PricingCardsProps) {
+export function PricingCards({ session, products, publishableKey, columns = 4, categoryFilter }: PricingCardsProps) {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
   const { toast } = useToast()
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => getPriceForTab(p.prices, activeTab))
-  }, [products, activeTab])
+    // First filter by category if specified
+    let categoryFiltered = products
+    if (categoryFilter) {
+      categoryFiltered = products.filter(product => 
+        product.metadata?.category === categoryFilter
+      )
+    }
+    
+    // Then filter by active tab (pricing type)
+    return categoryFiltered.filter((p) => getPriceForTab(p.prices, activeTab))
+  }, [products, activeTab, categoryFilter])
 
   const handleSelectPrice = async (priceId: string) => {
     if (!session) {
