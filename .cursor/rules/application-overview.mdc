@@ -1,0 +1,276 @@
+# APP_NAME - Next.js Boilerplate Application Overview
+
+## Application Purpose and Vision
+
+APP_NAME is an enterprise-grade Next.js boilerplate designed to accelerate application development with a complete, production-ready foundation. It provides a comprehensive starter kit with authentication, payments, mobile support, AI integration, and modern development workflows.
+
+## Key Application Features
+
+### 🔐 **Complete Authentication System**
+- **Supabase Authentication**: Email/password login with session management
+- **Role-based Access Control**: User, admin, and custom role support
+- **Secure Session Management**: Server-side session validation and client-side state
+- **Profile Management**: User settings, password changes, and profile updates
+- **Database Integration**: Seamless sync between Supabase Auth and user_data table
+
+### 💳 **Stripe Payment Integration**
+- **Product Management**: Dynamic product creation and editing via admin interface
+- **Subscription Tiers**: Support for multiple subscription plans with different billing cycles
+- **Payment Processing**: Secure checkout sessions and webhook handling
+- **Customer Portal**: Subscription management and payment history
+- **Admin Controls**: Complete payment configuration through admin settings
+
+### 📱 **Mobile-First Architecture**
+- **Capacitor Integration**: Native iOS and Android app deployment
+- **Responsive Design**: Mobile-optimized UI with Tailwind CSS
+- **Progressive Web App**: PWA capabilities with offline support
+- **Native Features**: Camera, geolocation, push notifications, biometric auth
+
+### 🤖 **AI Agents Platform**
+- **Custom AI Agents**: Create and deploy intelligent automation agents
+- **API Integration**: Connect to external AI services and APIs
+- **Agent Configuration**: Flexible configuration with headers, body fields, and UI options
+- **Public/Private Agents**: Share agents with community or keep private
+- **Real-time Messaging**: WebSocket-based communication with agents
+
+### 🎨 **Dynamic Theming System**
+- **Admin-Controlled Colors**: Database-driven color scheme configuration
+- **Light/Dark Mode**: Automatic theme switching with user preferences
+- **CSS Variable Injection**: Server-side style injection to prevent FOUC
+- **Design System**: Consistent design tokens with Radix UI components
+
+### 🛠 **Developer Experience**
+- **Next.js 15**: Latest framework with App Router and Server Components
+- **TypeScript**: Full type safety with auto-generated database types
+- **Testing Suite**: Vitest, Playwright, and Storybook integration
+- **TaskMaster Integration**: AI-powered development workflow management
+- **MCP Server Support**: Model Context Protocol for AI tool integration
+
+## Technology Stack
+
+### Frontend
+- **Next.js 15**: React framework with App Router
+- **React 19**: Latest React with new hooks and features
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling framework
+- **Radix UI**: Accessible component primitives
+- **Framer Motion**: Animation and motion library
+- **Tiptap**: Rich text editing capabilities
+
+### Backend & Database
+- **Supabase**: PostgreSQL database with real-time features
+- **Row Level Security**: Database-level security policies
+- **Real-time Subscriptions**: Live data updates
+- **Supabase Auth**: Built-in authentication system
+- **Edge Functions**: Serverless function deployment
+
+### Payments & Integrations
+- **Stripe**: Payment processing and subscription management
+- **Capacitor**: Mobile app deployment
+- **TaskMaster AI**: Development workflow automation
+- **MCP Protocol**: AI tool integration standard
+
+### Development & Testing
+- **Vitest**: Unit testing framework
+- **Playwright**: End-to-end testing
+- **Storybook**: Component development and documentation
+- **ESLint/Prettier**: Code quality and formatting
+- **Turbopack**: Fast development builds
+
+## Application Architecture
+
+### Directory Structure
+```
+nextjs-boilerplate/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes (auth, stripe, contact, etc.)
+│   ├── dashboard/         # Protected dashboard pages
+│   ├── admin-settings/    # Admin configuration interface
+│   ├── create-agent/      # AI agent creation
+│   └── [page]/           # Various application pages
+├── components/            # Reusable React components
+│   ├── ui/               # Base UI components (shadcn/ui)
+│   ├── auth-provider.tsx # Authentication context
+│   ├── navigation.tsx    # Main navigation component
+│   └── [feature]/        # Feature-specific components
+├── lib/                  # Utility libraries and configurations
+│   ├── auth.ts          # Authentication utilities
+│   ├── supabase.ts      # Database client configuration
+│   ├── stripe.ts        # Payment processing utilities
+│   └── utils.ts         # Common utility functions
+├── documentation/        # Application documentation (this folder)
+└── .taskmaster/         # Development workflow management
+```
+
+### Data Flow Architecture
+
+1. **Authentication Flow**
+   - User authentication through Supabase Auth
+   - Session management with server-side validation
+   - Role-based access control via user_data table
+   - Real-time auth state synchronization
+
+2. **Payment Flow**
+   - Product configuration via admin settings
+   - Stripe checkout session creation
+   - Webhook handling for subscription updates
+   - Database synchronization with Stripe data
+
+3. **Theming Flow**
+   - Admin color configuration in database
+   - Server-side CSS variable injection
+   - Client-side theme switching
+   - Automatic dark/light mode detection
+
+4. **AI Agent Flow**
+   - Agent configuration with custom fields
+   - API integration and request handling
+   - Real-time message processing
+   - Public/private agent sharing
+
+## Database Schema Overview
+
+### Core Tables
+- **user_data**: Extended user profiles and role management
+- **admin_settings**: Application configuration and theming
+- **subscriptions**: Stripe subscription tracking
+- **agents**: AI agent configurations
+- **agent_messages**: AI conversation history
+- **pages**: Static page content management
+- **submissions**: Contact form submissions
+
+### Security Features
+- **Row Level Security (RLS)**: All tables protected with policies
+- **Role-based Access**: Admin, user, and service role permissions
+- **Data Isolation**: Users can only access their own data
+- **Audit Logging**: Automatic timestamp tracking
+
+## Key Features for LLM Development
+
+### 🚨 **Critical Authentication Guidelines**
+- **DO NOT MODIFY** the existing authentication setup
+- **ALWAYS USE** the singleton pattern for components needing user session
+- **REFERENCE** the AuthProvider context for user state
+- **FOLLOW** server-side session validation patterns
+
+### 🎯 **Component Development Patterns**
+- **Use** the existing design system (Tailwind + Radix UI)
+- **Follow** the semantic color classes (bg-primary, text-foreground)
+- **Implement** mobile-first responsive design
+- **Maintain** accessibility standards with Radix UI
+
+### 🔧 **Adding New Features**
+- **Database Changes**: Use Supabase MCP tools for migrations
+- **API Routes**: Follow existing patterns in app/api/
+- **Components**: Place in appropriate feature directories
+- **Styling**: Use the dynamic theming system
+- **Testing**: Add appropriate test coverage
+
+### 📱 **Mobile Considerations**
+- **Touch Targets**: Minimum 44px touch areas
+- **Responsive**: Mobile-first design approach
+- **Performance**: Optimize for mobile networks
+- **Native Features**: Leverage Capacitor capabilities
+
+## Environment Configuration
+
+### Required Environment Variables
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Stripe Configuration (Optional)
+NEXT_PUBLIC_STRIPE_KEY=your_stripe_publishable_key
+NEXT_PUBLIC_STRIPE_SECRET=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+
+# Application Configuration
+NEXT_PUBLIC_APP_URL=your_app_url
+```
+
+### Admin Configuration
+- **Admin Settings Page**: `/admin-settings` for application configuration
+- **Database-driven**: Most settings stored in admin_settings table
+- **Dynamic Updates**: Changes apply immediately without redeploy
+- **Stripe Integration**: Payment configuration through admin interface
+
+## Development Workflow
+
+### Getting Started
+1. **Environment Setup**: Configure required environment variables
+2. **Database Setup**: Run Supabase SQL migrations
+3. **Admin Configuration**: Set up initial admin settings
+4. **TaskMaster**: Initialize development workflow management
+
+### Adding Features
+1. **Plan**: Use TaskMaster for feature planning and breakdown
+2. **Database**: Apply any schema changes via Supabase MCP
+3. **Components**: Follow existing patterns and design system
+4. **Testing**: Add appropriate test coverage
+5. **Documentation**: Update relevant documentation files
+
+### Best Practices
+- **Authentication**: Never modify existing auth patterns
+- **Database**: Always use RLS policies for new tables
+- **Styling**: Use semantic color classes and responsive design
+- **Performance**: Optimize for mobile and slow networks
+- **Security**: Follow existing security patterns and validations
+
+## Support and Community
+
+### Documentation Structure
+- **application-overview.mdc**: This comprehensive overview
+- **database-schema.mdc**: Complete database documentation
+- **authentication-patterns.mdc**: Authentication implementation guide
+- **component-patterns.mdc**: UI component development guide
+- **technology-stack.mdc**: Technology and integration details
+
+### Development Tools
+- **TaskMaster AI**: Automated development workflow management
+- **MCP Integration**: AI-powered development assistance
+- **Storybook**: Component development and testing
+
+## Mobile Development
+
+### Capacitor Integration
+- **iOS/Android Deployment**: Native app compilation
+- **Native Plugin Access**: Camera, geolocation, notifications
+- **Performance Optimization**: Native rendering and caching
+- **App Store Distribution**: Configured for store deployment
+
+### Progressive Web App
+- **Service Worker**: Offline functionality
+- **App Manifest**: Home screen installation
+- **Push Notifications**: Web-based notifications
+- **Responsive Design**: Mobile-first approach
+
+## Security Features
+
+### Authentication Security
+- **JWT Tokens**: Secure session management
+- **Row Level Security**: Database-level protection
+- **Role-based Access**: Granular permission control
+- **Session Validation**: Server-side security checks
+
+### Data Protection
+- **HTTPS Encryption**: Secure data transmission
+- **Environment Variables**: Sensitive data protection
+- **Input Validation**: XSS and injection prevention
+- **CORS Configuration**: Cross-origin request security
+
+## Performance Features
+
+### Frontend Optimization
+- **Server Components**: Reduced client-side JavaScript
+- **Image Optimization**: Next.js Image component
+- **Code Splitting**: Automatic bundle optimization
+- **Static Generation**: Pre-rendered pages for speed
+
+### Database Performance
+- **Connection Pooling**: Efficient database connections
+- **Query Optimization**: Efficient data fetching
+- **Caching Strategies**: Reduced database load
+- **Real-time Updates**: Efficient live data synchronization
+
+This application represents a comprehensive foundation for building modern web applications with enterprise-grade features, security, and performance. When working with this codebase, always prioritize the existing patterns and conventions while following the security guidelines outlined in this documentation.

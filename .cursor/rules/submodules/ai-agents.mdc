@@ -1,0 +1,80 @@
+## AI Agents Submodule – Project Plan
+
+### 1. Purpose
+Integrate the core AI-agent experience from the public `ai-agent` repository into the existing **NextJS Boilerplate** code-base as an isolated submodule that can:
+1. Run side-by-side with the parent application inside a monorepo.
+2. Run completely standalone when required.
+3. Re-use the parent application’s Supabase database, authentication, and theme settings.
+
+### 2. Guiding Principles
+* **Keep It Modular** – All AI-agent code lives in its own folder (`apps/ai-agents` or `packages/ai-agents` depending on the chosen monorepo tool) with zero runtime coupling to the parent app other than the shared providers (theme + auth).
+* **Single Source of Truth** – Theme settings, auth session, and database connection must be imported from the parent shared libraries to avoid drift.
+* **Selective Copy** – Only copy the pages and components that power the AI-agent flows (`/agents`, `/my-agents`, `/create-agent`, `/edit-agent`, plus supporting components). Reject messaging, landing, or auth UI from the source repo.
+* **Mono-repo Friendly** – Support both integrated (`pnpm dlx turbo run dev`) and standalone (`pnpm --filter ai-agents dev`) workflows.
+
+### 3. High-Level Architecture
+```
+nextjs-boilerplate/          # existing app ("main-web")
+├─ apps/
+│  ├─ main-web/             # parent application (current)
+│  └─ ai-agents/            # NEW submodule (this project)
+│     └─ app/               # Next.js 14 /app router
+│        ├─ agents/         # list + details
+│        ├─ my-agents/
+│        ├─ create-agent/
+│        └─ edit-agent/
+├─ packages/
+│  ├─ ui/                   # shared theme + shadcn components
+│  ├─ auth/                 # shared Supabase + NextAuth helpers
+│  └─ db/                   # shared drizzle schema + Supabase client
+└─ turbo.json / nx.json     # build pipeline
+```
+
+### 4. Tasks & Milestones
+| # | Milestone | Key Deliverables |
+|---|-----------|------------------|
+| 1 | **Monorepo foundation** | • Decide on Turborepo vs NX<br/>• Move existing `nextjs-boilerplate` app to `apps/main-web`.<br/>• Establish shared `packages/ui`, `packages/auth`, `packages/db`. |
+| 2 | **Create `ai-agents` Next.js app** | • Scaffold fresh Next 14 app with `/app` router.<br/>• Configure `next.config.js` to consume shared packages.<br/>• Setup Tailwind + shadcn via shared `ui` package. |
+| 3 | **Reuse Theme Provider** | • Import `ThemeProvider` & `ThemeToggle` from `packages/ui`.<br/>• Hook into existing theme settings table via shared `packages/db` helper. |
+| 4 | **Reuse Auth** | • Import `AuthProvider` wrapping `<SessionProvider>` + Supabase in both SSR & CSR.<br/>• Ensure `getServerSession` reads cookies that the parent app sets.<br/>• Fallback to own NextAuth routes when running standalone. |
+| 5 | **Copy AI-agent pages & API routes** | • From `geviai/ai-agent` repo copy:<br/>  – `/agents`, `/my-agents`, `/create-agent`, `/edit-agent` pages.<br/>  – All hooks, utilities, and components referenced exclusively by those pages.<br/>  – Sanitize code to remove duplicate theme or auth logic.<br/>  – Replace database calls with shared `db` helpers. |
+| 6 | **Database integration** | • Verify required tables already exist (Agents, AgentRuns, AgentTools, etc.).<br/>• Add drizzle models into `packages/db`.<br/>• Write seed script for local dev. |
+| 7 | **Routing & Navigation** | • Expose AI-agents routes inside parent nav when running integrated.<br/>• Provide its own minimal nav when standalone. |
+| 8 | **CI / CD** | • Update GitHub Actions to build both apps.<br/>• Add preview deploy for `ai-agents`. |
+| 9 | **E2E & Unit Tests** | • Port Vitest + Playwright setup from parent.<br/>• Write smoke tests for agents CRUD. |
+|10 | **Documentation** | • README in `apps/ai-agents` explaining dev scripts.<br/>• Update root docs how to run submodules.<br/>• Maintain this `.mdc` plan.
+
+### 5. Technical Decisions
+1. **Monorepo Tool** – Use **Turborepo** (lighter for two Next apps). NX is acceptable if advanced generators are desired.
+2. **Package Manager** – Keep existing **pnpm**.
+3. **Database ORM** – Continue with **Drizzle** wrappers inside `packages/db` referencing the live Supabase DB.
+4. **Auth Strategy** – Reuse **NextAuth.js + Supabase Adapter**. Detect host app via environment variable `PARENT_HOST=true` to decide whether to expose own auth routes.
+5. **Theming** – Consume `ThemeProvider` from shared UI; respect user’s theme setting stored in `theme_settings` table.
+
+### 6. Risk & Mitigation
+| Risk | Impact | Mitigation |
+|------|--------|-----------|
+| Duplicate dependencies between submodules | build bloat | Use shared `ui`, `auth`, `db` packages, hoist in pnpm workspace |
+| Auth session mismatch when running integrated | users logged-out crossing apps | Ensure both apps share the same domain & cookie prefix; align `NEXTAUTH_URL`. |
+| DB migrations drift | runtime errors | Keep drizzle migrations in `packages/db` centralised. |
+| Theme overrides drifting | inconsistent UI | Source of truth lives in shared `ui` package. |
+
+### 7. Timeline (Rough)
+Week 1: Monorepo setup & scaffolding (Tasks 1–2)
+Week 2: Theme + Auth reuse (Tasks 3–4)
+Week 3–4: Pages & component migration, DB integration (Tasks 5–6)
+Week 5: CI/CD, Testing & polish (Tasks 7–9)
+
+### 8. Done Definition
+• Agents CRUD works both standalone (`pnpm --filter ai-agents dev`) and integrated (`pnpm dev`).
+• Single login/session across submodules when hosted together.
+• Shared theme looks consistent.
+• All tests green, CI passes.
+• Plan doc kept up-to-date and referenced in README.
+
+---
+*Last updated: {{date}}*
+description:
+globs:
+alwaysApply: false
+---

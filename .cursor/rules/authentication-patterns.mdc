@@ -1,0 +1,487 @@
+# Authentication System and Patterns
+
+## 🚨 CRITICAL WARNING FOR LLMs
+
+**DO NOT MODIFY THE EXISTING AUTHENTICATION SETUP**
+
+The authentication system is fully implemented and tested. When adding new features:
+- **NEVER** change existing authentication code
+- **ALWAYS** use the singleton AuthProvider pattern
+- **MUST** follow established session management patterns
+- **REQUIRED** to use server-side session validation for protected routes
+
+## Authentication Architecture Overview
+
+The application uses a **dual-layer authentication system**:
+
+1. **Supabase Auth**: Primary authentication with JWT tokens
+2. **Database Integration**: Extended user data in `user_data` table
+3. **Server-side Validation**: Secure session checking on protected routes
+4. **Client-side State**: React context for UI state management
+
+## Core Authentication Components
+
+### 1. AuthProvider (Client-side Context)
+**Location**: `components/auth-provider.tsx`
+
+```typescript
+// ✅ CORRECT: Use AuthProvider for client-side auth state
+import { useAuth } from '@/components/auth-provider'
+
+export function MyComponent() {
+  const { user, session, loading, signOut } = useAuth()
+  
+  if (loading) return <div>Loading...</div>
+  
+  if (!user) {
+    return <div>Please log in</div>
+  }
+  
+  return <div>Welcome, {user.email}</div>
+}
+```
+
+**Key Features**:
+- Singleton pattern - one instance per app
+- Automatic session hydration
+- Role fetching from database
+- Real-time auth state updates
+- Error handling and loading states
+
+### 2. Server-side Session Management
+**Location**: `lib/auth.ts`
+
+```typescript
+// ✅ CORRECT: Server-side session validation
+import { getServerSession, requireAuth } from '@/lib/auth'
+
+// For optional authentication
+export default async function MyPage() {
+  const sessionData = await getServerSession()
+  
+  if (!sessionData) {
+    return <div>Public content</div>
+  }
+  
+  const { user } = sessionData
+  return <div>Welcome, {user.email}</div>
+}
+
+// For required authentication
+export default async function ProtectedPage() {
+  const { user } = await requireAuth()
+  
+  // User is guaranteed to exist here
+  return <div>Protected content for {user.email}</div>
+}
+```
+
+**Key Features**:
+- Server-side session validation
+- Automatic redirects for unauthorized access
+- User data enhancement with database info
+- Type-safe user objects
+
+### 3. Supabase Client Pattern
+**Location**: `lib/supabase.ts`
+
+```typescript
+// ✅ CORRECT: Server-side Supabase client
+import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase'
+
+export default async function ServerComponent() {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(cookieStore)
+  
+  // Database queries with RLS automatically applied
+  const { data } = await supabase
+    .from('user_data')
+    .select('*')
+    .eq('UID', user.id)
+}
+
+// ✅ CORRECT: Client-side Supabase client
+'use client'
+import { createClient } from '@/lib/supabase'
+
+export function ClientComponent() {
+  const supabase = createClient()
+  
+  // Client-side database operations
+}
+```
+
+## Authentication Patterns
+
+### Protected Component Pattern
+```typescript
+// ✅ CORRECT: Client-side protected component
+'use client'
+import { useAuth } from '@/components/auth-provider'
+
+export function ProtectedComponent() {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return <div className="animate-spin">Loading...</div>
+  }
+  
+  if (!user) {
+    return (
+      <div>
+        <p>Please log in to access this feature</p>
+        <Link href="/login">Login</Link>
+      </div>
+    )
+  }
+  
+  return <div>Protected content</div>
+}
+```
+
+### Protected Page Pattern (Server Component)
+```typescript
+// ✅ CORRECT: Server-side protected page
+import { requireAuth } from '@/lib/auth'
+
+export default async function ProtectedPage() {
+  // This will redirect to login if not authenticated
+  const { user } = await requireAuth()
+  
+  return (
+    <div>
+      <h1>Welcome {user.email}</h1>
+      {/* Protected content */}
+    </div>
+  )
+}
+```
+
+### Optional Authentication Pattern
+```typescript
+// ✅ CORRECT: Optional authentication
+import { getServerSession } from '@/lib/auth'
+
+export default async function HomePage() {
+  const sessionData = await getServerSession()
+  
+  return (
+    <div>
+      <h1>Welcome to our app</h1>
+      {sessionData ? (
+        <p>Hello, {sessionData.user.email}!</p>
+      ) : (
+        <div>
+          <Link href="/login">Login</Link>
+          <Link href="/signup">Sign Up</Link>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## User Data Structure
+
+### AuthUser Interface
+```typescript
+interface AuthUser extends User {
+  subscription?: {
+    id: string
+    plan: string
+    status: string
+    currentPeriodEnd?: string
+  } | null
+  role?: string
+}
+```
+
+### Database User Data
+```typescript
+interface UserData {
+  UID: string                    // Matches auth.users.id
+  user_role: string             // 'user', 'admin', etc.
+  display_name: string | null   // User's display name
+  email: string | null          // User's email
+  phone: string | null          // Phone number
+  credits: number               // User credits
+  stripe_id: any[]              // Stripe customer data
+  trial_credits_claimed: boolean
+  // ... other fields
+}
+```
+
+## Role-Based Access Control
+
+### Role Checking Patterns
+```typescript
+// ✅ Client-side role checking
+const { user } = useAuth()
+const isAdmin = user?.role?.toLowerCase() === 'admin'
+
+if (isAdmin) {
+  return <AdminControls />
+}
+
+// ✅ Server-side role checking
+const { user } = await requireAuth()
+const isAdmin = user.role?.toLowerCase() === 'admin'
+
+if (!isAdmin) {
+  redirect('/dashboard')
+}
+```
+
+### Admin Helper Function (Database)
+```sql
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM user_data 
+    WHERE user_data."UID" = auth.uid() 
+    AND user_data.user_role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+## Authentication Hooks and Utilities
+
+### useSupabaseReady Hook
+```typescript
+import { useSupabaseReady } from '@/hooks/use-supabase-ready'
+
+export function DataComponent() {
+  const { user } = useAuth()
+  const supaReady = useSupabaseReady()
+  
+  // Wait for both auth and Supabase to be ready
+  if (!supaReady || !user) {
+    return <Loading />
+  }
+  
+  // Safe to make Supabase queries
+  return <DataTable />
+}
+```
+
+### Supabase Client Pattern
+```typescript
+import { createClient } from '@/lib/supabase'
+
+export function useSupabaseData() {
+  const { user } = useAuth()
+  const supabase = createClient()
+  
+  const fetchUserData = async () => {
+    if (!user) return null
+    
+    const { data, error } = await supabase
+      .from('user_data')
+      .select('*')
+      .eq('UID', user.id)
+      .single()
+    
+    return data
+  }
+  
+  return { fetchUserData }
+}
+```
+
+## Database Integration Patterns
+
+### User Data Synchronization
+```typescript
+// ✅ CORRECT: Sync auth user with database
+const { user } = useAuth()
+
+useEffect(() => {
+  if (user) {
+    syncUserWithDatabase(user)
+  }
+}, [user])
+
+async function syncUserWithDatabase(authUser: User) {
+  const supabase = createClient()
+  
+  const { error } = await supabase
+    .from('user_data')
+    .upsert({
+      UID: authUser.id,
+      email: authUser.email,
+      updated_at: new Date().toISOString()
+    })
+  
+  if (error) {
+    console.error('Failed to sync user:', error)
+  }
+}
+```
+
+### Profile Updates
+```typescript
+// ✅ CORRECT: Update both auth and database
+async function updateUserProfile(updates: {
+  display_name?: string
+  email?: string
+}) {
+  const supabase = createClient()
+  
+  // Update Supabase Auth if email changed
+  if (updates.email) {
+    const { error: authError } = await supabase.auth.updateUser({
+      email: updates.email
+    })
+    
+    if (authError) throw authError
+  }
+  
+  // Update database record
+  const { error: dbError } = await supabase
+    .from('user_data')
+    .update({
+      display_name: updates.display_name,
+      email: updates.email,
+      updated_at: new Date().toISOString()
+    })
+    .eq('UID', user.id)
+  
+  if (dbError) throw dbError
+}
+```
+
+## Session Management
+
+### Session Validation Pattern
+```typescript
+// ✅ CORRECT: Validate session in middleware
+import { createServerClient } from '@/lib/supabase'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next()
+  const supabase = createServerClient(request.cookies)
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  // Redirect to login if no session on protected routes
+  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  
+  return response
+}
+```
+
+### Session Refresh Pattern
+```typescript
+// ✅ CORRECT: Handle session refresh
+useEffect(() => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (event, session) => {
+      if (event === 'TOKEN_REFRESHED') {
+        // Session was refreshed, update local state
+        setSession(session)
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear local state
+        setUser(null)
+        setSession(null)
+      }
+    }
+  )
+  
+  return () => subscription.unsubscribe()
+}, [])
+```
+
+## Error Handling
+
+### Authentication Errors
+```typescript
+// ✅ CORRECT: Handle auth errors gracefully
+async function handleLogin(email: string, password: string) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    
+    if (error) {
+      switch (error.message) {
+        case 'Invalid login credentials':
+          setError('Invalid email or password')
+          break
+        case 'Email not confirmed':
+          setError('Please check your email to confirm your account')
+          break
+        default:
+          setError('An error occurred during login')
+      }
+      return
+    }
+    
+    // Success - redirect or update state
+    router.push('/dashboard')
+  } catch (err) {
+    setError('Network error. Please try again.')
+  }
+}
+```
+
+## Common Anti-Patterns to Avoid
+
+### ❌ DON'T: Modify AuthProvider
+```typescript
+// ❌ NEVER modify the existing AuthProvider
+// This will break the entire authentication system
+```
+
+### ❌ DON'T: Create Multiple Auth Contexts
+```typescript
+// ❌ NEVER create additional auth contexts
+// Use the existing singleton pattern
+```
+
+### ❌ DON'T: Skip Server-side Validation
+```typescript
+// ❌ NEVER rely only on client-side auth
+export default function ProtectedPage() {
+  // This is insecure - missing server-side validation
+  return <div>Secret content</div>
+}
+```
+
+### ❌ DON'T: Direct Database Auth Queries
+```typescript
+// ❌ NEVER query auth.users directly
+const { data } = await supabase
+  .from('auth.users')  // This will fail
+  .select('*')
+```
+
+## Best Practices Summary
+
+### For LLMs Working with This Codebase:
+
+1. **NEVER** modify `components/auth-provider.tsx`
+2. **NEVER** modify `lib/auth.ts` core functions
+3. **ALWAYS** use `useAuth()` hook for client-side auth state
+4. **ALWAYS** use `getServerSession()` or `requireAuth()` for server-side auth
+5. **ALWAYS** follow the established RLS patterns for database access
+6. **MUST** use the existing Supabase client patterns
+7. **REQUIRED** to validate user permissions before sensitive operations
+
+### Security Checklist:
+- [ ] Server-side session validation for protected routes
+- [ ] Proper RLS policies on database tables
+- [ ] User data isolation (users can only access their own data)
+- [ ] Admin role verification for administrative functions
+- [ ] Error handling that doesn't leak sensitive information
+
+The authentication system is battle-tested and secure. Follow these patterns exactly to maintain the security and stability of the application.

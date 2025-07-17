@@ -1,0 +1,47 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+## Agent Creation Prompt
+
+1. I want you to inspect the supabase database table "agents". We are going to create a new agent on the front end of this application by creating a new table row. I want you to inspect the existing table and the way agents are setup. Do not make any changes yet.
+
+2. I want you to create the following agent. Do not make any changes to the code in the applciation or modify any other tables or table records.
+
+UID: 7bed2e3d-8146-4be2-a98d-6b9c41c16764
+Name: Landing Page Analyzer
+Description: This AI Agent will help you analyze your web pages for things like usability and improving search engine optimization. Input your URL in the Agent config options and inform the agent of any things you would like to specifically focus on.
+Category: Websites
+API URL: https://api.geag.ai/webhook/webpage-analysis
+Agent Role: You are a professional expert in Conversion Rate Optimization who helps business founders & CMOs improve their landing pages. You are a world-class expert in analyzing landing pages, roasting them, and providing valuable Conversion Rate Optimization Ideas to help businesses increase conversions.
+is_public: true
+icon: Bot
+top_p: 0.9
+max_tokens: 6000
+placeholder: Please describe anything in specific you would like to focus on or just say, general report.
+temperature: 0.7
+
+I want you to create the agent with the following additional fields in the config. All fields are text and I have provided the defauls. Make sure you get the config correctly based on the authentication I have provided and the existing examples in the database.
+
+a) First queried the existing agents in the database to see how their config fields are structured
+b) Examined the actual format, field naming conventions, and JSON structure used in the existing examples
+C)Then matched that exact pattern when creating the new agent's config
+
+Use the supabase mcp server.
+
+Here are the configurable fields that should be included in the config json in the same way as the examples. These are all text fields.
+
+- [page_url]: https://www.geag.ai
+
+
+## Agent Modification Prompt
+
+I want you to look at the files I have attached. We are woking on the front end of the agents with the json in the config column of the "agents" table in the supabase table. You have access to the supabase mcp tools. I want you to edit the row with "id" = {agent_id}
+
+The config colomn difines the dynamic fields for the front end of the agent which is documents in @workflow-rules-example.mdc 
+
+I want you to only modify the "config" column of the stipulated db row. do not modify any code in the application unless directed to.
+
+{instructions}

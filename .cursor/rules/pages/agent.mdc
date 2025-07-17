@@ -1,0 +1,52 @@
+# /agent Page – Functionality & Usage
+
+## When to Use This File
+- When creating, updating, or refactoring the `/agent/[id]` page or its components.
+- When implementing or modifying logic for displaying, interacting with, or managing a single AI agent.
+- When ensuring UI/UX consistency for agent detail, chat, or workflow interfaces.
+- When troubleshooting or enhancing the individual agent experience.
+- When adding new features related to agent configuration, conversation, or task management.
+
+## Overview
+The `/agent/[id]` page is the dedicated interface for viewing and interacting with a specific AI agent. It is designed to:
+- Display detailed information about the selected agent, including name, description, capabilities, and configuration.
+- Provide a chat or interaction interface for users to communicate with the agent, send prompts, and receive responses.
+- Show agent-specific history, recent activity, or task results.
+- Allow authorized users to edit agent settings, update configuration, or manage agent-specific workflows.
+
+## UI Structure
+- **Agent Header**: Shows agent name, avatar/icon, and summary information.
+- **Agent Details**: Displays agent description, capabilities, and configuration options.
+- **Chat/Interaction Interface**: Main area for user-agent conversation, prompt input, and response display.
+- **History/Activity**: Section for recent interactions, logs, or task results.
+- **Management Actions**: Buttons or menus for editing agent settings, deleting the agent, or managing workflows (admin or authorized users only).
+- **Responsive Design**: The page is fully responsive and accessible.
+
+## Key Implementation Details
+- **Dynamic Routing**: The page uses dynamic routing (`/agent/[id]`) to display the correct agent based on the URL parameter.
+- **Data Fetching**: Agent details and history are fetched from the backend or a dedicated API endpoint using the agent ID.
+- **Chat/Interaction**: Uses a chat interface or similar UI to facilitate real-time or asynchronous communication with the agent.
+- **Permissions**: Editing and management actions are only available to users with the appropriate role (e.g., admin).
+- **Error Handling**: User-friendly errors are displayed for failed data loads, unauthorized actions, or agent errors.
+- **State Management**: Uses React state or context to manage agent data, chat history, and UI state.
+
+## Best Practices
+- Ensure agent data and chat history are kept in sync with the backend.
+- Protect all management actions with proper authorization checks.
+- Provide clear feedback for user actions (e.g., message sent, error, loading states).
+- Ensure accessibility and mobile usability for all agent interaction UI.
+
+## Anti-Patterns
+- ❌ Never expose sensitive agent configuration or credentials in the client.
+- ❌ Do not allow unauthorized users to edit or delete agents.
+- ❌ Avoid duplicating agent data fetching or chat logic across components.
+
+## Example Usage
+- When viewing an agent, ensure all details and recent activity are displayed accurately.
+- When sending a message to the agent, ensure the chat interface updates with the response.
+- When updating agent settings, ensure changes are reflected immediately and securely.
+- When troubleshooting agent interaction, check both frontend logic and backend API integration.
+description:
+globs:
+alwaysApply: false
+---

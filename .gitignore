@@ -1,0 +1,53 @@
+node_modules/
+.env
+.env.*
+*.env
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+dist/
+build/
+.next/
+out/
+.DS_Store
+*.log
+coverage/
+.idea/
+.vscode/
+*.tsbuildinfo
+*.local
+*.cache
+*.swp 
+
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/
+
+# Allow .cursor folder but exclude sensitive files
+!.cursor/
+!.cursor/rules/
+!.cursor/rules/*.mdc
+!.cursor/mcp-example.json
+
+# Sensitive configuration files (MUST BE AFTER inclusion rules)
+.cursor/mcp.json
+.cursor/rules/supabase-config.mdc
+.cursor/rules/workflows/workflow-rules.mdc 

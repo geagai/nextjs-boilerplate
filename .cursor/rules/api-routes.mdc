@@ -1,0 +1,500 @@
+# API Routes & Backend Architecture
+
+This document provides comprehensive guidance for understanding and working with the API routes and backend architecture in APP_NAME.
+
+## **Critical Authentication Rule for LLMs**
+
+⚠️ **NEVER modify existing authentication routes or patterns**. The authentication system is production-ready and battle-tested. When creating new API routes, follow the established patterns shown in this document.
+
+## **API Route Structure**
+
+The application uses Next.js App Router API routes located in `app/api/`:
+
+```
+app/api/
+├── auth/
+│   ├── [...nextauth]/route.ts    # NextAuth.js authentication handler
+│   ├── signup/route.ts           # User registration endpoint
+│   └── update-profile/route.ts   # Profile update endpoint
+├── contact/route.ts              # Contact form submission
+├── mcp/
+│   └── ip-lookup/route.ts        # MCP tool for IP address lookup
+└── stripe/
+    ├── clear-product-cache/route.ts      # Cache management
+    ├── create-checkout-session/route.ts  # Payment initiation
+    ├── create-portal-session/route.ts    # Customer portal
+    ├── create-product/route.ts           # Product creation
+    ├── edit-product/route.ts             # Product modification
+    ├── get-product/route.ts              # Product retrieval
+    └── webhook/route.ts                  # Stripe webhooks
+```
+
+## **Authentication Patterns**
+
+### Server-Side Authentication Check
+
+All protected API routes must validate authentication:
+
+```typescript
+// ✅ DO: Standard authentication pattern
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+
+export async function GET() {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  
+  // Continue with authenticated logic
+}
+```
+
+### Role-Based Access Control
+
+For admin-only endpoints:
+
+```typescript
+// ✅ DO: Admin role validation
+import { auth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
+
+export async function POST() {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  
+  // Check admin role
+  const { data: userData } = await supabase
+    .from('user_data')
+    .select('role')
+    .eq('id', session.user.id)
+    .single();
+    
+  if (userData?.role !== 'admin') {
+    return new Response('Forbidden', { status: 403 });
+  }
+  
+  // Admin-only logic here
+}
+```
+
+## **Database Integration Patterns**
+
+### Using Supabase in API Routes
+
+```typescript
+// ✅ DO: Proper Supabase usage with RLS
+import { supabase } from '@/lib/supabase';
+
+export async function GET() {
+  const session = await auth();
+  
+  // RLS automatically filters based on authenticated user
+  const { data, error } = await supabase
+    .from('user_data')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+    
+  if (error) {
+    return new Response('Database error', { status: 500 });
+  }
+  
+  return Response.json(data);
+}
+```
+
+### Creating Records with Proper Ownership
+
+```typescript
+// ✅ DO: Associate records with authenticated user
+export async function POST(request: Request) {
+  const session = await auth();
+  const body = await request.json();
+  
+  const { data, error } = await supabase
+    .from('agents')
+    .insert({
+      ...body,
+      user_id: session.user.id,  // Ensure ownership
+      created_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+    
+  return Response.json(data);
+}
+```
+
+## **Stripe Integration Patterns**
+
+### Product Management
+
+The application includes comprehensive Stripe product management:
+
+```typescript
+// Product creation with caching
+export async function POST(request: Request) {
+  const session = await auth();
+  const { name, description, price, features } = await request.json();
+  
+  try {
+    // Create Stripe product
+    const product = await stripe.products.create({
+      name,
+      description,
+      metadata: {
+        user_id: session.user.id,
+        features: JSON.stringify(features)
+      }
+    });
+    
+    // Create price
+    const priceObject = await stripe.prices.create({
+      product: product.id,
+      unit_amount: Math.round(price * 100),
+      currency: 'usd',
+      recurring: { interval: 'month' }
+    });
+    
+    // Store in database with user association
+    const { data } = await supabase
+      .from('products')
+      .insert({
+        stripe_product_id: product.id,
+        stripe_price_id: priceObject.id,
+        user_id: session.user.id,
+        name,
+        description,
+        price,
+        features
+      })
+      .select()
+      .single();
+      
+    // Clear cache
+    await fetch('/api/stripe/clear-product-cache', { method: 'POST' });
+    
+    return Response.json(data);
+  } catch (error) {
+    return new Response('Stripe error', { status: 500 });
+  }
+}
+```
+
+### Webhook Handling
+
+```typescript
+// ✅ DO: Secure webhook validation
+import { headers } from 'next/headers';
+import Stripe from 'stripe';
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const headersList = headers();
+  const signature = headersList.get('stripe-signature');
+  
+  try {
+    const event = stripe.webhooks.constructEvent(
+      body,
+      signature!,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+    
+    switch (event.type) {
+      case 'customer.subscription.updated':
+        // Handle subscription changes
+        await handleSubscriptionUpdate(event.data.object);
+        break;
+        
+      case 'invoice.payment_succeeded':
+        // Handle successful payments
+        await handlePaymentSuccess(event.data.object);
+        break;
+    }
+    
+    return new Response('OK');
+  } catch (error) {
+    return new Response('Webhook error', { status: 400 });
+  }
+}
+```
+
+## **MCP Tool Integration**
+
+### IP Lookup Tool Example
+
+The application includes MCP (Model Context Protocol) tools:
+
+```typescript
+// app/api/mcp/ip-lookup/route.ts
+export async function POST(request: Request) {
+  try {
+    const { ip } = await request.json();
+    
+    if (!ip) {
+      return Response.json({ error: 'IP address is required' }, { status: 400 });
+    }
+    
+    // Validate IP format
+    const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    if (!ipRegex.test(ip)) {
+      return Response.json({ error: 'Invalid IP address format' }, { status: 400 });
+    }
+    
+    // Perform IP lookup
+    const response = await fetch(`http://ip-api.com/json/${ip}`);
+    const data = await response.json();
+    
+    return Response.json(data);
+  } catch (error) {
+    return Response.json({ error: 'Failed to lookup IP' }, { status: 500 });
+  }
+}
+```
+
+## **Error Handling Patterns**
+
+### Standardized Error Responses
+
+```typescript
+// ✅ DO: Consistent error handling
+export async function POST(request: Request) {
+  try {
+    const session = await auth();
+    
+    if (!session?.user?.id) {
+      return Response.json(
+        { error: 'Authentication required' }, 
+        { status: 401 }
+      );
+    }
+    
+    const body = await request.json();
+    
+    // Validate input
+    if (!body.name || body.name.length < 2) {
+      return Response.json(
+        { error: 'Name must be at least 2 characters' },
+        { status: 400 }
+      );
+    }
+    
+    // Database operation
+    const { data, error } = await supabase
+      .from('table_name')
+      .insert(body)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Database error:', error);
+      return Response.json(
+        { error: 'Failed to create record' },
+        { status: 500 }
+      );
+    }
+    
+    return Response.json(data);
+    
+  } catch (error) {
+    console.error('API error:', error);
+    return Response.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## **Caching Patterns**
+
+### Product Cache Management
+
+```typescript
+// Clear cache after data mutations
+export async function POST() {
+  try {
+    // Clear any Redis/memory cache here
+    // For now, this is a placeholder for cache clearing logic
+    
+    return Response.json({ success: true });
+  } catch (error) {
+    return Response.json({ error: 'Cache clear failed' }, { status: 500 });
+  }
+}
+```
+
+## **Request Validation**
+
+### Input Sanitization
+
+```typescript
+// ✅ DO: Validate and sanitize inputs
+import { z } from 'zod';
+
+const CreateAgentSchema = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().max(500),
+  instructions: z.string().min(10),
+  tools: z.array(z.string()).optional()
+});
+
+export async function POST(request: Request) {
+  const session = await auth();
+  
+  try {
+    const body = await request.json();
+    const validatedData = CreateAgentSchema.parse(body);
+    
+    // Use validatedData instead of raw body
+    const { data } = await supabase
+      .from('agents')
+      .insert({
+        ...validatedData,
+        user_id: session.user.id
+      });
+      
+    return Response.json(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return Response.json(
+        { error: 'Invalid input', details: error.errors },
+        { status: 400 }
+      );
+    }
+    throw error;
+  }
+}
+```
+
+## **Rate Limiting**
+
+```typescript
+// ✅ DO: Implement rate limiting for public endpoints
+const rateLimiter = new Map();
+
+export async function POST(request: Request) {
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 10;
+  
+  const userRequests = rateLimiter.get(ip) || [];
+  const recentRequests = userRequests.filter(
+    (timestamp: number) => now - timestamp < windowMs
+  );
+  
+  if (recentRequests.length >= maxRequests) {
+    return Response.json(
+      { error: 'Rate limit exceeded' },
+      { status: 429 }
+    );
+  }
+  
+  recentRequests.push(now);
+  rateLimiter.set(ip, recentRequests);
+  
+  // Continue with normal logic
+}
+```
+
+## **API Route Anti-Patterns**
+
+```typescript
+// ❌ DON'T: Skip authentication
+export async function POST(request: Request) {
+  // Missing authentication check
+  const body = await request.json();
+  // Dangerous: anyone can access this
+}
+
+// ❌ DON'T: Expose sensitive data
+export async function GET() {
+  const { data } = await supabase
+    .from('user_data')
+    .select('*, password_hash, api_keys'); // Exposing secrets
+  return Response.json(data);
+}
+
+// ❌ DON'T: Bypass RLS
+const supabaseAdmin = createClient(url, serviceRoleKey);
+// Using service role bypasses RLS - only for admin operations
+
+// ❌ DON'T: Use client-side validation only
+export async function POST(request: Request) {
+  const body = await request.json();
+  // Missing server-side validation
+  await supabase.from('table').insert(body);
+}
+```
+
+## **Environment Variables**
+
+Required environment variables for API routes:
+
+```bash
+# Authentication
+NEXTAUTH_SECRET=NEXTAUTH_SECRET
+NEXTAUTH_URL=LOCALHOST_URL
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY
+
+# Stripe
+STRIPE_SECRET_KEY=STRIPE_SECRET_KEY
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=STRIPE_PUBLISHABLE_KEY
+STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET
+
+# Optional: Rate limiting, external APIs
+REDIS_URL=redis://localhost:6379
+```
+
+## **Testing API Routes**
+
+```typescript
+// Use Vitest for API route testing
+import { POST } from '@/app/api/agents/route';
+import { auth } from '@/lib/auth';
+
+vi.mock('@/lib/auth');
+
+describe('/api/agents', () => {
+  it('requires authentication', async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    
+    const request = new Request('TEST_API_URL/agents', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Test Agent' })
+    });
+    
+    const response = await POST(request);
+    expect(response.status).toBe(401);
+  });
+});
+```
+
+## **Best Practices Summary**
+
+- **Always authenticate** protected routes
+- **Use RLS** for data security 
+- **Validate inputs** server-side
+- **Handle errors** consistently
+- **Implement rate limiting** for public endpoints
+- **Cache when appropriate** to improve performance
+- **Follow RESTful conventions** for endpoint design
+- **Log errors** for debugging
+- **Use TypeScript** for type safety
+- **Test your routes** with unit and integration tests
+
+Reference related documentation: [@2-authentication.mdc](mdc:.cursor/rules/2-authentication.mdc), [@1-supabase-database-setup.mdc](mdc:.cursor/rules/1-supabase-database-setup.mdc)
+description:
+globs:
+alwaysApply: false
+---

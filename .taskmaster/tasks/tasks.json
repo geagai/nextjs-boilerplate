@@ -1,0 +1,389 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Agent Edit Page Implementation",
+        "description": "Create a comprehensive /edit-agent page that mirrors the functionality of the /create-agent page, allowing users to modify existing agent configurations through a dynamic form interface with Supabase integration.",
+        "details": "Implementation Steps:\n\n1. Component Structure:\n- Create EditAgentPage component in pages/edit-agent/[id].tsx\n- Implement form layout matching create-agent page structure\n- Utilize existing form components and theme providers\n\n2. Data Fetching:\n- Add getAgent query function to fetch agent data by ID\n- Implement useQuery hook for initial data loading\n- Handle loading and error states appropriately\n\n3. Form Implementation:\n- Initialize form with react-hook-form\n- Create controlled inputs for all agent fields\n- Add dynamic field arrays for header/body parameters\n- Implement JSON config field handling\n- Add form validation matching create-agent rules\n\n4. Supabase Integration:\n- Create updateAgent mutation function\n- Implement optimistic updates\n- Handle success/error responses\n- Add proper type safety with TypeScript\n\n5. UX Considerations:\n- Add loading indicators during submission\n- Implement proper error handling and display\n- Add success confirmation and redirect\n- Ensure responsive design across breakpoints\n\nCode Structure:\n```typescript\ninterface EditAgentProps {\n  agentId: string;\n}\n\nconst EditAgentPage: React.FC<EditAgentProps> = ({ agentId }) => {\n  const form = useForm<AgentFormData>();\n  const { data, isLoading } = useQuery(['agent', agentId], getAgent);\n  \n  const updateMutation = useMutation(updateAgent, {\n    onSuccess: () => {\n      // Handle success\n    }\n  });\n\n  // Form submission handler\n  const onSubmit = async (data: AgentFormData) => {\n    // Transform and submit data\n  };\n\n  return (\n    <Form onSubmit={handleSubmit(onSubmit)}>\n      // Form fields implementation\n    </Form>\n  );\n};\n```",
+        "testStrategy": "1. Unit Testing:\n- Verify form initialization with mock agent data\n- Test all form field interactions and validations\n- Validate JSON config transformation\n- Test error handling scenarios\n\n2. Integration Testing:\n- Test complete form submission flow\n- Verify Supabase update operations\n- Check loading states and error handling\n- Test navigation and redirects\n\n3. E2E Testing:\n- Navigate to edit page with existing agent\n- Modify all field types (text, arrays, JSON)\n- Submit form and verify database updates\n- Verify success/error scenarios\n\n4. Manual Testing Checklist:\n- Load existing agent data correctly\n- Edit all field types\n- Validate form submissions\n- Check responsive design\n- Verify theme consistency\n- Test error scenarios\n- Confirm success flows",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Analyze Repository Structure and Setup Edit Page Component",
+            "description": "Review existing codebase patterns and create the base EditAgentPage component structure",
+            "dependencies": [],
+            "details": "1. Review /create-agent implementation patterns\n2. Create pages/edit-agent/[id].tsx file\n3. Setup basic component structure with TypeScript interfaces\n4. Add routing parameters for agent ID\n5. Implement basic layout matching create-agent page",
+            "status": "done",
+            "testStrategy": "Verify component renders without errors and correctly receives route parameters"
+          },
+          {
+            "id": 2,
+            "title": "Implement Agent Data Fetching Logic",
+            "description": "Create data fetching functionality to retrieve existing agent data for editing",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create getAgent query function in api/agents\n2. Implement useQuery hook for data fetching\n3. Add loading state handling\n4. Implement error boundary and error state display\n5. Type agent response data",
+            "status": "done",
+            "testStrategy": "Test data fetching with mock responses and error scenarios"
+          },
+          {
+            "id": 3,
+            "title": "Setup Form Structure with Initial Data",
+            "description": "Initialize react-hook-form with existing agent data and implement form fields",
+            "dependencies": [
+              2
+            ],
+            "details": "1. Setup useForm hook with AgentFormData type\n2. Create form field components\n3. Implement form validation rules\n4. Add form reset functionality\n5. Setup default values from fetched data",
+            "status": "done",
+            "testStrategy": "Verify form initialization with mock data and field validation"
+          },
+          {
+            "id": 4,
+            "title": "Implement Dynamic Parameter Fields",
+            "description": "Add support for editing header and body parameters with JSON config handling",
+            "dependencies": [
+              3
+            ],
+            "details": "1. Create dynamic field arrays for parameters\n2. Implement add/remove parameter functionality\n3. Setup JSON config field handling\n4. Add parameter validation\n5. Ensure proper data transformation",
+            "status": "done",
+            "testStrategy": "Test parameter field addition/removal and JSON validation"
+          },
+          {
+            "id": 5,
+            "title": "Create Supabase Update Integration",
+            "description": "Implement agent update functionality with Supabase",
+            "dependencies": [
+              4
+            ],
+            "details": "1. Create updateAgent mutation function\n2. Implement optimistic updates\n3. Add proper error handling\n4. Setup success notifications\n5. Add TypeScript safety checks",
+            "status": "done",
+            "testStrategy": "Test update operations with various data scenarios"
+          },
+          {
+            "id": 6,
+            "title": "Enhance UI/UX and Responsive Design",
+            "description": "Implement loading states, error handling, and responsive design",
+            "dependencies": [
+              5
+            ],
+            "details": "1. Add loading indicators\n2. Implement error message displays\n3. Add success confirmation\n4. Setup responsive breakpoints\n5. Integrate theme providers",
+            "status": "done",
+            "testStrategy": "Test responsive behavior and UI state transitions"
+          },
+          {
+            "id": 7,
+            "title": "Security and Code Quality",
+            "description": "Implement security measures and ensure code quality",
+            "dependencies": [
+              6
+            ],
+            "details": "1. Review and update RLS policies\n2. Add input sanitization\n3. Fix lint errors\n4. Add proper TypeScript types\n5. Document component usage",
+            "status": "done",
+            "testStrategy": "Verify security measures and run linting checks"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Deploy Guide Page Implementation",
+        "description": "Create a comprehensive deployment guide page that walks users through setting up and deploying the application with Vercel and Supabase, including automated setup scripts and clear step-by-step instructions.",
+        "details": "Implementation Steps:\n\n1. Page Structure:\n- Create new page component at pages/deploy-guide.tsx\n- Design a multi-step wizard interface with progress tracking\n- Implement responsive layout with clear section separation\n\n2. Setup Scripts:\n- Create Supabase setup script to automatically:\n  - Generate required database tables\n  - Configure RLS policies\n  - Create necessary functions and triggers\n  - Set up initial data structures\n- Implement verification checks for each setup step\n\n3. Integration Components:\n- Develop Vercel deployment integration\n  - Add \"Deploy to Vercel\" button component\n  - Create configuration template for environment variables\n  - Implement repository fork handling\n- Create Supabase project creation guide\n  - Add automated database URL and API key retrieval\n  - Include database schema visualization\n\n4. User Flow Implementation:\n- Create step-by-step progress tracker\n- Implement validation for each setup phase\n- Add error handling and recovery steps\n- Include skip options for already completed steps\n\n5. Documentation Integration:\n- Embed relevant documentation sections\n- Add tooltips and help text for complex steps\n- Include troubleshooting guide\n- Provide links to external resources\n\n6. Local Development Setup:\n- Create automated local environment setup script\n- Add development environment requirements checker\n- Implement .env file generator\n- Include development-specific configuration guide\n\nTechnical Considerations:\n- Use Next.js API routes for setup script execution\n- Implement proper error handling and logging\n- Ensure secure handling of credentials\n- Add rate limiting for API calls\n- Consider caching for repeated operations\n<info added on 2025-07-12T18:31:59.758Z>\nTechnical Implementation Notes:\n\nAll components and features will be integrated directly into the main application structure:\n\n- Deploy guide page component will be added to existing pages directory alongside other application routes\n- Setup scripts will be implemented as internal Next.js API routes under pages/api/deploy/*\n- Integration components will be created within the shared components directory following existing component patterns\n- Utility functions for deployment and setup will be placed in the utils/ directory\n- Database scripts and schema management will be handled through the existing database management structure\n- Environment configuration handling will use the established project configuration patterns\n- All styling will utilize the application's existing CSS/styling framework\n- State management for the deployment process will leverage the application's existing state management solution\n- Error handling will integrate with the main application's error boundary and logging systems\n- Documentation content will be stored in the application's content management system\n- Testing will be integrated into the main application's test suite\n\nFile structure alignment:\n- pages/deploy-guide.tsx\n- components/deploy-guide/*\n- lib/deploy/*\n- utils/deploy/*\n- api/deploy/*\n- styles/deploy-guide/*\n- tests/deploy-guide/*\n</info added on 2025-07-12T18:31:59.758Z>\n<info added on 2025-07-12T18:38:33.351Z>\nCross-Cutting Implementation Requirements:\n\n1. Component Reusability:\n- Audit existing component library before creating new components\n- Document any component extensions or modifications in the component registry\n- When extending existing components, maintain backward compatibility\n- Follow the established component composition patterns for modifications\n\n2. Theme Integration:\n- Implement all UI elements using the application's theme token system\n- Utilize semantic color classes from admin_settings:\n  - Primary: var(--color-primary)\n  - Secondary: var(--color-secondary)\n  - Background: var(--color-background)\n  - Text: var(--color-text)\n  - Accent: var(--color-accent)\n- Apply responsive dark/light mode classes using the theme-* prefix\n- Use opacity modifiers from the theme system for hover and active states\n- Ensure all components respond to theme changes without page reload\n\n3. Styling Guidelines:\n- Follow @3-styling.mdc conventions for all new CSS/Tailwind implementations\n- Use provided theme mixins for consistent styling across components\n- Implement color transitions using the application's transition system\n- Maintain WCAG 2.1 AA contrast requirements across all theme variations\n- Test all components against the full range of admin-configurable color schemes\n\n4. Component Documentation:\n- Document any theme-specific props or configuration options\n- Include theme compatibility notes in component stories\n- Add theme variation examples to component documentation\n- Provide theme override examples where applicable\n</info added on 2025-07-12T18:38:33.351Z>",
+        "testStrategy": "1. Functional Testing:\n- Verify each step of the deployment wizard works independently\n- Test automatic setup script execution\n- Validate environment variable configuration\n- Check database schema creation\n- Test repository forking process\n- Verify Vercel deployment integration\n- Validate Supabase project setup\n\n2. Integration Testing:\n- Complete end-to-end deployment process testing\n- Verify all external service integrations\n- Test error handling and recovery\n- Validate progress saving and restoration\n\n3. User Experience Testing:\n- Test responsive design across devices\n- Verify clear error messages and help text\n- Check accessibility compliance\n- Test with different user permission levels\n\n4. Security Testing:\n- Verify secure credential handling\n- Test rate limiting functionality\n- Validate access controls\n- Check for exposed sensitive information\n\n5. Performance Testing:\n- Measure page load times\n- Test setup script execution time\n- Verify handling of slow network conditions\n- Monitor resource usage during setup",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement Deploy Guide Page UI Structure",
+            "description": "Create the base UI components and layout for the deployment guide page, including the multi-step wizard interface and progress tracking.",
+            "dependencies": [],
+            "details": "Create pages/deploy-guide.tsx with a responsive layout using Grid/Flexbox. Implement StepWizard component with progress bar. Design mobile-friendly UI with clear section breaks. Use MaterialUI or similar for consistent styling.",
+            "status": "pending",
+            "testStrategy": "Visual regression testing for responsive layouts, component unit tests for wizard navigation"
+          },
+          {
+            "id": 2,
+            "title": "Implement Repository Fork Functionality",
+            "description": "Create the repository forking mechanism that allows users to clone the template repository into their own GitHub account.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use GitHub API to handle repository forking. Implement OAuth flow for GitHub authentication. Add loading states and error handling for fork process. Create success/failure notifications.",
+            "status": "pending",
+            "testStrategy": "Integration tests with GitHub API mocks, error scenario testing"
+          },
+          {
+            "id": 3,
+            "title": "Create Supabase Setup Automation Script",
+            "description": "Develop an automated script to initialize and configure Supabase project with required tables, policies, and functions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create SQL migration scripts for table creation. Implement RLS policy setup. Add database functions and triggers. Use Supabase Management API for automation. Include rollback capabilities.",
+            "status": "pending",
+            "testStrategy": "Unit tests for SQL scripts, integration tests with Supabase test instance"
+          },
+          {
+            "id": 4,
+            "title": "Integrate Vercel Deployment System",
+            "description": "Build the Vercel deployment integration including the deployment button and configuration handling.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement 'Deploy to Vercel' button component. Create deployment configuration template. Handle environment variable setup. Add deployment status checking and feedback.",
+            "status": "pending",
+            "testStrategy": "Integration tests with Vercel API, deployment flow testing"
+          },
+          {
+            "id": 5,
+            "title": "Develop Environment Variable Configuration Guide",
+            "description": "Create an interactive guide for setting up required environment variables in both Vercel and local development.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Create .env template generator. Add variable validation logic. Implement secure credential handling. Create step-by-step configuration wizard with validation.",
+            "status": "pending",
+            "testStrategy": "Unit tests for validation logic, usability testing for configuration flow"
+          },
+          {
+            "id": 6,
+            "title": "Implement Local Development Setup Assistant",
+            "description": "Create automated tools and guides for setting up local development environment.",
+            "dependencies": [
+              5
+            ],
+            "details": "Create development environment checker script. Implement automated local setup script. Add dependency verification. Create troubleshooting guide component.",
+            "status": "pending",
+            "testStrategy": "Integration tests for setup scripts, cross-platform testing"
+          },
+          {
+            "id": 7,
+            "title": "Create Comprehensive Documentation Components",
+            "description": "Develop in-page documentation components including tooltips, help text, and troubleshooting guides.",
+            "dependencies": [
+              1,
+              5,
+              6
+            ],
+            "details": "Implement tooltip system for complex steps. Create collapsible help sections. Add troubleshooting guide component. Integrate external documentation links.",
+            "status": "pending",
+            "testStrategy": "Content validation tests, accessibility testing for documentation components"
+          },
+          {
+            "id": 8,
+            "title": "Implement End-to-End Testing and Validation",
+            "description": "Create comprehensive testing suite for the entire deployment guide flow and all its components.",
+            "dependencies": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Implement E2E tests for complete deployment flow. Add integration tests for GitHub, Vercel, and Supabase interactions. Create automated validation suite for setup scripts.",
+            "status": "pending",
+            "testStrategy": "Cypress E2E tests, integration test suite, user flow validation"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Comprehensive Codebase Lint and Type Error Resolution",
+        "description": "Fix all current lint and TypeScript errors across the codebase as reported by 'npx next lint' and 'npx tsc --noEmit', ensuring each fix resolves both lint and type errors without introducing new issues. Focus on proper, production-quality fixes that use specific types.",
+        "status": "in-progress",
+        "dependencies": [
+          1,
+          2
+        ],
+        "priority": "medium",
+        "details": "Implementation Steps:\n\n1. Initial Error Assessment:\n- Run 'npx next lint' and save output\n- Run 'npx tsc --noEmit' and save output\n- Create tracking spreadsheet of all errors by file\n- For each file, document both lint and type errors together\n- Prioritize files by error count and severity\n\n2. Code Cleanup:\n- Remove all unused variables and imports\n- Remove unused components\n- Replace all require() with import statements\n- Verify each cleanup doesn't introduce new type errors\n- Document any significant removals in Git history\n\n3. TypeScript Comment Cleanup:\n- Add descriptions to all @ts-expect-error comments\n- Remove unnecessary @ts-expect-error and @ts-ignore\n- Replace @ts-ignore with proper type fixes\n- Verify lint rules aren't violated by type fixes\n\n4. Type System Improvements:\n- Replace all explicit 'any' types with specific, correct types\n- For unknown types, implement type guards or add documented TODOs\n- Never use 'unknown' type without proper type narrowing\n- Install missing @types packages for third-party modules\n- Add proper type declarations where needed\n- Implement null checks for supabase instances\n\n5. React-Specific Fixes:\n- Address all React hook dependency warnings\n- Fix useEffect dependency arrays\n- Escape all unescaped entities in JSX\n- Update component props to match current APIs\n- Ensure type fixes don't violate React lint rules\n\n6. Component-Specific Fixes:\n- Resolve rich text editor type errors\n- Update component implementations to match library APIs\n- Fix type errors in custom components\n- Verify fixes maintain lint compliance\n- Test functionality after each fix\n\n7. File-by-File Verification:\n- Address both lint and type errors in each file before moving on\n- Only mark files as complete when both lint and type checks pass\n- Document any patterns found for future prevention\n- Create regression tests where appropriate",
+        "testStrategy": "1. Error Resolution Verification:\n- Run both 'npx next lint' and 'npx tsc --noEmit' after each file fix\n- Verify no new errors of either type introduced\n- Document any error interdependencies found\n\n2. Component Testing:\n- Test affected components after type fixes\n- Verify rich text editor functionality\n- Test supabase integration points\n- Ensure lint-compliant implementations\n\n3. Integration Testing:\n- Run full application build\n- Test key user flows\n- Verify no runtime errors\n- Check both lint and type compliance\n\n4. Documentation Review:\n- Verify all @ts-expect-error comments have descriptions\n- Review type definitions for completeness\n- Check null handling implementation\n- Verify all TODOs are properly documented\n- Ensure no 'unknown' types are used without guards",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Error Assessment and Tracking Setup",
+            "description": "Run initial error checks and create tracking system that maps interdependencies between lint and type errors",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Run 'npx next lint' and 'npx tsc --noEmit'. Create spreadsheet to track all errors by file, noting both lint and type errors together. Map any dependencies between errors. Prioritize files based on total error count and severity.",
+            "testStrategy": "Verify all current errors are captured, categorized correctly, and interdependencies are documented"
+          },
+          {
+            "id": 2,
+            "title": "Unused Code and Import Cleanup",
+            "description": "Remove all unused variables, imports, and components while maintaining type safety",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Remove unused variables and imports flagged by lint. Replace require() with import statements. Remove unused components. Verify each removal doesn't introduce type errors. Document removals in Git commits.",
+            "testStrategy": "Run both lint and type checks after removals to verify no new errors introduced"
+          },
+          {
+            "id": 3,
+            "title": "TypeScript Comment Resolution",
+            "description": "Fix and document all TypeScript suppression comments without introducing lint errors",
+            "status": "pending",
+            "dependencies": [
+              2
+            ],
+            "details": "Add descriptions to @ts-expect-error comments. Remove unnecessary suppressions. Replace @ts-ignore with proper fixes that maintain lint compliance.",
+            "testStrategy": "Verify all remaining suppression comments are necessary, documented, and don't mask lint errors"
+          },
+          {
+            "id": 4,
+            "title": "Third-Party Type Installation",
+            "description": "Install missing type definitions for external modules",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Install @types packages for third-party modules. Add type declarations for modules without @types packages. Verify type compatibility and lint rule compliance.",
+            "testStrategy": "Run both type and lint checks to verify no errors remain"
+          },
+          {
+            "id": 5,
+            "title": "Explicit Type Replacement",
+            "description": "Replace all 'any' types with proper type definitions, using guards where needed",
+            "status": "pending",
+            "dependencies": [
+              4
+            ],
+            "details": "Replace all 'any' types with specific, correct types. Implement type guards for complex cases. Add documented TODOs where type cannot be determined. Never use 'unknown' without proper narrowing. Add null checks for supabase instances.",
+            "testStrategy": "Run type check to verify no 'any' or unsafe 'unknown' types remain"
+          },
+          {
+            "id": 6,
+            "title": "React Hook and JSX Fixes",
+            "description": "Resolve React-specific lint and type errors together",
+            "status": "pending",
+            "dependencies": [
+              2
+            ],
+            "details": "Fix React hook dependency warnings. Escape unescaped entities in JSX. Update component implementations to match current APIs. Ensure type fixes maintain lint compliance.",
+            "testStrategy": "Run both lint and type checks to verify no React-specific issues remain"
+          },
+          {
+            "id": 7,
+            "title": "Rich Text Editor Type Resolution",
+            "description": "Fix all type errors in rich text editor implementation while maintaining lint compliance",
+            "status": "pending",
+            "dependencies": [
+              5
+            ],
+            "details": "Update rich text editor code to match library APIs. Fix type errors in editor components. Verify editor functionality. Ensure fixes don't introduce lint errors.",
+            "testStrategy": "Test editor functionality and run both lint and type checks after fixes"
+          },
+          {
+            "id": 8,
+            "title": "Final Error Resolution Verification",
+            "description": "Verify all lint and type errors are resolved without introducing new issues",
+            "status": "pending",
+            "dependencies": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Run final lint and type checks. Verify all files pass both checks. Document any remaining suppressions with clear explanations.",
+            "testStrategy": "Complete full lint and type check runs. Verify no errors of either type remain."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Centralized useSupabaseReady Hook",
+        "description": "Create a centralized useSupabaseReady hook to manage Supabase client initialization and ensure all client-side queries wait for AuthProvider session hydration, eliminating intermittent blank states on authenticated pages.",
+        "details": "Implementation Steps:\n\n1. Hook Implementation:\n- Create new `hooks/useSupabaseReady.ts` file\n- Implement hook to track Supabase client and auth state initialization\n- Add state management for tracking hydration status\n- Implement timeout handling for failed initialization\n- Add error boundary handling for initialization failures\n\n2. AuthProvider Integration:\n- Modify AuthProvider to expose session hydration status\n- Add context value for tracking initialization state\n- Implement proper cleanup on unmount\n- Add debug logging for initialization stages\n\n3. Client Query Integration:\n- Create HOC or wrapper function for protected queries\n- Implement query suspension until initialization complete\n- Add loading state handling for waiting queries\n- Create utility functions for common query patterns\n\n4. Error Handling:\n- Implement proper error states for initialization failures\n- Add retry logic for failed initialization attempts\n- Create error boundary for catching initialization errors\n- Add telemetry for tracking initialization issues\n\n5. Performance Optimization:\n- Implement request batching for concurrent queries\n- Add caching layer for initialization state\n- Optimize re-render behavior during initialization\n- Add performance monitoring hooks\n\nCode Example:\n```typescript\nexport const useSupabaseReady = () => {\n  const [isReady, setIsReady] = useState(false);\n  const { session, isLoading } = useSession();\n  \n  useEffect(() => {\n    const checkInitialization = async () => {\n      try {\n        await supabase.auth.getSession();\n        setIsReady(true);\n      } catch (error) {\n        console.error('Supabase initialization failed:', error);\n      }\n    };\n    \n    if (!isLoading) {\n      checkInitialization();\n    }\n  }, [isLoading]);\n\n  return { isReady, isLoading, session };\n};\n```",
+        "testStrategy": "1. Unit Testing:\n- Test hook initialization with mock Supabase client\n- Verify proper state management during initialization\n- Test timeout handling and retry logic\n- Verify error boundary functionality\n- Test cleanup on unmount\n- Validate session hydration detection\n- Test concurrent query handling\n\n2. Integration Testing:\n- Verify hook integration with AuthProvider\n- Test protected route behavior\n- Validate query suspension functionality\n- Test error handling in real environment\n- Verify proper loading state management\n- Test performance with multiple concurrent queries\n- Validate caching behavior\n\n3. End-to-End Testing:\n- Test complete authentication flow\n- Verify protected page loading behavior\n- Test navigation between protected routes\n- Validate session persistence\n- Test error recovery scenarios\n- Verify proper loading states across routes\n\n4. Performance Testing:\n- Measure initialization time impact\n- Test concurrent query performance\n- Verify memory usage during initialization\n- Measure impact on page load times\n- Test under various network conditions",
+        "status": "pending",
+        "dependencies": [
+          3
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create useSupabaseReady hook",
+            "description": "Implement new hook in hooks/useSupabaseReady.ts that waits for AuthProvider.loading to be false and ensures supabase.auth.getSession() resolves before returning true.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 2,
+            "title": "Guard admin-settings-provider with useSupabaseReady",
+            "description": "Import useSupabaseReady and render null or skeleton until supaReady true before calling fetchAdminSettings or clearCacheAndRefresh.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 3,
+            "title": "Guard session-sidebar with useSupabaseReady",
+            "description": "Add supaReady guard in ai-agents/components/session-sidebar.tsx so loadSessions runs only when ready.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 4,
+            "title": "Remove redundant auth.getUser calls",
+            "description": "Refactor ai-agents/agent/[id]/page.tsx and chat-interface.tsx to use authUser from useAuth and remove extra getUser calls.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 5,
+            "title": "Audit other createClient usages",
+            "description": "Search for createClient usages that run on mount and add useSupabaseReady guards or move logic into hooks. Files include product/image-upload.tsx, page-editor.tsx, login page, deploy-guide page, edit-product-stripe client, admin-settings-client, admin-submissions-client.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 6,
+            "title": "Add ESLint rule to forbid createClient outside hooks",
+            "description": "Configure custom eslint rule or project convention to prevent importing createClient in non-hook components.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 7,
+            "title": "End-to-end testing",
+            "description": "Test /agents and /agent pages while logged in and logged out, verify no blank states and session-sidebar loads correctly. Add Playwright tests if time.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-04T20:48:35.105Z",
+      "updated": "2025-07-16T03:40:23.176Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

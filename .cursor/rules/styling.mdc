@@ -1,0 +1,759 @@
+---
+description: Use this file and information when making changes to the applications asthetics or options on the /admin-settings page that pertain to the theme and styling of the application.
+alwaysApply: false
+---
+# Styling & Design System Rules
+
+## Overview
+This application uses Tailwind CSS with shadcn/ui components, next-themes for theme management, and a mobile-first responsive design approach.
+
+## Tailwind CSS Configuration
+
+### 1. Core Configuration
+```typescript
+// ✅ tailwind.config.ts
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  darkMode: ['class'],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
+      },
+    },
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+}
+
+export default config
+```
+
+### 2. Global Styles
+```css
+/* ✅ app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+```
+
+## Design System Patterns
+
+### 1. Color Usage
+```typescript
+// ✅ Semantic color classes
+export function ExampleComponent() {
+  return (
+    <div className="bg-background text-foreground">
+      {/* Primary actions */}
+      <button className="bg-primary text-primary-foreground hover:bg-primary/90">
+        Primary Action
+      </button>
+      
+      {/* Secondary actions */}
+      <button className="bg-secondary text-secondary-foreground hover:bg-secondary/80">
+        Secondary Action
+      </button>
+      
+      {/* Destructive actions */}
+      <button className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+        Delete
+      </button>
+      
+      {/* Muted text */}
+      <p className="text-muted-foreground">Additional information</p>
+      
+      {/* Borders */}
+      <div className="border border-border rounded-lg">
+        <div className="bg-card text-card-foreground p-4">
+          Card content
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+### 2. Typography Scale
+```typescript
+// ✅ Typography classes
+export function TypographyExample() {
+  return (
+    <div className="space-y-4">
+      <h1 className="text-4xl font-bold tracking-tight">Heading 1</h1>
+      <h2 className="text-3xl font-semibold tracking-tight">Heading 2</h2>
+      <h3 className="text-2xl font-semibold tracking-tight">Heading 3</h3>
+      <h4 className="text-xl font-semibold tracking-tight">Heading 4</h4>
+      <h5 className="text-lg font-medium">Heading 5</h5>
+      <h6 className="text-base font-medium">Heading 6</h6>
+      
+      <p className="text-base leading-7">
+        Body text with comfortable line height for reading.
+      </p>
+      
+      <p className="text-sm text-muted-foreground">
+        Small text for captions and labels.
+      </p>
+      
+      <p className="text-xs text-muted-foreground">
+        Extra small text for fine print.
+      </p>
+    </div>
+  )
+}
+```
+
+### 3. Spacing System
+```typescript
+// ✅ Consistent spacing patterns
+export function SpacingExample() {
+  return (
+    <div className="space-y-8">
+      {/* Container spacing */}
+      <div className="container mx-auto px-4 py-8">
+        
+        {/* Card spacing */}
+        <div className="bg-card rounded-lg p-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Card Title</h3>
+            <p className="text-muted-foreground">Card content</p>
+          </div>
+        </div>
+        
+        {/* Section spacing */}
+        <section className="py-16">
+          <div className="space-y-12">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold">Section Title</h2>
+              <p className="text-xl text-muted-foreground">Section subtitle</p>
+            </div>
+            
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {/* Grid items */}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+```
+
+## Responsive Design Patterns
+
+### 1. Mobile-First Approach
+```typescript
+// ✅ Mobile-first responsive design
+export function ResponsiveComponent() {
+  return (
+    <div className="
+      // Mobile (default)
+      px-4 py-6 text-sm
+      
+      // Tablet
+      md:px-6 md:py-8 md:text-base
+      
+      // Desktop
+      lg:px-8 lg:py-12 lg:text-lg
+      
+      // Large desktop
+      xl:px-12 xl:py-16 xl:text-xl
+    ">
+      <div className="
+        // Mobile: single column
+        grid grid-cols-1 gap-4
+        
+        // Tablet: two columns
+        md:grid-cols-2 md:gap-6
+        
+        // Desktop: three columns
+        lg:grid-cols-3 lg:gap-8
+      ">
+        {/* Grid items */}
+      </div>
+    </div>
+  )
+}
+```
+
+### 2. Breakpoint Guidelines
+```typescript
+// ✅ Breakpoint usage patterns
+export function BreakpointExample() {
+  return (
+    <div className="space-y-8">
+      {/* Navigation - responsive behavior */}
+      <nav className="
+        flex flex-col space-y-4
+        md:flex-row md:space-y-0 md:space-x-6
+        lg:space-x-8
+      ">
+        {/* Navigation items */}
+      </nav>
+      
+      {/* Hero section - responsive text */}
+      <section className="text-center space-y-4">
+        <h1 className="
+          text-3xl font-bold
+          md:text-4xl
+          lg:text-5xl
+          xl:text-6xl
+        ">
+          Hero Title
+        </h1>
+        
+        <p className="
+          text-lg text-muted-foreground max-w-md mx-auto
+          md:text-xl md:max-w-2xl
+          lg:text-2xl lg:max-w-4xl
+        ">
+          Hero description
+        </p>
+      </section>
+      
+      {/* Content - responsive layout */}
+      <div className="
+        space-y-8
+        lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0
+      ">
+        <div className="lg:col-span-2">
+          {/* Main content */}
+        </div>
+        <div className="
+          space-y-4
+          lg:space-y-6
+        ">
+          {/* Sidebar content */}
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+## Component Styling Patterns
+
+### 1. Button Variants
+```typescript
+// ✅ Button styling with variants
+import { cva } from 'class-variance-authority'
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+```
+
+### 2. Form Styling
+```typescript
+// ✅ Form component styling
+export function FormExample() {
+  return (
+    <form className="space-y-6">
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          Email
+        </label>
+        <input
+          type="email"
+          className="
+            flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm
+            ring-offset-background placeholder:text-muted-foreground
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+            disabled:cursor-not-allowed disabled:opacity-50
+          "
+          placeholder="Enter your email"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none">
+          Password
+        </label>
+        <input
+          type="password"
+          className="
+            flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm
+            ring-offset-background placeholder:text-muted-foreground
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+            disabled:cursor-not-allowed disabled:opacity-50
+          "
+          placeholder="Enter your password"
+        />
+      </div>
+      
+      <button
+        type="submit"
+        className="
+          w-full inline-flex items-center justify-center rounded-md text-sm font-medium
+          h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90
+          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+          disabled:pointer-events-none disabled:opacity-50
+        "
+      >
+        Sign In
+      </button>
+    </form>
+  )
+}
+```
+
+## Animation and Transitions
+
+### 1. Hover Effects
+```typescript
+// ✅ Smooth hover transitions
+export function HoverExample() {
+  return (
+    <div className="space-y-4">
+      {/* Button hover */}
+      <button className="
+        px-4 py-2 bg-primary text-primary-foreground rounded-md
+        hover:bg-primary/90 transition-colors duration-200
+      ">
+        Hover Button
+      </button>
+      
+      {/* Card hover */}
+      <div className="
+        p-6 bg-card border border-border rounded-lg
+        hover:shadow-lg hover:border-border/50
+        transition-all duration-200
+      ">
+        Hover Card
+      </div>
+      
+      {/* Link hover */}
+      <a href="#" className="
+        text-primary underline-offset-4
+        hover:underline transition-all duration-200
+      ">
+        Hover Link
+      </a>
+    </div>
+  )
+}
+```
+
+### 2. Loading States
+```typescript
+// ✅ Loading animations
+export function LoadingExample() {
+  return (
+    <div className="space-y-4">
+      {/* Spinner */}
+      <div className="flex items-center justify-center">
+        <div className="
+          animate-spin rounded-full h-8 w-8 border-b-2 border-primary
+        "></div>
+      </div>
+      
+      {/* Skeleton loading */}
+      <div className="space-y-3">
+        <div className="h-4 bg-muted rounded animate-pulse"></div>
+        <div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
+        <div className="h-4 bg-muted rounded animate-pulse w-1/2"></div>
+      </div>
+      
+      {/* Pulse effect */}
+      <div className="
+        w-full h-32 bg-muted rounded-lg
+        animate-pulse
+      "></div>
+    </div>
+  )
+}
+```
+
+## Theme Management
+
+### 1. Theme Provider Setup
+```typescript
+// ✅ Theme provider configuration
+import { ThemeProvider } from 'next-themes'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
+    </ThemeProvider>
+  )
+}
+```
+
+### 2. Theme Toggle Component
+```typescript
+// ✅ Theme toggle implementation
+import { useTheme } from 'next-themes'
+import { Sun, Moon } from 'lucide-react'
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+
+  return (
+    <button
+      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+      className="
+        inline-flex items-center justify-center rounded-md text-sm font-medium
+        h-10 w-10 border border-input bg-background hover:bg-accent hover:text-accent-foreground
+        transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+      "
+    >
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </button>
+  )
+}
+```
+
+## Mobile-Specific Styling
+
+### 1. Touch-Friendly Design
+```typescript
+// ✅ Touch-optimized components
+export function TouchFriendlyExample() {
+  return (
+    <div className="space-y-4">
+      {/* Minimum touch target size */}
+      <button className="
+        min-h-[44px] min-w-[44px] px-4 py-2
+        bg-primary text-primary-foreground rounded-md
+        touch-manipulation
+      ">
+        Touch Button
+      </button>
+      
+      {/* Adequate spacing for touch */}
+      <div className="space-y-4 md:space-y-2">
+        <button className="w-full h-12 bg-primary text-primary-foreground rounded-md">
+          Option 1
+        </button>
+        <button className="w-full h-12 bg-secondary text-secondary-foreground rounded-md">
+          Option 2
+        </button>
+        <button className="w-full h-12 bg-outline text-foreground rounded-md border">
+          Option 3
+        </button>
+      </div>
+    </div>
+  )
+}
+```
+
+### 2. Mobile Navigation
+```typescript
+// ✅ Mobile-first navigation
+export function MobileNavigation() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <nav className="border-b">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center space-x-2">
+          <Logo />
+        </div>
+        
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="
+            md:hidden inline-flex items-center justify-center
+            h-10 w-10 rounded-md hover:bg-accent hover:text-accent-foreground
+            transition-colors
+          "
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        
+        {/* Desktop navigation */}
+        <div className="hidden md:flex md:items-center md:space-x-6">
+          <NavigationItems />
+        </div>
+      </div>
+      
+      {/* Mobile navigation menu */}
+      {isOpen && (
+        <div className="md:hidden border-t bg-background">
+          <div className="px-4 py-2 space-y-1">
+            <MobileNavigationItems />
+          </div>
+        </div>
+      )}
+    </nav>
+  )
+}
+```
+
+## Common Anti-Patterns
+
+### ❌ Don't Use Inline Styles
+```typescript
+// ❌ Avoid inline styles
+<div style={{ backgroundColor: 'red', padding: '10px' }}>
+
+// ✅ Use Tailwind classes
+<div className="bg-red-500 p-4">
+```
+
+### ❌ Don't Use Fixed Pixel Values
+```typescript
+// ❌ Avoid fixed pixel values
+<div className="w-[300px] h-[200px]">
+
+// ✅ Use responsive units
+<div className="w-full max-w-sm h-48 md:h-64">
+```
+
+### ❌ Don't Skip Dark Mode Considerations
+```typescript
+// ❌ Hard-coded colors that don't work in dark mode
+<div className="bg-white text-black">
+
+// ✅ Use semantic color classes
+<div className="bg-background text-foreground">
+```
+
+### ❌ Don't Use Arbitrary Values Unnecessarily
+```typescript
+// ❌ Unnecessary arbitrary values
+<div className="p-[13px] m-[27px]">
+
+// ✅ Use design system values
+<div className="p-3 m-6">
+```
+
+## Admin-Settings–Driven Color Scheme (Dynamic Theming)
+
+Application colors are **data-driven**.  A single row in the `public.admin_settings` table holds light & dark palette values that are loaded **server-side in `app/layout.tsx`** and mapped to CSS variables.
+
+### 1. Database Columns
+| Column | Light Var | Dark Var | Purpose |
+|--------|-----------|----------|---------|
+| `primary_color` | `--primary` | `--primary` | Brand or accent color (buttons, links) |
+| `secondary_color` | `--secondary` | `--secondary` | Supporting accent |
+| `background_color` | `--background` |  –  | Page background (light) |
+| `headline_text_color` | `--foreground \*` |  –  | `h1–h3` headings |
+| `paragraph_text_color` | `--foreground` | `--foreground` (dark) | Body copy |
+| `button_color` | — (derived from `primary_color`) | — | CTA background; legacy field |
+| `button_hover_color` | — | — | CTA hover |
+| `button_text_color` | `--primary-foreground` | `--primary-foreground` | CTA copy |
+| `link_color` | `--link` | `--link` | Anchor default |
+| `link_hover_color` | `--link-hover` | `--link-hover` | Anchor hover |
+| `header_background_color` | `--header-bg` |  –  | Navigation bar in light theme |
+| `dark_*` equivalents | – | see mapping | Dark-mode palette |
+| `show_header` | n/a | n/a | Toggles `<Navigation>` visibility |
+| `dev_mode` | n/a | n/a | Exposes JSON debug blocks |
+
+\* If `headline_text_color` is `NULL` the Tailwind semantic `text-foreground` falls back to `--foreground` (black in light mode).
+
+### 2. RootLayout Mapping
+```tsx
+// app/layout.tsx (excerpt)
+const vars = {
+  '--background': hexToHsl(settings?.background_color ?? '#F7F9FB'),
+  '--primary':    hexToHsl(settings?.primary_color    ?? '#3A72BB'),
+  '--secondary':  hexToHsl(settings?.secondary_color  ?? '#33363B'),
+  '--link':       hexToHsl(settings?.link_color       ?? '#33363B'),
+  '--link-hover': hexToHsl(settings?.link_hover_color ?? '#3872BB'),
+  '--header-bg':  hexToHsl(settings?.header_background_color ?? '#F7F9FB'),
+}
+
+const darkVars = {
+  '--background': hexToHsl(settings?.dark_background_color ?? '#0D0D0D'),
+  '--primary':    hexToHsl(settings?.dark_primary_color    ?? vars['--primary']),
+  '--secondary':  hexToHsl(settings?.dark_secondary_color  ?? vars['--secondary']),
+  '--link':       hexToHsl(settings?.dark_link_color       ?? '#FFFFFF'),
+  '--link-hover': hexToHsl(settings?.dark_link_hover_color ?? '#3872BB'),
+  '--header-bg':  hexToHsl(settings?.dark_header_background_color ?? '#0D0D0D'),
+  '--foreground': hexToHsl(settings?.dark_paragraph_text_color    ?? '#EDEDED'),
+}
+```
+* `hexToHsl()` ensures compatibility with the Tailwind HSL design-token scheme.
+* CSS is injected inline: `:root { … } html.dark { … }` so no client flash.
+
+### 3. Guidelines for LLM-Generated Components
+1. **Always use semantic Tailwind classes** (`bg-primary`, `text-foreground`, etc).  Never hard-code hex values.
+2. If you need a new semantic color (e.g. `warning`), add a column pair `warning_color` / `dark_warning_color` in `admin_settings` and map it in **both** `vars` & `darkVars`.
+3. For front-end previews, fall back to default hex codes shown above when a DB value is `NULL`.
+4. When writing migrations, enforce `CHECK (value ~* '^#?[0-9A-F]{6}$')` to validate hex.
+5. Avoid client-side `document.documentElement.style.setProperty()` except in **Dev Mode**— server injection prevents a FOUC.
+
+### 4. Light vs Dark Theme Toggle
+The project uses `next-themes`.  The **ThemeProvider** wraps the application in `components/providers.tsx`.  The `.dark` class is applied to `<html>`; CSS variables inside `html.dark { … }` automatically switch palettes.
+
+```tsx
+import { ThemeProvider } from 'next-themes'
+
+export function Providers({ children, initialUser, initialSession }: ProvidersProps) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider initialUser={initialUser} initialSession={initialSession}>
+        {children}
+      </AuthProvider>
+    </ThemeProvider>
+  )
+}
+```
+
+### 5. Admin Settings UX
+The `/admin-settings` page exposes two **Tabs** (“Light” & “Dark”).  Each tab
+contains color-picker inputs bound to the columns above.  Clicking **Save**
+`upsert`s the single row.  A **Clear** button resets that tab to sensible
+defaults (see `AdminSettingsClient`).
+
+---
+This section keeps the design-system documentation in sync with the current
+Supabase-driven theming logic so LLM-generated code stays consistent and avoids
+hard-coded styles.
+
+// ✅ Use design system values
+<div className="p-3 m-6">
+```

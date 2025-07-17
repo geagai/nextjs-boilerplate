@@ -1,0 +1,93 @@
+# AI Agent Creation Page (`/create-agent`)
+
+This page provides the UI and logic for creating new AI agents in the application. It is implemented in [`ai-agents/create-agent/page.tsx`](mdc:ai-agents/create-agent/page.tsx) and uses a modular form component to handle agent configuration, including dynamic fields.
+
+## 1. Page Setup and Routing
+- **File:** [`ai-agents/create-agent/page.tsx`](mdc:ai-agents/create-agent/page.tsx)
+- **Route:** `/create-agent` (see [`app/create-agent/page.tsx`](mdc:app/create-agent/page.tsx))
+- **Import:** The page is imported into the main app route via:
+  ```typescript
+  import CreateAgentPage from '@/ai-agents/create-agent/page'
+  export default CreateAgentPage
+  ```
+- **Navigation:** Linked from the agents list page for admins (see `/agents` page).
+
+## 2. Authentication & Redirects
+- Uses the `useAuth` hook from [`components/auth-provider.tsx`](mdc:components/auth-provider.tsx) to check if the user is authenticated.
+- If not authenticated, redirects to `/login`.
+- Shows a loading spinner while checking auth or redirecting.
+
+## 3. Main Form Component: `AgentForm`
+- **File:** [`ai-agents/components/agent-form.tsx`](mdc:ai-agents/components/agent-form.tsx)
+- Handles both creation and editing of agents (`mode="create"` for this page).
+- Uses `react-hook-form` with a Zod schema for validation.
+- **Sections:**
+  - Basic Information (name, description, category, API URL, public toggle)
+  - Agent Behavior (role, system prompt)
+  - UI Options (icon, placeholder, max tokens, temperature, top_p)
+  - HTTP Headers (dynamic key-value pairs)
+  - Body Parameters (dynamic fields for user input)
+
+## 4. Supabase Integration
+- **Client:** Uses `createClient()` from [`lib/supabase.ts`](mdc:lib/supabase.ts) to interact with Supabase.
+- **Table:** `agents` (see schema below)
+- **Insert:** On submit, builds an agent object and inserts it into the `agents` table with the current user's UID.
+- **Update:** (edit mode) Updates the agent row by ID and UID.
+- **Error Handling:** Displays toast notifications for success/error.
+
+### Agents Table Schema (Supabase)
+| Column       | Type      | Description                                  |
+|--------------|-----------|----------------------------------------------|
+| id           | uuid      | Primary key, auto-generated                  |
+| created_at   | timestamptz | Creation timestamp                         |
+| updated_at   | timestamptz | Last update timestamp                      |
+| UID          | uuid      | User ID (foreign key to auth.users)         |
+| name         | text      | Agent name                                  |
+| description  | text      | Description                                 |
+| category     | text      | Category                                    |
+| api_url      | text      | API endpoint for the agent                   |
+| prompt       | text      | System prompt                               |
+| agent_role   | text      | Role/personality of the agent                |
+| is_public    | boolean   | Public visibility toggle                     |
+| config       | jsonb     | Agent configuration (headers, body, options) |
+
+- The `config` field stores headers, body fields, and UI options as JSON.
+
+## 5. Dynamic Fields & Form Logic
+- **Dynamic Body Parameters:**
+  - Users can add/remove body parameters (fields) that will be sent to the agent's API.
+  - Each parameter can be of type: `text`, `textarea`, `dropdown`, `website_credentials`, or `none`.
+  - Dropdown fields allow specifying selectable options.
+  - Each field can have a label, default value, and input type.
+- **Dynamic Headers:**
+  - Users can add/remove HTTP headers to be sent with API requests.
+- **Validation:**
+  - Uses Zod schema for required fields and correct formats (e.g., valid URL).
+- **Component:** [`DropdownOptionsSection`](mdc:ai-agents/components/agent-form.tsx) handles conditional rendering of dropdown options.
+
+## 6. Dynamic Form Rendering (Usage)
+- The dynamic fields defined in the agent's config are rendered at runtime using [`DynamicFormFields`](mdc:ai-agents/components/dynamic-form-fields.tsx).
+- **Logic:**
+  - Processes the `body` array from the agent's config to generate form fields.
+  - Supports types: `text`, `textarea`, `dropdown`, `website_credentials`, `checkbox`, `number`.
+  - Handles validation and default values.
+  - See [`processFormFields`](mdc:lib/ai-agent-utils.ts) and [`validateFormData`](mdc:lib/ai-agent-utils.ts) for utility logic.
+  - Types are defined in [`lib/types.ts`](mdc:lib/types.ts): `BodyField`, `FormField`, `Agent`.
+
+## 7. How It All Connects
+- The `/create-agent` page is the entry point for creating new agents.
+- It uses `AgentForm` to collect all agent configuration, including dynamic fields.
+- On submit, the agent is saved to Supabase in the `agents` table, with all config stored as JSON.
+- The dynamic fields defined here are later rendered for users when interacting with the agent (see `DynamicFormFields`).
+
+## 8. References
+- [ai-agents/create-agent/page.tsx](mdc:ai-agents/create-agent/page.tsx)
+- [ai-agents/components/agent-form.tsx](mdc:ai-agents/components/agent-form.tsx)
+- [ai-agents/components/dynamic-form-fields.tsx](mdc:ai-agents/components/dynamic-form-fields.tsx)
+- [lib/ai-agent-utils.ts](mdc:lib/ai-agent-utils.ts)
+- [lib/types.ts](mdc:lib/types.ts)
+- [app/create-agent/page.tsx](mdc:app/create-agent/page.tsx)
+description:
+globs:
+alwaysApply: false
+---

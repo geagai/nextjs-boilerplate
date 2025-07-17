@@ -1,0 +1,66 @@
+---
+description: This file provides information about the /my-products page. Check it and use the information when making changes to the /my-products page.
+alwaysApply: false
+---
+# /my-products Page
+
+## Purpose
+Displays all Stripe products in a tabular layout so admins can quickly review existing offerings and navigate to edit them.
+
+## Route
+`/my-products`
+
+## Access Control
+* Requires authentication via `requireAuth()`.
+* Both regular users and admins can view the page, but **Developer Mode** features show JSON only when `admin_settings.dev_mode = TRUE`.
+* The page now leverages the global session-hydration pattern (see 2-authentication.mdc §4.1). The server component passes `initialUser` / `initialSession` into `Providers`, preventing any Sign-In/Sign-Up flash on refresh.
+
+## Data-fetch Flow (Server Component)
+1. Fetch `stripe_secret` & `dev_mode` from `admin_settings` with `createServerClient(cookies())`.
+2. Use Stripe SDK (`2025-05-28.basil`) to list products (`stripe.products.list`) then prices for each product (`stripe.prices.list`).
+3. Pass an array of simplified product objects plus `devMode` flag to the client component.
+
+```ts
+interface ProductRow {
+  id: string
+  name: string
+  image: string | null
+  metadata: Record<string, any>
+  prices: Array<{
+    id: string
+    amount: number | null
+    currency: string
+    type: 'recurring' | 'one_time'
+    interval: string | null
+  }>
+}
+```
+
+## UI (Client Component)
+* Renders table columns: Image, Title, Prices, Credits, Action.
+* **Action** column contains a themed “Edit Product” button → `/edit-product-stripe?id=<id>`.
+* Credits pulled from `product.metadata.credits`.
+* When `devMode` true, raw JSON of `products` is shown in a `<pre><code>` block under the table.
+
+## Dev Mode Toggle
+* Boolean `dev_mode` column in `admin_settings`.
+* Added toggle in Admin Settings UI. Enables JSON dump on this page.
+
+## Component Files
+| File | Responsibility |
+|------|----------------|
+| `app/my-products/page.tsx` | Server component: auth, Stripe fetch, dev-mode flag, renders client comp |
+| `app/my-products/my-products-client.tsx` | Client component: table rendering, JSON dev block |
+
+## Related Updates
+* Create Product flow now redirects here after creation.
+* Edit Product flow now stays on page and shows toast.
+
+## Future Enhancements
+* Pagination for large product sets.
+* Search / filter products.
+* Column to toggle active status of prices.
+description:
+globs:
+alwaysApply: false
+---

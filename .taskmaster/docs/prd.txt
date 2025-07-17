@@ -1,0 +1,145 @@
+# Next.js Boilerplate Enhancement PRD
+
+## Project Overview
+This project enhances an existing Next.js boilerplate application with improved settings management, subscription handling, and admin functionality. The application uses Supabase for authentication and database, and Stripe for payment processing.
+
+## Feature Requirements
+
+### 1. Settings Page Enhancements
+
+#### 1.1 Profile Information Management
+- **Objective**: Update profile information in both Supabase authentication and user_data table
+- **Requirements**:
+  - Full name field must update both Authentication Display Name column and user_data.display_name column
+  - Form validation for profile fields
+  - Real-time sync between authentication and database
+  - Error handling for update failures
+  - Success/failure feedback to user
+
+#### 1.2 Subscription Management System
+- **Objective**: Create comprehensive subscription management with database integration
+- **Requirements**:
+  - Create subscriptions table in Supabase with columns:
+    - UID (uppercase): current logged-in user ID from Supabase
+    - customer_id: Stripe customer ID  
+    - subscription_id: Stripe subscription ID
+    - cost: subscription cost amount
+    - billing_term: payment terms (lifetime, monthly, yearly) using actual Stripe values
+  - Display subscription information from database on settings page
+  - Show current plan, billing cycle, next billing date
+  - Provide upgrade/downgrade options
+  - Handle subscription status changes
+
+#### 1.3 Password Management
+- **Objective**: Enable secure password updates through Supabase authentication
+- **Requirements**:
+  - Password change form with current password verification
+  - New password confirmation field
+  - Password strength validation
+  - Update password in Supabase authentication system
+  - Secure password handling (no plaintext storage)
+  - Session management after password change
+
+### 2. Admin Settings Page and Functionality
+
+#### 2.1 Admin Settings Database Table
+- **Objective**: Create centralized admin configuration storage
+- **Requirements**:
+  - Create admin_settings table in Supabase with columns:
+    - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: Stripe publishable key
+    - STRIPE_SECRET_KEY: Stripe secret key  
+    - STRIPE_WEBHOOK_SECRET: Stripe webhook secret
+  - Secure storage of sensitive configuration data
+  - Version control for configuration changes
+
+#### 2.2 Admin Settings Page (/admin-settings)
+- **Objective**: Provide admin interface for Stripe configuration
+- **Requirements**:
+  - Create /admin-settings page with form fields for:
+    - Stripe publishable key
+    - Stripe secret key
+    - Stripe webhook secret
+  - Form validation for API key formats
+  - Secure handling of sensitive data
+  - Admin-only access control
+  - Configuration persistence to database
+
+#### 2.3 Header Visibility Control
+- **Objective**: Allow header removal for submodule integration
+- **Requirements**:
+  - Setting to remove header from application
+  - Useful when running as submodule where header should not show
+  - Dynamic header rendering based on configuration
+  - Maintain navigation functionality when header is hidden
+
+#### 2.4 Admin Navigation Enhancement
+- **Objective**: Improve admin navigation structure
+- **Requirements**:
+  - Add link to /admin-settings page in Admin submenu
+  - Place under "Create Product" menu item
+  - Maintain existing admin navigation structure
+  - Ensure proper permissions for admin links
+
+### 3. Create Product Page Enhancement
+
+#### 3.1 Stripe Configuration Integration
+- **Objective**: Streamline Stripe setup process for product creation
+- **Requirements**:
+  - Link "Configure Stripe" button to new /admin-settings page
+  - Remove "Stripe Configuration Required" message when either:
+    - Admin settings table contains Stripe configuration, OR
+    - Environment variables are present: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - Note: Webhook configuration not required for create product form display
+  - Seamless transition between configuration and product creation
+
+### 4. Database Infrastructure
+
+#### 4.1 Supabase Database Setup
+- **Objective**: Establish complete database schema with security policies
+- **Requirements**:
+  - Create all necessary tables (subscriptions, admin_settings, enhanced user_data)
+  - Implement Row Level Security (RLS) policies for data protection
+  - Set up database triggers for automated updates
+  - Create functions for complex operations
+  - Use Supabase MCP server for all database interactions
+  - Provide setup documentation and migration scripts
+
+#### 4.2 Data Security and Access Control
+- **Objective**: Ensure secure data handling and appropriate access controls
+- **Requirements**:
+  - RLS policies for user-specific data access
+  - Admin-only access for sensitive configuration
+  - Encrypted storage for sensitive admin settings
+  - Audit logging for configuration changes
+  - Data validation at database level
+
+## Technical Implementation Requirements
+
+### Database Schema
+- Use Supabase PostgreSQL database
+- Implement proper foreign key relationships
+- Add appropriate indexes for performance
+- Use UUID primary keys for security
+
+### Authentication & Authorization
+- Leverage existing Supabase authentication
+- Implement role-based access control
+- Secure admin functionality behind proper permissions
+- Session management for security
+
+### Integration Points
+- Stripe API integration for subscription management
+- Supabase Auth API for user management
+- Real-time updates where appropriate
+- Error handling and user feedback
+
+## Success Criteria
+- Users can successfully update profile information
+- Subscription information displays accurately from database
+- Admin can configure Stripe settings through UI
+- Password changes work securely through Supabase
+- Create product flow is streamlined with proper configuration detection
+- All database operations are secure and performant
+
+## Priority
+High - These enhancements are critical for production readiness and user experience. 

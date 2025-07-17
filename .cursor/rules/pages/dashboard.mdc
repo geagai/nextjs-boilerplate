@@ -1,0 +1,52 @@
+---
+description: Use the information in this file when working with or making changes to the /dashboard page.
+alwaysApply: false
+---
+# /dashboard Page (Live User Dashboard)
+
+## Purpose
+- Serves as the main user dashboard after login
+- Displays user account summary, active subscriptions, and all purchases (subscriptions and one-off payments)
+
+## Key UI Blocks/Components
+- **DashboardHeader**: Shows user name, email, user ID, and credits (all from user_data table)
+- **Active Subscriptions Block**: Shows a table of all active subscriptions for the user (from subscriptions table)
+  - Columns: Subscription ID, Cost, Billing Term, Created At, Status (with green highlight), Action ("Manage Subscription" button for monthly/yearly terms)
+  - Only subscriptions with status = 'active' and billing_term = 'month', 'monthly', 'year', or 'yearly' are shown
+- **Purchases Block**: Shows a table of all purchases (subscriptions and one-off payments) for the user (from subscriptions table)
+  - Columns: Subscription ID, Cost, Billing Term, Created At, Status (always 'Paid', blue highlight)
+  - All records are shown, regardless of status or billing term
+  - No Action column in this table
+- **(Removed) Payment History Block**: Previously showed payment history, now removed
+
+## Data Sources
+- **user_data table**: Used to fetch user email, role, credits, and UID (primary key for user lookups)
+- **subscriptions table**: Used to fetch all subscriptions and purchases for the current user (filtered by UID)
+- **auth.users table**: Used for authentication and UID reference
+
+## Special Logic
+- All dashboard data blocks are only rendered if the user_data table exists in the database (prevents errors if missing)
+- Active Subscriptions table is filtered to only show rows with status = 'active' and billing_term = 'month', 'monthly', 'year', or 'yearly'
+- Purchases table shows all records, regardless of status or billing term, and always displays 'Paid' in the Status column
+- "Manage Subscription" button (Action column) only appears in the Active Subscriptions table for monthly/yearly subscriptions
+- User ID block now displays UID from user_data, not just auth.users.id
+- Layout: All main blocks are full width, stacked vertically, with 20px margin above Active Subscriptions
+
+## Conditional Rendering
+- If user_data table does not exist, none of the dashboard blocks are rendered
+- If no active subscriptions, the Active Subscriptions table is not shown
+- If no purchases, the Purchases table is not shown
+
+## Styling/UX
+- Uses Tailwind CSS for layout and spacing
+- Table columns are compact, with status highlighted in green (Active Subscriptions) or blue (Purchases)
+- Action buttons styled as primary, only in Active Subscriptions
+
+## File References
+- Main page: `app/dashboard/page.tsx`
+- Header: `components/dashboard/dashboard-header.tsx`
+- Subscriptions/Purchases: `components/dashboard/subscription-card.tsx`
+description:
+globs:
+alwaysApply: false
+---

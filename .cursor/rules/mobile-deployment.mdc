@@ -1,0 +1,791 @@
+# Mobile Deployment & Capacitor Integration
+
+This document provides comprehensive guidance for mobile deployment using Capacitor, native features integration, and mobile-specific development patterns in APP_NAME.
+
+## **Mobile Architecture Overview**
+
+APP_NAME is designed as a **mobile-first progressive web application** with native mobile capabilities through Capacitor:
+
+- **Progressive Web App (PWA)** that works in mobile browsers
+- **Native iOS and Android apps** through Capacitor
+- **Responsive design** optimized for mobile devices
+- **Native features integration** (camera, storage, push notifications)
+- **Offline capability** with service worker caching
+
+## **Capacitor Configuration**
+
+### Core Configuration
+
+The application uses Capacitor 6.x configured in `capacitor.config.ts`:
+
+```typescript
+// capacitor.config.ts
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'MOBILE_APP_ID',
+  appName: 'MOBILE_APP_NAME',
+  webDir: 'out',  // Next.js static export directory
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#ffffff',
+      androidSplashResourceName: 'splash',
+      iosSplashResourceName: 'Default'
+    },
+    StatusBar: {
+      style: 'default',
+      backgroundColor: '#ffffff'
+    },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert']
+    }
+  }
+};
+
+export default config;
+```
+
+### Next.js Configuration for Mobile
+
+```javascript
+// next.config.js - Mobile optimizations
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',  // Required for Capacitor static hosting
+  trailingSlash: true,
+  images: {
+    unoptimized: true  // Required for static export
+  },
+  // PWA configuration
+  experimental: {
+    optimizeCss: true
+  }
+};
+
+module.exports = nextConfig;
+```
+
+## **Mobile Development Workflow**
+
+### 1. Development Setup
+
+```bash
+# Install Capacitor CLI globally
+npm install -g @capacitor/cli
+
+# Install Capacitor dependencies
+npm install @capacitor/core @capacitor/ios @capacitor/android
+
+# Add platforms
+npx cap add ios
+npx cap add android
+
+# Sync changes to mobile platforms
+npx cap sync
+```
+
+### 2. Build and Deploy Process
+
+```bash
+# 1. Build Next.js for production
+npm run build
+
+# 2. Sync with Capacitor platforms
+npx cap sync
+
+# 3. Open in native IDEs
+npx cap open ios     # Opens Xcode
+npx cap open android # Opens Android Studio
+
+# 4. Build and deploy from native IDEs
+```
+
+### 3. Live Reload Development
+
+```bash
+# Start Next.js dev server
+npm run dev
+
+# Run with live reload on device/simulator
+npx cap run ios --live-reload --external
+npx cap run android --live-reload --external
+```
+
+## **Native Features Integration**
+
+### Camera Integration
+
+```typescript
+// ✅ DO: Camera functionality with permissions
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+
+export async function takePicture() {
+  try {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: true,
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Camera
+    });
+    
+    return image.dataUrl;
+  } catch (error) {
+    console.error('Camera error:', error);
+    throw new Error('Failed to take picture');
+  }
+}
+
+// Choose from gallery
+export async function selectFromGallery() {
+  try {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: true,
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Photos
+    });
+    
+    return image.dataUrl;
+  } catch (error) {
+    console.error('Gallery error:', error);
+    throw new Error('Failed to select image');
+  }
+}
+```
+
+### Local Storage & Preferences
+
+```typescript
+// ✅ DO: Secure native storage
+import { Preferences } from '@capacitor/preferences';
+
+export class MobileStorage {
+  static async setItem(key: string, value: any) {
+    await Preferences.set({
+      key,
+      value: JSON.stringify(value)
+    });
+  }
+  
+  static async getItem(key: string) {
+    const { value } = await Preferences.get({ key });
+    return value ? JSON.parse(value) : null;
+  }
+  
+  static async removeItem(key: string) {
+    await Preferences.remove({ key });
+  }
+  
+  static async clear() {
+    await Preferences.clear();
+  }
+}
+
+// Usage in components
+export function useUserPreferences() {
+  const [theme, setTheme] = useState('light');
+  
+  useEffect(() => {
+    MobileStorage.getItem('theme').then(savedTheme => {
+      if (savedTheme) setTheme(savedTheme);
+    });
+  }, []);
+  
+  const updateTheme = async (newTheme: string) => {
+    setTheme(newTheme);
+    await MobileStorage.setItem('theme', newTheme);
+  };
+  
+  return { theme, updateTheme };
+}
+```
+
+### Push Notifications
+
+```typescript
+// ✅ DO: Push notifications setup
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+
+export class NotificationService {
+  static async initialize() {
+    if (!Capacitor.isNativePlatform()) return;
+    
+    // Request permission
+    const permStatus = await PushNotifications.requestPermissions();
+    
+    if (permStatus.receive === 'granted') {
+      await PushNotifications.register();
+    }
+    
+    // Listen for registration
+    PushNotifications.addListener('registration', token => {
+      console.log('Push registration success:', token.value);
+      // Send token to your backend
+      this.sendTokenToBackend(token.value);
+    });
+    
+    // Listen for incoming notifications
+    PushNotifications.addListener('pushNotificationReceived', notification => {
+      console.log('Push received:', notification);
+      // Handle foreground notification
+    });
+    
+    // Listen for notification actions
+    PushNotifications.addListener('pushNotificationActionPerformed', notification => {
+      console.log('Push action performed:', notification);
+      // Handle notification tap
+    });
+  }
+  
+  private static async sendTokenToBackend(token: string) {
+    try {
+      await fetch('/api/push/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+    } catch (error) {
+      console.error('Failed to register push token:', error);
+    }
+  }
+}
+```
+
+### Haptic Feedback
+
+```typescript
+// ✅ DO: Haptic feedback for better UX
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+export class HapticService {
+  static async light() {
+    await Haptics.impact({ style: ImpactStyle.Light });
+  }
+  
+  static async medium() {
+    await Haptics.impact({ style: ImpactStyle.Medium });
+  }
+  
+  static async heavy() {
+    await Haptics.impact({ style: ImpactStyle.Heavy });
+  }
+  
+  static async vibrate() {
+    await Haptics.vibrate();
+  }
+  
+  static async success() {
+    await Haptics.notification({ type: 'SUCCESS' });
+  }
+  
+  static async error() {
+    await Haptics.notification({ type: 'ERROR' });
+  }
+}
+
+// Usage in components
+function Button({ onClick, children }: ButtonProps) {
+  const handleClick = async () => {
+    await HapticService.light(); // Provide tactile feedback
+    onClick?.();
+  };
+  
+  return <button onClick={handleClick}>{children}</button>;
+}
+```
+
+## **Mobile-Specific Components**
+
+### Safe Area Handling
+
+```typescript
+// ✅ DO: Handle device safe areas
+import { StatusBar } from '@capacitor/status-bar';
+import { useEffect, useState } from 'react';
+
+export function useSafeArea() {
+  const [safeArea, setSafeArea] = useState({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  });
+  
+  useEffect(() => {
+    async function getSafeArea() {
+      try {
+        const info = await StatusBar.getInfo();
+        // Calculate safe areas based on status bar
+        setSafeArea({
+          top: info.height || 0,
+          bottom: 0, // Add bottom safe area for home indicator
+          left: 0,
+          right: 0
+        });
+      } catch (error) {
+        console.error('Safe area error:', error);
+      }
+    }
+    
+    getSafeArea();
+  }, []);
+  
+  return safeArea;
+}
+
+// Safe area wrapper component
+export function SafeAreaWrapper({ children }: { children: React.ReactNode }) {
+  const safeArea = useSafeArea();
+  
+  return (
+    <div 
+      style={{
+        paddingTop: `${safeArea.top}px`,
+        paddingBottom: `${safeArea.bottom}px`,
+        paddingLeft: `${safeArea.left}px`,
+        paddingRight: `${safeArea.right}px`,
+        minHeight: '100vh'
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+```
+
+### Mobile Navigation
+
+```typescript
+// ✅ DO: Mobile-optimized navigation
+export function MobileNavigation() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const toggleMenu = async () => {
+    await HapticService.light();
+    setIsMenuOpen(!isMenuOpen);
+  };
+  
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <div className="flex justify-around items-center h-16">
+        <NavButton icon="home" label="Home" href="/" />
+        <NavButton icon="agents" label="Agents" href="/my-agents" />
+        <NavButton icon="products" label="Products" href="/my-products" />
+        <NavButton icon="settings" label="Settings" href="/settings" />
+      </div>
+    </nav>
+  );
+}
+
+function NavButton({ icon, label, href }: NavButtonProps) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+  
+  return (
+    <Link 
+      href={href}
+      className={`flex flex-col items-center justify-center p-2 ${
+        isActive ? 'text-blue-600' : 'text-gray-500'
+      }`}
+      onClick={() => HapticService.light()}
+    >
+      <Icon name={icon} className="w-6 h-6" />
+      <span className="text-xs mt-1">{label}</span>
+    </Link>
+  );
+}
+```
+
+## **Platform-Specific Features**
+
+### iOS Specific
+
+```typescript
+// ✅ DO: iOS-specific adaptations
+import { Capacitor } from '@capacitor/core';
+
+export function IOSAdaptations() {
+  const isIOS = Capacitor.getPlatform() === 'ios';
+  
+  useEffect(() => {
+    if (isIOS) {
+      // Set iOS-specific styles
+      document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
+      document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom)');
+      
+      // Handle iOS keyboard
+      window.addEventListener('focusin', handleIOSKeyboard);
+      window.addEventListener('focusout', handleIOSKeyboardClose);
+    }
+    
+    return () => {
+      if (isIOS) {
+        window.removeEventListener('focusin', handleIOSKeyboard);
+        window.removeEventListener('focusout', handleIOSKeyboardClose);
+      }
+    };
+  }, [isIOS]);
+  
+  const handleIOSKeyboard = () => {
+    // Adjust viewport for iOS keyboard
+    setTimeout(() => {
+      document.activeElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  };
+  
+  const handleIOSKeyboardClose = () => {
+    // Reset viewport
+    window.scrollTo(0, 0);
+  };
+}
+```
+
+### Android Specific
+
+```typescript
+// ✅ DO: Android-specific adaptations
+export function AndroidAdaptations() {
+  const isAndroid = Capacitor.getPlatform() === 'android';
+  
+  useEffect(() => {
+    if (isAndroid) {
+      // Handle Android back button
+      document.addEventListener('backbutton', handleBackButton);
+      
+      // Android-specific splash screen
+      SplashScreen.hide();
+    }
+    
+    return () => {
+      if (isAndroid) {
+        document.removeEventListener('backbutton', handleBackButton);
+      }
+    };
+  }, [isAndroid]);
+  
+  const handleBackButton = (event: Event) => {
+    event.preventDefault();
+    // Custom back button logic
+    if (canGoBack()) {
+      router.back();
+    } else {
+      // Show exit confirmation
+      showExitConfirmation();
+    }
+  };
+}
+```
+
+## **Offline Capabilities**
+
+### Service Worker for Caching
+
+```typescript
+// ✅ DO: Offline-first approach
+// public/sw.js
+const CACHE_NAME = 'CACHE_NAME';
+const urlsToCache = [
+  '/',
+  '/static/js/bundle.js',
+  '/static/css/main.css',
+  '/api/offline-data'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      })
+  );
+});
+```
+
+### Offline Data Synchronization
+
+```typescript
+// ✅ DO: Queue actions for offline sync
+export class OfflineSync {
+  private static queue: Array<{ action: string, data: any, timestamp: number }> = [];
+  
+  static async addToQueue(action: string, data: any) {
+    const item = {
+      action,
+      data,
+      timestamp: Date.now()
+    };
+    
+    this.queue.push(item);
+    await MobileStorage.setItem('offline_queue', this.queue);
+  }
+  
+  static async processQueue() {
+    const isOnline = navigator.onLine;
+    if (!isOnline) return;
+    
+    const storedQueue = await MobileStorage.getItem('offline_queue') || [];
+    
+    for (const item of storedQueue) {
+      try {
+        await this.executeAction(item);
+        // Remove from queue on success
+        this.queue = this.queue.filter(q => q.timestamp !== item.timestamp);
+      } catch (error) {
+        console.error('Failed to sync offline action:', error);
+      }
+    }
+    
+    await MobileStorage.setItem('offline_queue', this.queue);
+  }
+  
+  private static async executeAction(item: any) {
+    switch (item.action) {
+      case 'create_agent':
+        return fetch('/api/agents', {
+          method: 'POST',
+          body: JSON.stringify(item.data)
+        });
+      case 'update_profile':
+        return fetch('/api/auth/update-profile', {
+          method: 'POST',
+          body: JSON.stringify(item.data)
+        });
+      default:
+        throw new Error(`Unknown action: ${item.action}`);
+    }
+  }
+}
+```
+
+## **Performance Optimizations**
+
+### Mobile-Specific Optimizations
+
+```typescript
+// ✅ DO: Mobile performance patterns
+export function MobileOptimizations() {
+  // Lazy load heavy components
+  const HeavyComponent = lazy(() => import('./HeavyComponent'));
+  
+  // Optimize images for mobile
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Reduce motion for better performance
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  
+  // Virtual scrolling for long lists
+  const { items, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    queryKey: ['mobile-items'],
+    queryFn: fetchItems,
+    getNextPageParam: (lastPage) => lastPage.nextCursor
+  });
+  
+  return (
+    <div className="mobile-optimized">
+      {/* Optimized image loading */}
+      <img
+        src={imageLoaded ? fullResImage : placeholderImage}
+        onLoad={() => setImageLoaded(true)}
+        loading="lazy"
+        decoding="async"
+      />
+      
+      {/* Conditional animations */}
+      <motion.div
+        animate={prefersReducedMotion ? {} : { opacity: 1 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+      >
+        Content
+      </motion.div>
+      
+      {/* Virtual scrolling */}
+      <VirtualizedList items={items} />
+    </div>
+  );
+}
+```
+
+## **Testing Mobile Applications**
+
+### Device Testing
+
+```typescript
+// ✅ DO: Mobile-specific testing
+describe('Mobile Features', () => {
+  beforeEach(async () => {
+    // Mock Capacitor environment
+    global.Capacitor = {
+      isNativePlatform: () => true,
+      getPlatform: () => 'ios'
+    };
+  });
+  
+  it('should handle camera permissions', async () => {
+    const mockCamera = {
+      getPhoto: jest.fn().mockResolvedValue({
+        dataUrl: 'data:image/jpeg;base64,test'
+      })
+    };
+    
+    global.Camera = mockCamera;
+    
+    const result = await takePicture();
+    expect(result).toBe('data:image/jpeg;base64,test');
+    expect(mockCamera.getPhoto).toHaveBeenCalled();
+  });
+  
+  it('should handle offline state', async () => {
+    // Mock offline state
+    Object.defineProperty(navigator, 'onLine', {
+      writable: true,
+      value: false
+    });
+    
+    await OfflineSync.addToQueue('test_action', { data: 'test' });
+    
+    // Verify queued
+    const queue = await MobileStorage.getItem('offline_queue');
+    expect(queue).toHaveLength(1);
+  });
+});
+```
+
+## **Deployment & Distribution**
+
+### iOS App Store
+
+```bash
+# 1. Build for production
+npm run build
+npx cap sync ios
+
+# 2. Open in Xcode
+npx cap open ios
+
+# 3. Configure in Xcode:
+# - Set bundle identifier
+# - Configure signing certificates
+# - Set app icons and splash screens
+# - Configure privacy permissions in Info.plist
+
+# 4. Archive and upload to App Store Connect
+```
+
+### Google Play Store
+
+```bash
+# 1. Build for production
+npm run build
+npx cap sync android
+
+# 2. Open in Android Studio
+npx cap open android
+
+# 3. Configure in Android Studio:
+# - Set application ID
+# - Configure signing keys
+# - Set app icons and splash screens
+# - Configure permissions in AndroidManifest.xml
+
+# 4. Generate signed APK/AAB and upload to Play Console
+```
+
+### Required Permissions
+
+```xml
+<!-- iOS - Info.plist -->
+<key>NSCameraUsageDescription</key>
+<string>This app needs access to camera to take photos</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to photo library to select images</string>
+
+<!-- Android - AndroidManifest.xml -->
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+## **Mobile Anti-Patterns**
+
+```typescript
+// ❌ DON'T: Use desktop-only patterns
+export function BadMobileComponent() {
+  // Don't use hover states on mobile
+  return <button className="hover:bg-blue-500">Button</button>;
+  
+  // Don't use small touch targets
+  return <button className="w-2 h-2">Tiny</button>;
+  
+  // Don't ignore safe areas
+  return <div className="fixed top-0 left-0">Header</div>;
+  
+  // Don't block the UI thread
+  const heavyWork = () => {
+    for (let i = 0; i < 1000000; i++) {
+      // Heavy synchronous work
+    }
+  };
+}
+
+// ❌ DON'T: Ignore platform differences
+function BadPlatformHandling() {
+  // Don't assume all platforms support all features
+  Camera.getPhoto(); // Missing permission checks
+  
+  // Don't use web-only APIs without checks
+  localStorage.setItem('key', 'value'); // Use Preferences instead
+  
+  // Don't ignore network conditions
+  fetch('/api/large-data'); // Should check connection quality
+}
+```
+
+## **Best Practices Summary**
+
+- **Always check platform capabilities** before using native features
+- **Handle permissions gracefully** with user-friendly fallbacks
+- **Optimize for mobile performance** with lazy loading and virtualization
+- **Test on real devices** not just simulators
+- **Handle offline scenarios** with proper queuing and sync
+- **Follow platform design guidelines** for iOS and Android
+- **Use safe areas** to avoid notches and home indicators
+- **Implement proper error handling** for native feature failures
+- **Cache strategically** for offline functionality
+- **Optimize images** for mobile bandwidth and storage
+
+## **Related Dependencies**
+
+```json
+{
+  "@capacitor/core": "^6.0.0",
+  "@capacitor/cli": "^6.0.0",
+  "@capacitor/ios": "^6.0.0",
+  "@capacitor/android": "^6.0.0",
+  "@capacitor/camera": "^6.0.0",
+  "@capacitor/preferences": "^6.0.0",
+  "@capacitor/push-notifications": "^6.0.0",
+  "@capacitor/haptics": "^6.0.0",
+  "@capacitor/status-bar": "^6.0.0",
+  "@capacitor/splash-screen": "^6.0.0"
+}
+```
+
+This mobile deployment system provides a robust foundation for cross-platform mobile applications while maintaining the rich web experience of the APP_NAME platform.
+description:
+globs:
+alwaysApply: false
+---
