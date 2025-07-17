@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { ImageUpload } from './image-upload'
-import { SortableMarketingFeatures } from './sortable-marketing-features'
+import { SimpleMarketingFeatures } from './simple-marketing-features'
 import { SortablePricingOptions } from './sortable-pricing-options'
 import { productFormSchema, ProductFormData } from '@/lib/product-schema'
 import { toast } from 'sonner'
@@ -179,10 +179,10 @@ export function ProductForm({
       {/* Marketing Features */}
       <Card>
         <CardContent className="pt-6">
-          <SortableMarketingFeatures
+          <SimpleMarketingFeatures
             features={watchedMarketingFeatures}
             onChange={(features) => setValue('marketingFeatures', features)}
-            errors={errors.marketingFeatures as Array<{ title?: string; description?: string }> | undefined}
+            errors={errors.marketingFeatures as string[] | undefined}
           />
         </CardContent>
       </Card>
@@ -201,34 +201,30 @@ export function ProductForm({
         </CardContent>
       </Card>
 
-      {/* Advanced Settings */}
+      {/* Additional Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Advanced Settings</CardTitle>
+          <CardTitle>Additional Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="taxBehavior">Tax Behavior</Label>
-            <Select
-              value={watch('taxBehavior')}
-              onValueChange={(value: 'inclusive' | 'exclusive' | 'unspecified') => 
-                setValue('taxBehavior', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unspecified">Unspecified</SelectItem>
-                <SelectItem value="inclusive">Tax Inclusive</SelectItem>
-                <SelectItem value="exclusive">Tax Exclusive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="taxBehavior">Tax Behavior</Label>
+              <Select
+                value={watch('taxBehavior')}
+                onValueChange={(value) => setValue('taxBehavior', value as 'inclusive' | 'exclusive' | 'unspecified')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tax behavior" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unspecified">Unspecified</SelectItem>
+                  <SelectItem value="inclusive">Inclusive</SelectItem>
+                  <SelectItem value="exclusive">Exclusive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="credits">Credits</Label>
               <Input
@@ -236,24 +232,19 @@ export function ProductForm({
                 type="number"
                 min="0"
                 {...register('credits', { valueAsNumber: true })}
-                placeholder="0"
+                placeholder="Number of credits"
               />
-              <p className="text-sm text-muted-foreground">
-                Number of credits included with this product
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-2 pt-8">
-              <Switch
-                id="creditsRollover"
-                checked={watch('creditsRollover')}
-                onCheckedChange={(checked) => setValue('creditsRollover', checked)}
-              />
-              <Label htmlFor="creditsRollover">Allow credits rollover</Label>
             </div>
           </div>
 
-          <Separator />
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="creditsRollover"
+              checked={watch('creditsRollover')}
+              onCheckedChange={(checked) => setValue('creditsRollover', checked)}
+            />
+            <Label htmlFor="creditsRollover">Allow Credits to Roll Over</Label>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="redirectUrl">Redirect URL</Label>
@@ -267,27 +258,27 @@ export function ProductForm({
               <p className="text-sm text-red-500">{errors.redirectUrl.message}</p>
             )}
             <p className="text-sm text-muted-foreground">
-              Where to redirect customers after successful purchase
+              URL to redirect customers after successful payment
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Submit Button */}
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end">
         <Button
           type="submit"
           disabled={isSubmitting || isLoading}
-          className="min-w-[150px]"
+          className="min-w-[120px]"
         >
-          {(isSubmitting || isLoading) ? (
+          {isSubmitting || isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {mode === 'create' ? 'Creating...' : 'Updating...'}
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Saving...
             </>
           ) : (
             <>
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="h-4 w-4 mr-2" />
               {submitLabel}
             </>
           )}

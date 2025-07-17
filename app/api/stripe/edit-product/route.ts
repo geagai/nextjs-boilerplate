@@ -30,12 +30,7 @@ interface ProductData {
   imageUrl?: string
   statementDescriptor?: string
   category?: string
-  marketingFeatures: Array<{
-    id: string
-    title: string
-    description?: string
-    order: number
-  }>
+  marketingFeatures: string[]
   pricing: PricingOption[]
   taxBehavior: 'inclusive' | 'exclusive' | 'unspecified'
   credits?: number
@@ -104,21 +99,30 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
+    // Prepare metadata with individual feature fields
+    const metadata: Record<string, string> = {
+      category: productData.category || '',
+      credits: productData.credits?.toString() || '0',
+      credits_rollover: productData.creditsRollover?.toString() || 'false',
+      redirect_url: productData.redirectUrl || '',
+      tax_behavior: productData.taxBehavior,
+      most_popular: productData.mostPopular ? 'true' : 'false'
+    }
+
+    // Add marketing features as individual metadata fields
+    productData.marketingFeatures.forEach((feature, index) => {
+      if (feature.trim()) {
+        metadata[`feature_${index + 1}`] = feature.trim()
+      }
+    })
+
     // Update product in Stripe
     const stripeProduct = await stripe.products.update(productData.productId, {
       name: productData.name,
       description: productData.description,
       images: productData.imageUrl ? [productData.imageUrl] : undefined,
       statement_descriptor: productData.statementDescriptor,
-      metadata: {
-        category: productData.category || '',
-        marketing_features: JSON.stringify(productData.marketingFeatures),
-        credits: productData.credits?.toString() || '0',
-        credits_rollover: productData.creditsRollover?.toString() || 'false',
-        redirect_url: productData.redirectUrl || '',
-        tax_behavior: productData.taxBehavior,
-        most_popular: productData.mostPopular ? 'true' : 'false'
-      }
+      metadata
     })
 
     // Handle pricing updates

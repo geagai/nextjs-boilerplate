@@ -56,6 +56,48 @@ function showNoCardText(price: Stripe.Price) {
   return hasTrial && !requiresCardMeta
 }
 
+// Helper: extract marketing features from product metadata
+function getMarketingFeatures(product: Stripe.Product): string[] {
+  const features: string[] = []
+  
+  if (product.metadata) {
+    // First, try to get features from the new format (feature_1, feature_2, etc.)
+    const featureEntries: Array<{ number: number; value: string }> = []
+    Object.keys(product.metadata).forEach(key => {
+      if (key.startsWith('feature_')) {
+        const featureNumber = parseInt(key.replace('feature_', ''))
+        const featureValue = product.metadata[key]
+        if (featureValue && typeof featureValue === 'string' && !isNaN(featureNumber)) {
+          featureEntries.push({ number: featureNumber, value: featureValue })
+        }
+      }
+    })
+    
+    if (featureEntries.length > 0) {
+      // Use new format
+      featureEntries
+        .sort((a, b) => a.number - b.number)
+        .forEach(entry => features.push(entry.value))
+    } else if (product.metadata.marketing_features) {
+      // Fallback to old JSON format for backward compatibility
+      try {
+        const oldFeatures = JSON.parse(product.metadata.marketing_features)
+        if (Array.isArray(oldFeatures)) {
+          oldFeatures.forEach((feature: any) => {
+            if (feature && typeof feature.title === 'string') {
+              features.push(feature.title)
+            }
+          })
+        }
+      } catch (error) {
+        console.warn('Failed to parse old marketing features format:', error)
+      }
+    }
+  }
+  
+  return features
+}
+
 export function PricingCards({ session, products, publishableKey, columns = 4 }: PricingCardsProps) {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
@@ -143,6 +185,8 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
           const price = getPriceForTab(product.prices, activeTab)
           if (!price) return null
           const popular = product.metadata?.most_popular === 'true'
+          const marketingFeatures = getMarketingFeatures(product)
+          
           return (
             <motion.div
               key={product.id}
@@ -187,14 +231,14 @@ export function PricingCards({ session, products, publishableKey, columns = 4 }:
                   )}
 
                   {/* Marketing features from metadata */}
-                  {product.metadata?.marketing_features && (
+                  {marketingFeatures.length > 0 && (
                     <div>
                       <h4 className="font-semibold mb-3">What&rsquo;s included:</h4>
                       <ul className="space-y-2">
-                        {JSON.parse(product.metadata.marketing_features).slice(0, 8).map((feat: { title: string }, idx: number) => (
+                        {marketingFeatures.slice(0, 8).map((feature, idx) => (
                           <li key={idx} className="flex items-start">
                             <Check className="h-4 w-4 text-primary mt-0.5 mr-3 flex-shrink-0" />
-                            <span className="text-sm">{feat.title}</span>
+                            <span className="text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>

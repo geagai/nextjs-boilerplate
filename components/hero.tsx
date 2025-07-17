@@ -95,6 +95,8 @@ export function Hero() {
             The <span className="gradient-text">Ultimate</span>
             <br />
             Next.js Boilerplate
+            <br />
+            for <span className="gradient-text">Vibe Coding</span>
           </motion.h1>
 
           {/* Subtitle */}

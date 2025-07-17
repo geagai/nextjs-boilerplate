@@ -1,13 +1,6 @@
 
 import { z } from 'zod'
 
-export const marketingFeatureSchema = z.object({
-  id: z.string(),
-  title: z.string().min(1, 'Feature title is required'),
-  description: z.string().optional(),
-  order: z.number()
-})
-
 export const pricingOptionSchema = z.object({
   id: z.string(),
   stripeId: z.string().optional(),
@@ -49,7 +42,7 @@ export const productFormSchema = z.object({
   imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
   statementDescriptor: z.string().max(22, 'Statement descriptor must be 22 characters or less').optional(),
   category: z.string().optional(),
-  marketingFeatures: z.array(marketingFeatureSchema),
+  marketingFeatures: z.array(z.string()),
   pricing: z.array(pricingOptionSchema).min(1, 'At least one pricing option is required'),
   taxBehavior: z.enum(['inclusive', 'exclusive', 'unspecified']),
   credits: z.number().min(0).optional(),
@@ -59,5 +52,4 @@ export const productFormSchema = z.object({
 })
 
 export type ProductFormData = z.infer<typeof productFormSchema>
-export type MarketingFeature = z.infer<typeof marketingFeatureSchema>
 export type PricingOption = z.infer<typeof pricingOptionSchema>

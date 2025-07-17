@@ -44,6 +44,43 @@ export default function EditProductClient({ isAdmin, hasStripeConfig }: EditProd
 
       const data = await response.json()
       
+      // Extract marketing features from metadata
+      const marketingFeatures: string[] = []
+      if (data.product.metadata) {
+        // First, try to get features from the new format (feature_1, feature_2, etc.)
+        const featureEntries: Array<{ number: number; value: string }> = []
+        Object.keys(data.product.metadata).forEach(key => {
+          if (key.startsWith('feature_')) {
+            const featureNumber = parseInt(key.replace('feature_', ''))
+            const featureValue = data.product.metadata[key]
+            if (featureValue && typeof featureValue === 'string' && !isNaN(featureNumber)) {
+              featureEntries.push({ number: featureNumber, value: featureValue })
+            }
+          }
+        })
+        
+        if (featureEntries.length > 0) {
+          // Use new format
+          featureEntries
+            .sort((a, b) => a.number - b.number)
+            .forEach(entry => marketingFeatures.push(entry.value))
+        } else if (data.product.metadata.marketing_features) {
+          // Fallback to old JSON format for backward compatibility
+          try {
+            const oldFeatures = JSON.parse(data.product.metadata.marketing_features)
+            if (Array.isArray(oldFeatures)) {
+              oldFeatures.forEach((feature: any) => {
+                if (feature && typeof feature.title === 'string') {
+                  marketingFeatures.push(feature.title)
+                }
+              })
+            }
+          } catch (error) {
+            console.warn('Failed to parse old marketing features format:', error)
+          }
+        }
+      }
+      
       // Transform Stripe product data to form data format
       const formData: ProductFormData = {
         productId: typeof data.product.id === 'string' ? data.product.id : '',
@@ -52,9 +89,7 @@ export default function EditProductClient({ isAdmin, hasStripeConfig }: EditProd
         imageUrl: Array.isArray(data.product.images) && typeof data.product.images[0] === 'string' ? data.product.images[0] : '',
         statementDescriptor: typeof data.product.statement_descriptor === 'string' ? data.product.statement_descriptor : '',
         category: typeof data.product.metadata?.category === 'string' ? data.product.metadata.category : '',
-        marketingFeatures: data.product.metadata?.marketing_features
-          ? (Array.isArray(JSON.parse(data.product.metadata.marketing_features)) ? JSON.parse(data.product.metadata.marketing_features) : [])
-          : [],
+        marketingFeatures,
         pricing: Array.isArray(data.prices)
           ? data.prices.map((price: Record<string, unknown>) => {
               const id = typeof price.id === 'string' ? price.id : '';
@@ -248,17 +283,9 @@ export default function EditProductClient({ isAdmin, hasStripeConfig }: EditProd
             </Button>
             <ClearProductCacheButton />
           </div>
-          
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
-            <p className="text-muted-foreground mt-2">
-              Update your product information and pricing options
-            </p>
-            {productData.name && (
-              <p className="text-sm text-gray-600 mt-1">
-                Editing: <span className="font-medium">{productData.name}</span>
-              </p>
-            )}
+            <p className="text-muted-foreground mt-2">Update your product details and pricing</p>
           </div>
         </div>
 
