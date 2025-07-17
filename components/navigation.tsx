@@ -58,6 +58,9 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             <Link href={aiAgentsHref} className="text-link hover:text-link-hover font-medium transition-colors px-4">
               AI Agents
             </Link>
+            <Link href="/nextjs-boilerplate" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Vibe
+            </Link>
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
             </Link>
@@ -179,6 +182,9 @@ export function Navigation({ sticky = true, siteName = 'NextGeag BP' }: Navigati
             )}
             <Link href={aiAgentsHref} onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               AI Agents
+            </Link>
+            <Link href="/nextjs-boilerplate" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Vibe
             </Link>
             {!loading && user && (
               <>
