@@ -81,8 +81,14 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
 
   // Debug: check admin status on mount
   useEffect(() => {
+    console.log('Admin Settings - Component mounted');
+    console.log('Admin Settings - Initial supabase client:', supabase);
+    
     async function checkAdminStatus() {
-      if (!supabase) return;
+      if (!supabase) {
+        console.log('Admin Settings - Supabase client is null, skipping admin check');
+        return;
+      }
       const { data, error } = await supabase.rpc('is_admin');
       if (error) {
         console.error('is_admin RPC error:', error);
@@ -119,6 +125,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
 
   const handleClearCache = async () => {
     setClearingCache(true);
+    console.log('Admin Settings - handleClearCache called');
     try {
       await clearCacheAndRefresh();
       toast({ title: "Cache cleared successfully" });
@@ -134,9 +141,14 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     e.preventDefault();
     setSaving(true);
 
-    if (!supabase) return;
+    console.log('Admin Settings - handleSubmit called');
+    console.log('Admin Settings - supabase client:', supabase);
+    console.log('Admin Settings - supabase is null?', !supabase);
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
       const payload = {
         stripe_publishable_key: settings.stripe_publishable_key,
         stripe_secret: settings.stripe_secret,
