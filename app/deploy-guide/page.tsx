@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useTheme } from "next-themes";
 import { useAdminSettings } from "@/components/admin-settings-provider";
-import { createClient } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 
 const steps = [
@@ -40,31 +39,17 @@ export default function DeployGuidePage() {
   // const missing = missingEnvVars();
   // Remove fallback: always render the normal stepper
   const { theme } = useTheme();
-  const { adminSettings } = useAdminSettings();
-  // Remove adminSettings.repo usage for repo URL
-  const [checkingRepo, setCheckingRepo] = useState(false);
-  const [repoUrl, setRepoUrl] = useState<string | null>(null);
+  const { adminSettings, loading: adminSettingsLoading } = useAdminSettings();
   const [showSqlModal, setShowSqlModal] = useState(false);
   const [sqlScript, setSqlScript] = useState<string | null>(null);
 
-  // Always fetch repo from Supabase
-  useEffect(() => {
-    setCheckingRepo(true);
-    (async () => {
-      try {
-        const supabase = createClient();
-        if (!supabase) return;
-        const { data, error } = await supabase
-          .from("admin_settings")
-          .select("repo")
-          .limit(1)
-          .maybeSingle();
-        setRepoUrl(data?.repo ?? null);
-      } finally {
-        setCheckingRepo(false);
-      }
-    })();
-  }, []);
+  // Use repo URL from admin settings
+  const repoUrl = adminSettings?.repo;
+  
+  // Debug logging
+  console.log('Deploy Guide - adminSettings:', adminSettings);
+  console.log('Deploy Guide - adminSettingsLoading:', adminSettingsLoading);
+  console.log('Deploy Guide - repoUrl:', repoUrl);
 
   // Handler to open modal and load SQL
   const handleOpenSqlModal = async () => {
@@ -117,8 +102,8 @@ export default function DeployGuidePage() {
   }
 
   function StepForkRepo() {
-    if (checkingRepo) {
-      return <span className="text-sm text-muted-foreground">Checking repository URL...</span>;
+    if (adminSettingsLoading) {
+      return <span className="text-sm text-muted-foreground">Loading repository URL...</span>;
     }
     if (!repoUrl) {
       return (
