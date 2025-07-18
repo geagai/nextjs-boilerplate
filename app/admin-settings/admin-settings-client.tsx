@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
 import { useAdminSettings } from "@/components/admin-settings-provider";
 import { adminSettingsCache } from "@/lib/admin-settings-cache";
+import { useSupabaseReady } from "@/hooks/use-supabase-ready";
 
 // Dynamically import the RichTextEditor to avoid SSR issues
 const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false });
@@ -78,15 +79,17 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const [clearingCache, setClearingCache] = useState(false);
   const supabase = createClient();
   const { clearCacheAndRefresh } = useAdminSettings();
+  const supabaseReady = useSupabaseReady();
 
   // Debug: check admin status on mount
   useEffect(() => {
     console.log('Admin Settings - Component mounted');
     console.log('Admin Settings - Initial supabase client:', supabase);
+    console.log('Admin Settings - Supabase ready:', supabaseReady);
     
     async function checkAdminStatus() {
-      if (!supabase) {
-        console.log('Admin Settings - Supabase client is null, skipping admin check');
+      if (!supabase || !supabaseReady) {
+        console.log('Admin Settings - Supabase client is null or not ready, skipping admin check');
         return;
       }
       const { data, error } = await supabase.rpc('is_admin');
@@ -97,7 +100,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
       }
     }
     checkAdminStatus();
-  }, [supabase]);
+  }, [supabase, supabaseReady]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -144,10 +147,11 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     console.log('Admin Settings - handleSubmit called');
     console.log('Admin Settings - supabase client:', supabase);
     console.log('Admin Settings - supabase is null?', !supabase);
+    console.log('Admin Settings - supabase ready?', supabaseReady);
 
     try {
-      if (!supabase) {
-        throw new Error('Supabase client not initialized');
+      if (!supabase || !supabaseReady) {
+        throw new Error('Supabase client not initialized or not ready');
       }
       const payload = {
         stripe_publishable_key: settings.stripe_publishable_key,
@@ -241,7 +245,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
           <button
             type="button"
             onClick={handleClearCache}
-            disabled={clearingCache}
+            disabled={clearingCache || !supabaseReady}
             className="px-4 py-2 bg-white hover:bg-gray-100 border border-[#d8d8d8] rounded-[10px] text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               backgroundColor: '#ffffff',
@@ -249,17 +253,17 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
               borderRadius: '10px'
             }}
             onMouseEnter={(e) => {
-              if (!clearingCache) {
+              if (!clearingCache && supabaseReady) {
                 e.currentTarget.style.backgroundColor = '#f3f4f6';
               }
             }}
             onMouseLeave={(e) => {
-              if (!clearingCache) {
+              if (!clearingCache && supabaseReady) {
                 e.currentTarget.style.backgroundColor = '#ffffff';
               }
             }}
           >
-            {clearingCache ? 'Clearing...' : 'Clear Cache'}
+            {clearingCache ? 'Clearing...' : !supabaseReady ? 'Loading...' : 'Clear Cache'}
           </button>
         </div>
 
@@ -630,8 +634,8 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
             </CardContent>
           </Card>
             <div className="flex justify-end mt-6">
-              <Button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save Settings"}
+              <Button type="submit" disabled={saving || !supabaseReady}>
+                {saving ? "Saving..." : !supabaseReady ? "Loading..." : "Save Settings"}
               </Button>
             </div>
           </form>
