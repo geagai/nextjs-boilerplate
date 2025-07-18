@@ -160,16 +160,8 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     setSaving(true);
 
     console.log('Admin Settings - handleSubmit called');
-    console.log('Admin Settings - supabase client:', supabase);
-    console.log('Admin Settings - supabase is null?', !supabase);
-    console.log('Admin Settings - supabase ready?', supabaseReady);
 
     try {
-      if (!supabase) {
-        throw new Error('Supabase client not initialized');
-      }
-      
-      console.log('Admin Settings - Creating payload...');
       const payload = {
         stripe_publishable_key: settings.stripe_publishable_key,
         stripe_secret: settings.stripe_secret,
@@ -203,7 +195,6 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         pricing_page_headline: settings.pricing_page_headline,
         pricing_page_description: settings.pricing_page_description,
         pricing_page_faq: settings.pricing_page_faq,
-        // footer settings
         footer_background_color: settings.footer_background_color,
         dark_footer_background_color: settings.dark_footer_background_color,
         footer_text_color: settings.footer_text_color,
@@ -214,45 +205,33 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         footer_html_one: settings.footer_html_one,
         footer_html_two: settings.footer_html_two,
         repo: settings.repo,
-      } as const;
+      };
 
-      console.log('Admin Settings - Payload created:', payload);
-      console.log('Admin Settings - Settings ID:', settings.id);
+      console.log('Admin Settings - Submitting to server action:', payload);
 
-      let error;
-      // Always use upsert - it will insert if no ID exists, update if ID exists
-      console.log('Admin Settings - Using upsert with ID:', settings.id);
-      const { error: upsertError, data } = await supabase
-        .from("admin_settings")
-        .upsert({ ...payload, ...(settings.id && { id: settings.id }) })
-        .select()
-        .single();
-      
-      error = upsertError;
-      console.log('Admin Settings - Upsert error:', error);
-      console.log('Admin Settings - Upsert result data:', data);
-      
-      // Update the ID if we got one back
-      if (!error && data?.id && !settings.id) {
-        console.log('Admin Settings - Setting ID from upsert result:', data.id);
-        setSettings((prev) => ({ ...prev, id: data.id }));
+      const response = await fetch('/api/admin-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save settings');
       }
 
-      if (error) {
-        console.log('Admin Settings - Database error, throwing:', error);
-        throw error;
-      }
-
-      console.log('Admin Settings - Database operation successful, clearing cache...');
-      // Clear and refresh the admin settings cache after save
-      await adminSettingsCache.clearCacheAndRefresh();
+      console.log('Admin Settings - Server action successful:', result);
+      
+      // Clear cache after successful save
       await clearCacheAndRefresh();
       toast({ title: "Settings saved successfully" });
     } catch (err) {
       console.error('Admin Settings - Error in handleSubmit:', err);
       toast({ title: "Failed to save settings", variant: "destructive" });
     } finally {
-      console.log('Admin Settings - Finally block reached, setting saving to false');
       setSaving(false);
     }
   };
