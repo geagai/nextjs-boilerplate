@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
 import { useAdminSettings } from "@/components/admin-settings-provider";
 import { adminSettingsCache } from "@/lib/admin-settings-cache";
-import { useSupabaseReady } from "@/hooks/use-supabase-ready";
+
 
 // Dynamically import the RichTextEditor to avoid SSR issues
 const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false });
@@ -79,17 +79,22 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const [clearingCache, setClearingCache] = useState(false);
   const supabase = createClient();
   const { clearCacheAndRefresh } = useAdminSettings();
-  const supabaseReady = useSupabaseReady();
+  const [supabaseReady, setSupabaseReady] = useState(false);
 
-  // Debug: check admin status on mount
+  // Debug: check admin status on mount and set ready state
   useEffect(() => {
     console.log('Admin Settings - Component mounted');
     console.log('Admin Settings - Initial supabase client:', supabase);
-    console.log('Admin Settings - Supabase ready:', supabaseReady);
+    
+    // Set Supabase as ready if client exists
+    if (supabase) {
+      setSupabaseReady(true);
+      console.log('Admin Settings - Supabase client ready');
+    }
     
     async function checkAdminStatus() {
-      if (!supabase || !supabaseReady) {
-        console.log('Admin Settings - Supabase client is null or not ready, skipping admin check');
+      if (!supabase) {
+        console.log('Admin Settings - Supabase client is null, skipping admin check');
         return;
       }
       const { data, error } = await supabase.rpc('is_admin');
@@ -100,7 +105,7 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
       }
     }
     checkAdminStatus();
-  }, [supabase, supabaseReady]);
+  }, [supabase]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -150,8 +155,8 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
     console.log('Admin Settings - supabase ready?', supabaseReady);
 
     try {
-      if (!supabase || !supabaseReady) {
-        throw new Error('Supabase client not initialized or not ready');
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
       }
       const payload = {
         stripe_publishable_key: settings.stripe_publishable_key,
