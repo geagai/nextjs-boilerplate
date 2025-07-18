@@ -81,6 +81,14 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const { clearCacheAndRefresh } = useAdminSettings();
   const [supabaseReady, setSupabaseReady] = useState(false);
 
+  // Ensure we always have the ID from server-side props
+  useEffect(() => {
+    if (initialSettings.id && !settings.id) {
+      console.log('Admin Settings - Restoring ID from server props:', initialSettings.id);
+      setSettings(prev => ({ ...prev, id: initialSettings.id }));
+    }
+  }, [initialSettings.id, settings.id]);
+
   // Debug: check admin status on mount and set ready state
   useEffect(() => {
     console.log('Admin Settings - Component mounted');
@@ -158,6 +166,8 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
       if (!supabase) {
         throw new Error('Supabase client not initialized');
       }
+      
+      console.log('Admin Settings - Creating payload...');
       const payload = {
         stripe_publishable_key: settings.stripe_publishable_key,
         stripe_secret: settings.stripe_secret,
@@ -204,36 +214,43 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
         repo: settings.repo,
       } as const;
 
+      console.log('Admin Settings - Payload created:', payload);
+      console.log('Admin Settings - Settings ID:', settings.id);
+
       let error;
-      if (settings.id) {
-        // Update existing row via upsert using its UUID primary key
-        const { error: upsertError } = await supabase
-          .from("admin_settings")
-          .upsert({ id: settings.id, ...payload });
-        error = upsertError;
-      } else {
-        // Insert new row; UUID will be generated automatically
-        const { error: insertError, data } = await supabase
-          .from("admin_settings")
-          .insert(payload)
-          .select()
-          .single();
-        if (!insertError && data?.id) {
-          setSettings((prev) => ({ ...prev, id: data.id }));
-        }
-        error = insertError;
+      // Always use upsert - it will insert if no ID exists, update if ID exists
+      console.log('Admin Settings - Using upsert with ID:', settings.id);
+      const { error: upsertError, data } = await supabase
+        .from("admin_settings")
+        .upsert({ ...payload, ...(settings.id && { id: settings.id }) })
+        .select()
+        .single();
+      
+      error = upsertError;
+      console.log('Admin Settings - Upsert error:', error);
+      console.log('Admin Settings - Upsert result data:', data);
+      
+      // Update the ID if we got one back
+      if (!error && data?.id && !settings.id) {
+        console.log('Admin Settings - Setting ID from upsert result:', data.id);
+        setSettings((prev) => ({ ...prev, id: data.id }));
       }
 
-      if (error) throw error;
+      if (error) {
+        console.log('Admin Settings - Database error, throwing:', error);
+        throw error;
+      }
 
+      console.log('Admin Settings - Database operation successful, clearing cache...');
       // Clear and refresh the admin settings cache after save
       await adminSettingsCache.clearCacheAndRefresh();
       await clearCacheAndRefresh();
       toast({ title: "Settings saved successfully" });
     } catch (err) {
-      console.error(err);
+      console.error('Admin Settings - Error in handleSubmit:', err);
       toast({ title: "Failed to save settings", variant: "destructive" });
     } finally {
+      console.log('Admin Settings - Finally block reached, setting saving to false');
       setSaving(false);
     }
   };
