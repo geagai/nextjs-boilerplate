@@ -225,13 +225,13 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
 
       console.log('Admin Settings - Server action successful:', result);
       
-      // Clear cache after successful save
-      await clearCacheAndRefresh();
       toast({ title: "Settings saved successfully" });
+      console.log('Admin Settings - Toast shown, about to set saving to false');
     } catch (err) {
       console.error('Admin Settings - Error in handleSubmit:', err);
       toast({ title: "Failed to save settings", variant: "destructive" });
     } finally {
+      console.log('Admin Settings - Finally block reached, setting saving to false');
       setSaving(false);
     }
   };
