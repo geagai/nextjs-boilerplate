@@ -36,7 +36,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
-  if (!supabase) throw new Error('Database connection failed');
+  if (!supabase) return null; // Return null instead of throwing error
   
   try {
     // FIX: Use getSession() for hydration
@@ -79,7 +79,9 @@ export async function requireAuth(): Promise<{ user: AuthUser; session: Session 
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
-  if (!supabase) throw new Error('Database connection failed');
+  if (!supabase) {
+    redirect('/login') // Redirect to login instead of throwing error
+  }
 
   try {
     // Use getUser() for secure authentication

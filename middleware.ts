@@ -5,11 +5,17 @@ import { createServerClient } from '@supabase/ssr'
 import { missingEnvVars } from '@/lib/checkEnv'
 
 export async function middleware(request: NextRequest) {
-  // Redirect to /deploy-guide if required env vars are missing, except on /deploy-guide
-  const missing = missingEnvVars();
+  // Skip middleware completely if on /deploy-guide to prevent redirect loops
   const isDeployGuide = request.nextUrl.pathname.startsWith('/deploy-guide');
-  if (missing.length > 0 && !isDeployGuide) {
-    return NextResponse.redirect(new URL('/deploy-guide', request.url));
+  if (isDeployGuide) {
+    return NextResponse.next();
+  }
+
+  // Check if env vars are missing but don't redirect
+  const missing = missingEnvVars();
+  if (missing.length > 0) {
+    // Don't redirect, just continue without Supabase
+    return NextResponse.next();
   }
 
   let response = NextResponse.next({
@@ -61,5 +67,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!deploy-guide).*)'], // Apply to all routes except /deploy-guide
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

@@ -107,7 +107,9 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
 
     // Listen for auth changes (with DB role fetch)
     if (!supabase) {
-      throw new Error('Supabase client is not initialized');
+      // Gracefully handle missing Supabase client (e.g., missing env vars)
+      setLoading(false);
+      return;
     }
     
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(

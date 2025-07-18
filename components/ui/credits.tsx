@@ -11,24 +11,26 @@ export default async function Credits({ userId }: CreditsProps) {
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   let credits = 0
-  try {
-    if (!supabase) {
-      throw new Error('Supabase client is not initialized');
-    }
-    const { data, error } = await supabase
-      .from('user_data')
-      .select('credits')
-      .eq('UID', userId)
-      .single()
-    if (!error && data) {
-      if (data.credits === null || data.credits === undefined) {
-        credits = 0;
-      } else {
-        credits = data.credits;
+  if (!supabase) {
+    // Return default credits when Supabase is not available
+    credits = 0;
+  } else {
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('credits')
+        .eq('UID', userId)
+        .single()
+      if (!error && data) {
+        if (data.credits === null || data.credits === undefined) {
+          credits = 0;
+        } else {
+          credits = data.credits;
+        }
       }
+    } catch (e) {
+      // fallback to 0
     }
-  } catch (e) {
-    // fallback to 0
   }
 
   return (

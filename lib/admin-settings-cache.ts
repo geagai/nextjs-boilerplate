@@ -107,7 +107,53 @@ class AdminSettingsCacheManager {
       console.log('Admin Settings Requested: true');
       const supabase = createClient();
       if (!supabase) {
-        throw new Error('Supabase client is not initialized');
+        console.log('Admin Settings Requested: false (no Supabase client) - using defaults');
+        // Return default admin settings when no Supabase client is available
+        return {
+          id: undefined,
+          stripe_publishable_key: null,
+          stripe_secret: null,
+          stripe_webhook_secret: null,
+          show_header: null,
+          sticky_header: null,
+          email: null,
+          primary_color: null,
+          secondary_color: null,
+          background_color: null,
+          headline_text_color: null,
+          paragraph_text_color: null,
+          button_color: null,
+          button_hover_color: null,
+          button_text_color: null,
+          link_color: null,
+          link_hover_color: null,
+          header_background_color: null,
+          dark_primary_color: null,
+          dark_secondary_color: null,
+          dark_background_color: null,
+          dark_headline_text_color: null,
+          dark_paragraph_text_color: null,
+          dark_button_color: null,
+          dark_button_hover_color: null,
+          dark_button_text_color: null,
+          dark_link_color: null,
+          dark_link_hover_color: null,
+          dark_header_background_color: null,
+          dev_mode: null,
+          pricing_page_headline: null,
+          pricing_page_description: null,
+          pricing_page_faq: null,
+          footer_background_color: null,
+          dark_footer_background_color: null,
+          footer_text_color: null,
+          dark_footer_text_color: null,
+          footer_link_color: null,
+          dark_footer_link_color: null,
+          site_name: null,
+          footer_html_one: null,
+          footer_html_two: null,
+          repo: null,
+        };
       }
       const { data, error } = await supabase
         .from('admin_settings')
