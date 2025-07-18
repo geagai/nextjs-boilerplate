@@ -78,6 +78,8 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const [settings, setSettings] = useState<AdminSettingsRow>(initialSettings);
   const [clearingCache, setClearingCache] = useState(false);
   const supabase = createClient();
+  // Don't use useAdminSettings for form data - only use server-side initialSettings
+  // const { clearCacheAndRefresh } = useAdminSettings();
   const { clearCacheAndRefresh } = useAdminSettings();
   const [supabaseReady, setSupabaseReady] = useState(false);
 
