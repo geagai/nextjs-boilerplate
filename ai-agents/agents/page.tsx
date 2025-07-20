@@ -9,9 +9,19 @@ import { Button } from '@/components/ui/button'
 import { AgentsClientWrapper } from '@/ai-agents/components/agents-client-wrapper'
 
 export default async function AgentsPage() {
-  // Server-side auth check
-  const { user } = await requireAuth();
-  const isAdmin = user?.role?.toLowerCase() === 'admin'
+  // Optional server-side auth check - don't redirect if not logged in
+  let user = null;
+  let isAdmin = false;
+  
+  try {
+    const authResult = await requireAuth();
+    user = authResult.user;
+    isAdmin = user?.role?.toLowerCase() === 'admin';
+  } catch (error) {
+    // User is not logged in, continue without authentication
+    user = null;
+    isAdmin = false;
+  }
 
   // Fetch agents server-side
   const cookieStore = await cookies();

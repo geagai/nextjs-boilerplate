@@ -96,20 +96,86 @@
 ## 15. SERVER-SIDE DATA FETCHING PATTERN - ALWAYS USE FIRST
 - **ALWAYS implement server-side data fetching for new pages and components**
 - **NEVER create client-side only data fetching for static content or initial page loads**
-- **Use getServerSideProps or getStaticProps for all new pages that need data**
+- **Use server components with async functions for all new pages that need data**
 - **Only use client-side data fetching for real-time updates, user interactions, or dynamic forms**
-- **Follow this pattern for new components:**
+- **Follow this exact pattern for new pages (like /agents):**
   ```typescript
-  // ✅ DO: Server-side data fetching
-  export async function getServerSideProps() {
-    const supabase = createServerClient(cookies())
-    const { data } = await supabase.from('table').select('*')
-    return { props: { data } }
-  }
+  // ✅ DO: Server component with server-side data fetching
+  import { cookies } from 'next/headers'
+  import { createServerClient } from '@/lib/supabase'
+  import { requireAuth } from '@/lib/auth'
   
-  // ❌ DON'T: Client-side only data fetching
+  export default async function PageName() {
+    // Server-side auth check
+    const { user } = await requireAuth();
+    
+    // Fetch data server-side
+    const cookieStore = await cookies();
+    const supabase = createServerClient(cookieStore);
+    
+    if (!supabase) {
+      throw new Error('Unable to initialize Supabase client')
+    }
+    
+    const { data, error } = await supabase
+      .from('table')
+      .select('*')
+      .eq('condition', true);
+    
+    if (error) {
+      throw new Error(`Failed to fetch data: ${error.message}`)
+    }
+    
+    // Process data
+    const processedData = (data || []).map((item: any) => ({
+      ...item,
+      // any processing needed
+    }));
+    
+    return (
+      <div>
+        {/* Server-rendered content */}
+        <ClientWrapper 
+          data={processedData}
+          user={user}
+        />
+      </div>
+    )
+  }
+  ```
+- **For interactive features: Create separate client components**
+  ```typescript
+  // ✅ DO: Client component for interactivity
   "use client"
-  const { data } = useQuery() // This causes refresh issues
+  
+  export function ClientWrapper({ data, user }) {
+    const [searchQuery, setSearchQuery] = useState('')
+    const [filteredData, setFilteredData] = useState(data)
+    
+    // Client-side filtering logic
+    useEffect(() => {
+      const filtered = data.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredData(filtered)
+    }, [searchQuery, data])
+    
+    return (
+      <>
+        <input 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search..."
+        />
+        <DataList data={filteredData} />
+      </>
+    )
+  }
+  ```
+- **❌ DON'T: Client-side only data fetching**
+  ```typescript
+  "use client"
+  const { data } = useQuery() // This causes refresh issues and race conditions
   ```
 - **For new pages: Always start with server-side data fetching**
 - **For new components: Use server-side props, not client-side hooks for initial data**
