@@ -1,3 +1,25 @@
+// Supabase Auth Types (our own definitions)
+export interface AuthUser {
+  id: string
+  email?: string
+  user_metadata?: any
+  app_metadata?: any
+  subscription?: {
+    id: string
+    plan: string
+    status: string
+    currentPeriodEnd?: string
+  } | null
+  role?: string
+}
+
+export interface AuthSession {
+  user: AuthUser
+  access_token: string
+  refresh_token: string
+  expires_at?: number
+}
+
 export type Expense = {
   id: string
   amount: number

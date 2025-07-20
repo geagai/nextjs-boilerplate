@@ -2,18 +2,7 @@
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { User, Session } from '@supabase/supabase-js'
-
-// Enhanced user type with subscription data
-export interface AuthUser extends User {
-  subscription?: {
-    id: string
-    plan: string
-    status: string
-    currentPeriodEnd?: string
-  } | null
-  role?: string
-}
+import { AuthUser, AuthSession } from './types'
 
 // Monkey-patch console.warn to trace Supabase session warning on the server
 if (typeof process !== 'undefined' && process?.versions?.node) {
@@ -32,7 +21,7 @@ if (typeof process !== 'undefined' && process?.versions?.node) {
 }
 
 // Get current session on server side
-export async function getServerSession(): Promise<{ user: AuthUser; session: Session | null } | null> {
+export async function getServerSession(): Promise<{ user: AuthUser; session: AuthSession | null } | null> {
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
@@ -75,7 +64,7 @@ export async function getServerSession(): Promise<{ user: AuthUser; session: Ses
 }
 
 // Require authentication - redirect if not logged in
-export async function requireAuth(): Promise<{ user: AuthUser; session: Session | null }> {
+export async function requireAuth(): Promise<{ user: AuthUser; session: AuthSession | null }> {
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 

@@ -58,7 +58,7 @@ export function SessionSidebar({
         try {
           const supabase = createClient();
           if (!supabase) throw new Error('Supabase client is not initialized');
-          const UID = user?.id;
+          const UID = (user as any)?.id;
           if (!UID) {
             setSessions([]);
             setIsLoading(false);
@@ -96,7 +96,7 @@ export function SessionSidebar({
           throw new Error('Supabase client is not initialized');
         }
         console.log('[SessionSidebar] user:', user);
-        const UID = user?.id;
+        const UID = (user as any)?.id;
         console.log('[SessionSidebar] UID:', UID, 'agentId:', agentId);
         if (!UID) {
           setSessions([])
@@ -156,7 +156,7 @@ export function SessionSidebar({
       if (!supabase) {
         throw new Error('Supabase client is not initialized');
       }
-      const UID = user?.id;
+      const UID = (user as any)?.id;
       if (!UID) {
         setSessions([]);
         setIsLoading(false);
@@ -203,7 +203,7 @@ export function SessionSidebar({
       if (!supabase) {
         throw new Error('Supabase client is not initialized');
       }
-      const UID = user?.id;
+      const UID = (user as any)?.id;
       if (!UID) {
         setSessions([]);
         setRenameLoading(false);
@@ -245,7 +245,7 @@ export function SessionSidebar({
               try {
                 const supabase = createClient();
                 if (!supabase) throw new Error('Supabase client is not initialized');
-                const UID = user?.id;
+                const UID = (user as any)?.id;
                 if (!UID) {
                   setSessions([]);
                   setIsLoading(false);

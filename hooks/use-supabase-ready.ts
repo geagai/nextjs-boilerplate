@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { createClient } from "@/lib/supabase";
-import { AuthChangeEvent } from "@supabase/supabase-js";
+
 
 /**
  * Returns `true` once the shared Supabase client has hydrated its auth
@@ -35,7 +35,7 @@ export function useSupabaseReady(): boolean {
     // Fallback 2: listen for first auth event (fires once hydration completes)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent) => {
+    } = supabase.auth.onAuthStateChange((_event: string) => {
       if (!cancelled) setReady(true);
     });
 

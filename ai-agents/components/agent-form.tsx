@@ -291,7 +291,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
         agent_role: data.agent_role || null,
         is_public: data.is_public,
         config,
-        UID: user.id
+        UID: (user as any).id
       }
 
       if (mode === 'create') {
@@ -319,7 +319,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
             updated_at: new Date().toISOString()
           })
           .eq('id', initialData.id)
-          .eq('UID', user.id)
+          .eq('UID', (user as any).id)
           .select();
 
         if (error) throw error

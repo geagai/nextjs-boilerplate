@@ -1,6 +1,5 @@
 "use client";
 
-import { useAgents } from '@/ai-agents/hooks/use-agents';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -18,17 +17,14 @@ function renderAgentIcon(icon: any) {
   return <span className="w-6 h-6 inline-block text-lg">{icon}</span>;
 }
 
-export default function MyAgentsTable() {
-  const { agents, isLoading, error } = useAgents({ onlyPublic: false });
+interface MyAgentsTableProps {
+  agents: any[];
+}
+
+export default function MyAgentsTable({ agents }: MyAgentsTableProps) {
   const { adminSettings, loading: adminSettingsLoading } = useAdminSettings();
 
-  if (isLoading) {
-    return <div className="bg-muted/50 p-8 rounded-lg text-center text-muted-foreground">Loading agents...</div>;
-  }
-  if (error) {
-    return <div className="bg-destructive/20 p-8 rounded-lg text-center text-destructive">Error: {error}</div>;
-  }
-  if (!agents.length) {
+  if (!agents || agents.length === 0) {
     return <div className="bg-muted/50 p-8 rounded-lg text-center text-muted-foreground">No agents found.</div>;
   }
 

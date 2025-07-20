@@ -113,7 +113,7 @@ export function ChatInterface({
         setCurrentUser(authUser ?? null)
         
         // Load agent data (for both anonymous and logged-in users)
-        const agentResult = await loadAgent(agentId, authUser?.id)
+        const agentResult = await loadAgent(agentId, (authUser as any)?.id)
         
         if (!agentResult.success || !agentResult.agent) {
           throw new Error(agentResult.error || 'Failed to load agent')

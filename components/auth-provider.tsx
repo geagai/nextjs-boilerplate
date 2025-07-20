@@ -2,22 +2,15 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
-import { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
+
+import { AuthUser, AuthSession } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 
-export interface AuthUser extends User {
-  subscription?: {
-    id: string
-    plan: string
-    status: string
-    currentPeriodEnd?: string
-  } | null
-  role?: string
-}
+
 
 interface AuthContextType {
   user: AuthUser | null
-  session: Session | null
+  session: AuthSession | null
   loading: boolean
   signOut: () => Promise<void>
 }
@@ -32,18 +25,18 @@ const AuthContext = createContext<AuthContextType>({
 interface AuthProviderProps {
   children: React.ReactNode
   initialUser?: AuthUser | null
-  initialSession?: Session | null
+  initialSession?: AuthSession | null
 }
 
 export function AuthProvider({ children, initialUser = null, initialSession = null }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(initialUser)
-  const [session, setSession] = useState<Session | null>(initialSession)
+  const [session, setSession] = useState<AuthSession | null>(initialSession)
   const [loading, setLoading] = useState(!initialUser) // If we have initialUser, don't start loading
   const router = useRouter()
   const supabase = createClient()
 
   // Create auth user with role (fetch from DB)
-  const createAuthUserWithRole = useCallback(async (sessionUser: User): Promise<AuthUser> => {
+  const createAuthUserWithRole = useCallback(async (sessionUser: any): Promise<AuthUser> => {
     if (!supabase) return { ...sessionUser, role: 'user' };
     try {
       const { data, error } = await supabase
@@ -113,7 +106,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
     }
     
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent) => {
+      async (event: string) => {
         try {
           if (event === 'SIGNED_IN') {
             // Check if a session exists before calling getUser

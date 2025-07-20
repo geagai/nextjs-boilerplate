@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase'
-import type { SupabaseClient } from '@supabase/supabase-js'
+
 import type { 
   Agent, 
   AgentMessage, 
@@ -143,7 +143,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
  * Save user prompt and assistant response to Supabase agent_messages table
  */
 export async function saveAgentMessages(
-  supabase: SupabaseClient,
+  supabase: any,
   agentId: string,
   sessionId: string,
   userPrompt: string,

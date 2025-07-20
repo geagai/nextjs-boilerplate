@@ -31,7 +31,7 @@ export default function EditAgentPage() {
       setFetching(true)
       setError(null)
       try {
-        const result = await loadAgent(agentId, user.id)
+        const result = await loadAgent(agentId, (user as any).id)
         if (!result.success || !result.agent) {
           setError(result.error || 'Failed to load agent')
           setInitialData(undefined)
