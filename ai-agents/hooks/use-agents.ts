@@ -16,6 +16,9 @@ export function useAgents(options: UseAgentsOptions = {}, enabled = true) {
   const [error, setError] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
 
+  // Debug logging
+  console.log('useAgents debug:', { enabled, supabase: !!supabase, options })
+
   useEffect(() => {
     if (!enabled) {
       setLoading(false)

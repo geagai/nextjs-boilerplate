@@ -30,6 +30,9 @@ export default function AgentsPage() {
   const supaReady = useSupabaseReady()
   const isAdmin = user?.role?.toLowerCase() === 'admin'
 
+  // Debug logging
+  console.log('Agents page debug:', { authLoading, supaReady, user: !!user })
+
   // Only fetch agents once authentication state has been resolved to avoid
   // race-conditions where the Supabase session token hasn't been applied yet.
   const { agents, isLoading, error, categories } = useAgents(
