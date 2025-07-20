@@ -38,7 +38,7 @@ export default function AgentsPage() {
       category: selectedCategory === 'all' ? undefined : selectedCategory,
       searchQuery: debouncedSearchQuery,
     },
-    !authLoading && supaReady // enabled when both auth and supabase ready
+    !authLoading // Only wait for auth loading to complete
   )
 
   // Debounce search input
