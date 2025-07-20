@@ -4,8 +4,8 @@ import { createServerClient } from '@/lib/supabase'
 import { requireAuth } from '@/lib/auth'
 import AgentPageWrapper from '@/components/ai-agents/AgentPageWrapper'
 
-export default async function AgentRoute({ params }: { params: { id: string } }) {
-  const agentId = params?.id as string
+export default async function AgentRoute({ params }: { params: Promise<{ id: string }> }) {
+  const { id: agentId } = await params
   
   if (!agentId) {
     notFound()
