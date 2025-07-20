@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth'
 
 import { Button } from '@/components/ui/button'
 
-import { AgentList } from '@/ai-agents/components/agent-list'
+import { AgentsClientWrapper } from '@/ai-agents/components/agents-client-wrapper'
 
 export default async function AgentsPage() {
   // Server-side auth check
@@ -62,27 +62,11 @@ export default async function AgentsPage() {
       </div>
 
       {/* Content */}
-      <AgentList
+      <AgentsClientWrapper
         agents={processedAgents}
-        viewMode="grid"
-        emptyMessage="No public agents available yet."
-        emptyAction={!user ? (
-          <Link href="/login">
-            <Button>Sign in to create agents</Button>
-          </Link>
-        ) : isAdmin ? (
-          <Link href="/create-agent">
-            <Button>Create the first public agent</Button>
-          </Link>
-        ) : null}
+        user={user}
+        isAdmin={isAdmin}
       />
-
-      {/* Stats */}
-      {processedAgents.length > 0 && (
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          Showing {processedAgents.length} agent{processedAgents.length !== 1 ? 's' : ''}
-        </div>
-      )}
     </div>
   )
 } 
