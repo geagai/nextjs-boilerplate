@@ -18,6 +18,8 @@ import { toast } from '@/hooks/use-toast'
 
 interface ChatInterfaceProps {
   agentId: string
+  agent?: Agent
+  user?: any
   className?: string
   hideAgentHeader?: boolean
   sessionId?: string | null
@@ -30,6 +32,8 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ 
   agentId, 
+  agent: externalAgent,
+  user: externalUser,
   className = "", 
   hideAgentHeader = false, 
   sessionId,
@@ -38,12 +42,12 @@ export function ChatInterface({
   isFormValid: externalIsFormValid,
   onValidationChange: externalOnValidationChange
 }: ChatInterfaceProps) {
-  const [agent, setAgent] = useState<Agent | null>(null)
-  const [isAgentLoading, setIsAgentLoading] = useState(true)
+  const [agent, setAgent] = useState<Agent | null>(externalAgent || null)
+  const [isAgentLoading, setIsAgentLoading] = useState(!externalAgent)
   const [agentError, setAgentError] = useState<string | null>(null)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<any>(externalUser || null)
   
-  // Auth context
+  // Auth context (only used if external data not provided)
   const { user: authUser, loading: authLoading } = useAuth()
   
   // Form state for dynamic fields (only used if not provided by parent)
@@ -89,8 +93,16 @@ export function ChatInterface({
     }
   })
 
-  // Load user and agent data once auth state is resolved
+  // Load user and agent data only if not provided externally
   useEffect(() => {
+    if (externalAgent && externalUser) {
+      // Data provided externally, no need to load
+      setAgent(externalAgent)
+      setCurrentUser(externalUser)
+      setIsAgentLoading(false)
+      return
+    }
+
     if (authLoading) return; // wait for auth session ready
 
     const loadUserAndAgent = async () => {
@@ -121,7 +133,7 @@ export function ChatInterface({
     if (agentId) {
       loadUserAndAgent()
     }
-  }, [agentId, authLoading, authUser])
+  }, [agentId, authLoading, authUser, externalAgent, externalUser])
 
   // Error state: Only show error if loading is done and agentError is set
   if (!isAgentLoading && agentError) {

@@ -74,6 +74,8 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
           </div>
           <ChatInterface 
             agentId={agentId}
+            agent={agent}
+            user={user}
             hideAgentHeader={true}
             sessionId={selectedSessionId}
             formData={formData}
