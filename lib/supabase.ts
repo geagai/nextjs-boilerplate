@@ -10,11 +10,6 @@ let browserClient: ReturnType<typeof createBrowserClient> | null = null
 
 // Client-side Supabase client for browser usage
 export const createClient = () => {
-  console.log('createClient debug:', { 
-    supabaseUrl: !!supabaseUrl, 
-    supabaseAnonKey: !!supabaseAnonKey,
-    browserClient: !!browserClient 
-  })
   if (!supabaseUrl || !supabaseAnonKey) return null
   if (!browserClient) {
     browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey)

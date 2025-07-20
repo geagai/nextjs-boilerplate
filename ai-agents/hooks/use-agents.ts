@@ -16,8 +16,7 @@ export function useAgents(options: UseAgentsOptions = {}, enabled = true) {
   const [error, setError] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
 
-  // Debug logging
-  console.log('useAgents debug:', { enabled, supabase: !!supabase, options })
+
 
   useEffect(() => {
     if (!enabled) {
@@ -49,15 +48,21 @@ export function useAgents(options: UseAgentsOptions = {}, enabled = true) {
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
       }
       
-      console.log('Supabase query:', query)
-      const { data, error } = await query
-      console.log('Supabase result:', { data, error })
-      if (error) {
-        setError(error.message)
+      let data: any[] = []
+      try {
+        const result = await query
+        if (result.error) {
+          setError(result.error.message)
+          setLoading(false)
+          return
+        }
+        data = result.data || []
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error occurred')
         setLoading(false)
         return
       }
-      const list = (data ?? []).map((agent: any) => ({
+      const list = data.map((agent: any) => ({
         ...agent,
         icon: agent.config?.options?.icon || null
       })) as any[]
