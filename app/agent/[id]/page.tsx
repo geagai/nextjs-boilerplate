@@ -41,5 +41,11 @@ export default async function AgentRoute({ params }: { params: Promise<{ id: str
     notFound()
   }
 
-  return <AgentPageWrapper />;
+  // Process agent data
+  const processedAgent = {
+    ...agent,
+    icon: agent.config?.options?.icon || null
+  };
+
+  return <AgentPageWrapper agent={processedAgent} user={user} />;
 } 

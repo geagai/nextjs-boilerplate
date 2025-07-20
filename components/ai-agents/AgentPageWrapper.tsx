@@ -1,5 +1,7 @@
 "use client";
 import React from 'react';
+import { AgentChatClient } from '@/ai-agents/components/agent-chat-client';
+import { useParams } from 'next/navigation';
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -20,19 +22,18 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
   </div>
 );
 
-export default function AgentPageWrapper() {
-  let AgentPage: React.ComponentType | null = null;
-  try {
-    // eslint-disable-next-line
-    const mod = require('@/ai-agents/agent/[id]/page');
-    AgentPage = mod.default || null;
-  } catch (e) {
-    AgentPage = null;
-  }
+interface AgentPageWrapperProps {
+  agent: any;
+  user: any;
+}
 
-  if (!AgentPage) {
+export default function AgentPageWrapper({ agent, user }: AgentPageWrapperProps) {
+  const params = useParams();
+  const agentId = params?.id as string;
+
+  if (!agentId) {
     return <AddonMissing addonName="AI Agents" purchaseUrl="https://www.geag.ai/ai-agents-addon" />;
   }
 
-  return <AgentPage />;
+  return <AgentChatClient agentId={agentId} agent={agent} user={user} />;
 } 
