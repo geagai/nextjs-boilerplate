@@ -63,7 +63,8 @@ export default function LoginPage() {
           title: 'Welcome back!',
           description: 'You have been successfully logged in.'
         })
-        window.location.href = '/dashboard'
+        // Force a hard refresh to ensure authentication state is properly established
+        window.location.replace('/dashboard')
       }
     } catch (error) {
       toast({
