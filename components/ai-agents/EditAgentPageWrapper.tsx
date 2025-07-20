@@ -1,9 +1,14 @@
 "use client";
 import React from 'react';
 import AddonMissing from '../../app/agents/AddonMissing';
+import type { Agent } from '@/lib/types';
 
-export default function EditAgentPageWrapper() {
-  let EditAgentPage: React.ComponentType | null = null;
+interface EditAgentPageWrapperProps {
+  agent: Agent;
+}
+
+export default function EditAgentPageWrapper({ agent }: EditAgentPageWrapperProps) {
+  let EditAgentPage: React.ComponentType<{ agent: Agent }> | null = null;
   try {
     // eslint-disable-next-line
     const mod = require('@/ai-agents/edit-agent/[id]/page');
@@ -16,5 +21,5 @@ export default function EditAgentPageWrapper() {
     return <AddonMissing addonName="AI Agents" purchaseUrl="https://www.geag.ai/ai-agents-addon" />;
   }
 
-  return <EditAgentPage />;
+  return <EditAgentPage agent={agent} />;
 } 
