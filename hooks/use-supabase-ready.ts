@@ -53,6 +53,6 @@ export function useSupabaseReady(): boolean {
 When creating new pages or components:
 - Always explicitly type event parameters in callbacks, especially for Supabase auth state change handlers.
 - Do NOT leave event parameters untyped, as this causes TypeScript 'implicitly has an any type' errors.
-- For Supabase auth events, use the AuthChangeEvent type from @supabase/supabase-js as shown above.
+- For Supabase auth events, use string type for event parameter as shown above.
 =========================================================
 */
