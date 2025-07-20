@@ -63,8 +63,7 @@ export default function LoginPage() {
           title: 'Welcome back!',
           description: 'You have been successfully logged in.'
         })
-        router.push('/dashboard')
-        router.refresh()
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       toast({
