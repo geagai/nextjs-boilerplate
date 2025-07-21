@@ -1,5 +1,5 @@
 import { getServerAdminSettings } from '@/lib/admin-settings'
-import AIAgentsPageWrapper from './AIAgentsPageWrapper'
+import AIAgentsPageWrapper from '@/components/ai-agents/AIAgentsPageWrapper'
 
 export const dynamic = 'force-dynamic'
 
