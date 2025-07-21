@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { createClient } from '@/lib/supabase'
+
 import type { Agent } from '@/lib/types'
 import { useAuth } from '@/components/auth-provider'
 import { toast } from 'sonner'
@@ -150,7 +150,7 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
   const router = useRouter()
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const supabase = createClient()
+
 
   const form = useForm<AgentFormData>({
     resolver: zodResolver(agentSchema),
@@ -290,39 +290,47 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
         prompt: data.prompt || null,
         agent_role: data.agent_role || null,
         is_public: data.is_public,
-        config,
-        UID: (user as any).id
+        config
       }
 
       if (mode === 'create') {
-        if (!supabase) {
-          throw new Error('Supabase client is not initialized');
-        }
-        const { error } = await supabase
-          .from('agents')
-          .insert(agentData)
-          .throwOnError()
+        // Create new agent using API route
+        const response = await fetch('/api/agents', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(agentData),
+        });
 
-        if (error) throw error
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to create agent');
+        }
 
         toast.success('Your Agent Has Been Created - You are now being redirected to the My Agents page.')
         router.push('/my-agents')
       } else {
+        // Update existing agent using API route
         if (!initialData?.id) throw new Error('Agent ID is required for update')
-        if (!supabase) {
-          throw new Error('Supabase client is not initialized');
-        }
-        const { error, data: updateData } = await supabase
-          .from('agents')
-          .update({
+        
+        const response = await fetch('/api/agents', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             ...agentData,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', initialData.id)
-          .eq('UID', (user as any).id)
-          .select();
+            id: initialData.id
+          }),
+        });
 
-        if (error) throw error
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to update agent');
+        }
 
         toast.success('Your Agent information has been saved.')
         // router.push('/ai-agents') // No redirect for update

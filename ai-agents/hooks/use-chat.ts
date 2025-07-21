@@ -78,14 +78,20 @@ export function useChat({
   }, [sessionId, userId])
 
   useEffect(() => {
+    // Always clear messages when sessionId changes
     setMessages([])
+    // Reset history loaded state
     setIsHistoryLoaded(false)
   }, [sessionId])
 
   // Load conversation history on mount or when sessionId changes
   useEffect(() => {
+    // Only load history if we have a valid sessionId and userId
     if (sessionId && userId && !isHistoryLoaded) {
       loadHistory()
+    } else if (!sessionId || !userId) {
+      // If no session or user, mark as loaded to prevent infinite loading
+      setIsHistoryLoaded(true)
     }
   }, [sessionId, userId, isHistoryLoaded, loadHistory])
 

@@ -290,7 +290,7 @@ export function ResponseDisplay({
             message.role === 'user' ? 'ml-auto' : ''
           }`}
         >
-          <Card className={message.role === 'user' ? 'bg-primary text-primary-foreground' : ''}>
+          <Card className={message.role === 'user' ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60' : ''}>
             <CardContent className="p-4">
               {/* Message Header */}
               <div className="flex items-center justify-between mb-2">
