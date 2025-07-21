@@ -38,16 +38,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
   }
 
   const handleSignOut = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('Sign out error:', error)
-      // If server action fails, try client-side sign out
-      if (supabase) {
-        await supabase.auth.signOut()
-        window.location.href = '/login'
-      }
-    }
+    await signOut()
   }
 
   return (

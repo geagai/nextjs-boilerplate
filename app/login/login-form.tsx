@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -33,30 +33,6 @@ export default function LoginForm({ adminSettings }: LoginFormProps) {
     color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
   }
 
-  // Cleanup effect to reset loading state on unmount
-  useEffect(() => {
-    // Clear any existing authentication state to prevent issues after logout
-    const clearAuthState = async () => {
-      try {
-        if (supabase) {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            // If there's an existing session, clear it to ensure clean login
-            await supabase.auth.signOut()
-          }
-        }
-      } catch (error) {
-        console.error('Error clearing auth state:', error)
-      }
-    }
-    
-    clearAuthState()
-    
-    return () => {
-      setIsLoading(false)
-    }
-  }, [supabase])
-
   const {
     register,
     handleSubmit,
@@ -88,18 +64,8 @@ export default function LoginForm({ adminSettings }: LoginFormProps) {
           description: 'You have been successfully logged in.'
         })
         // Force a hard refresh to ensure authentication state is properly established
-        try {
-          // Add a timeout to prevent infinite loading
-          setTimeout(() => {
-            setIsLoading(false)
-          }, 5000) // 5 second timeout
-          
-          window.location.replace('/dashboard')
-        } catch (redirectError) {
-          console.error('Redirect error:', redirectError)
-          // If redirect fails, stop loading and let user try again
-          setIsLoading(false)
-        }
+        window.location.replace('/dashboard')
+        // Don't set loading to false since we're redirecting
       }
     } catch (error) {
       toast({
