@@ -146,6 +146,11 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                 variant="outline"
                 size="sm"
                 onClick={handleSignOut}
+                style={{ 
+                  backgroundColor: 'transparent',
+                  borderColor: theme === 'dark' ? 'var(--dark-secondary)' : 'var(--secondary)',
+                  color: theme === 'dark' ? 'var(--dark-link)' : 'var(--link)'
+                }}
               >
                 Sign Out
               </Button>
@@ -227,6 +232,11 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                 size="sm"
                 onClick={handleSignOut}
                 className="w-full"
+                style={{ 
+                  backgroundColor: 'transparent',
+                  borderColor: theme === 'dark' ? 'var(--dark-secondary)' : 'var(--secondary)',
+                  color: theme === 'dark' ? 'var(--dark-link)' : 'var(--link)'
+                }}
               >
                 Sign Out
               </Button>

@@ -18,7 +18,7 @@ export function ThemeToggle() {
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
+      <Button variant="ghost" size="sm" className="w-9 h-9 p-0 bg-transparent border-none">
         <div className="h-4 w-4" />
       </Button>
     )
@@ -33,7 +33,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className="w-9 h-9 p-0 transition-all duration-300"
+      className="w-9 h-9 p-0 bg-transparent border-none hover:bg-transparent focus:bg-transparent transition-all duration-300"
       style={{ 
         backgroundColor: 'transparent',
         color: theme === 'dark' ? 'var(--dark-link)' : 'var(--link)'
