@@ -3,16 +3,10 @@ import AIAgentsPageWrapper from '@/components/ai-agents/AIAgentsPageWrapper'
 
 export const dynamic = 'force-dynamic'
 
-interface AIAgentsServerWrapperProps {
-  children: React.ReactNode
-}
-
-export async function AIAgentsServerWrapper({ children }: AIAgentsServerWrapperProps) {
+export async function AIAgentsServerWrapper() {
   const adminSettings = await getServerAdminSettings()
 
   return (
-    <AIAgentsPageWrapper adminSettings={adminSettings}>
-      {children}
-    </AIAgentsPageWrapper>
+    <AIAgentsPageWrapper adminSettings={adminSettings} />
   )
 } 
