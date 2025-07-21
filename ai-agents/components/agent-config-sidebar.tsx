@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Settings, X } from 'lucide-react'
-import { useAdminSettings } from '@/components/admin-settings-provider'
 import { DynamicFormFields } from './dynamic-form-fields'
 import type { Agent } from '@/lib/types'
 
@@ -18,6 +17,7 @@ interface AgentConfigSidebarProps {
   isOpen: boolean
   onClose: () => void
   isMobile: boolean
+  adminSettings?: any
 }
 
 export function AgentConfigSidebar({
@@ -28,9 +28,39 @@ export function AgentConfigSidebar({
   disabled = false,
   isOpen,
   onClose,
-  isMobile
+  isMobile,
+  adminSettings
 }: AgentConfigSidebarProps) {
-  const { getButtonStyles, getButtonHoverStyles } = useAdminSettings()
+  // Helper functions for button styling
+  const getButtonStyles = (variant: string = 'default') => {
+    if (!adminSettings) {
+      return {
+        backgroundColor: '#000000',
+        color: '#ffffff',
+        borderColor: '#000000'
+      }
+    }
+
+    return {
+      backgroundColor: adminSettings.button_color || '#000000',
+      color: adminSettings.button_text_color || '#ffffff',
+      borderColor: adminSettings.button_color || '#000000'
+    }
+  }
+
+  const getButtonHoverStyles = (variant: string = 'default') => {
+    if (!adminSettings) {
+      return {
+        backgroundColor: '#333333',
+        color: '#ffffff'
+      }
+    }
+
+    return {
+      backgroundColor: adminSettings.button_hover_color || '#333333',
+      color: adminSettings.button_text_color || '#ffffff'
+    }
+  }
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ paddingBottom: '75px' }}>

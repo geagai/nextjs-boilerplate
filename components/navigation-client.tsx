@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Menu, X, Code2, ChevronDown, Settings } from 'lucide-react'
 import { signOut } from '@/app/actions/auth'
+import { createClient } from '@/lib/supabase'
+import { useTheme } from 'next-themes'
 
 interface NavigationClientProps {
   user: any
@@ -22,6 +24,7 @@ interface NavigationClientProps {
 
 export default function NavigationClient({ user, adminSettings, sticky = true, siteName = 'NextGeag BP' }: NavigationClientProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const { theme } = useTheme()
 
   // Navigation bar (show basic links even while loading)
   const baseClasses = 'z-50 border-b'
@@ -119,7 +122,15 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             {user && (
               <>
                 <Link href="/dashboard">
-                  <Button size="sm" className="bg-primary hover:bg-primary/90">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                    }}
+                  >
                     Dashboard
                   </Button>
                 </Link>
@@ -141,7 +152,15 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                    }}
+                  >
                     Sign In
                   </Button>
                 </Link>
@@ -182,7 +201,16 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             {user && (
               <>
                 <Link href="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="w-full"
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                    }}
+                  >
                     Dashboard
                   </Button>
                 </Link>
@@ -205,7 +233,16 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             ) : (
               <>
                 <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                    }}
+                  >
                     Sign In
                   </Button>
                 </Link>

@@ -318,8 +318,11 @@ export function formatMessageContent(content: string): string {
     // Normalize line endings
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
-    // Remove excessive whitespace while preserving intentional formatting
-    .replace(/[ \t]+/g, ' ')
+    // Preserve intentional formatting for markdown
+    // Don't remove excessive whitespace that might be part of markdown formatting
+    // Only remove trailing spaces at end of lines
+    .replace(/[ \t]+$/gm, '')
+    // Remove excessive blank lines (more than 2 consecutive)
     .replace(/\n{3,}/g, '\n\n')
 }
 

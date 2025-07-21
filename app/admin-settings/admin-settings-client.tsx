@@ -12,7 +12,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
@@ -80,8 +80,19 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
   const supabase = createClient();
   // Don't use useAdminSettings for form data - only use server-side initialSettings
   // const { clearCacheAndRefresh } = useAdminSettings();
-  const { clearCacheAndRefresh } = useAdminSettings();
   const [supabaseReady, setSupabaseReady] = useState(false);
+  const { toast } = useToast();
+
+  // Simple cache refresh function
+  const clearCacheAndRefresh = async () => {
+    try {
+      // Clear any client-side cache if needed
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      throw error;
+    }
+  };
 
   // Ensure we always have the ID from server-side props
   useEffect(() => {

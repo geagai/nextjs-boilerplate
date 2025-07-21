@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Plus, MessageSquare, X, RefreshCw } from 'lucide-react'
-import { useAdminSettings } from '@/components/admin-settings-provider'
 import { toast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -27,6 +26,7 @@ interface SessionSidebarProps {
   isOpen: boolean
   onClose: () => void
   isMobile: boolean
+  adminSettings?: any
 }
 
 export function SessionSidebar({
@@ -36,9 +36,9 @@ export function SessionSidebar({
   onNewSession,
   isOpen,
   onClose,
-  isMobile
+  isMobile,
+  adminSettings
 }: SessionSidebarProps) {
-  const { getButtonStyles, getButtonHoverStyles } = useAdminSettings()
   const [sessions, setSessions] = useState<Session[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [renameModalOpen, setRenameModalOpen] = useState(false);
@@ -48,6 +48,37 @@ export function SessionSidebar({
 
   const supaReady = useSupabaseReady();
   const { user, loading: authLoading } = useAuth();
+
+  // Helper functions for button styling
+  const getButtonStyles = (variant: string = 'default') => {
+    if (!adminSettings) {
+      return {
+        backgroundColor: '#000000',
+        color: '#ffffff',
+        borderColor: '#000000'
+      }
+    }
+
+    return {
+      backgroundColor: adminSettings.button_color || '#000000',
+      color: adminSettings.button_text_color || '#ffffff',
+      borderColor: adminSettings.button_color || '#000000'
+    }
+  }
+
+  const getButtonHoverStyles = (variant: string = 'default') => {
+    if (!adminSettings) {
+      return {
+        backgroundColor: '#333333',
+        color: '#ffffff'
+      }
+    }
+
+    return {
+      backgroundColor: adminSettings.button_hover_color || '#333333',
+      color: adminSettings.button_text_color || '#ffffff'
+    }
+  }
 
   useEffect(() => {
     if (isOpen) {

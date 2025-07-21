@@ -268,8 +268,12 @@ export function ChatInterface({
       {/* Fixed Input Area - Fixed to bottom of viewport */}
       {currentUser ? (
         <div
-          className="fixed bottom-0 left-0 right-0 border-t p-4 bg-white z-50"
-          style={{ height: '114px' }}
+          className="fixed bottom-0 left-0 right-0 border-t p-4 z-50"
+          style={{ 
+            height: '114px',
+            backgroundColor: 'hsl(var(--header-bg))',
+            backdropFilter: 'blur(12px)'
+          }}
         >
           <div
             className="max-w-4xl mx-auto h-full flex items-center"
@@ -337,8 +341,13 @@ export function ChatInterface({
             }
           `}</style>
           <div
-            className="fixed bottom-0 left-0 right-0 border-t p-4 bg-white z-50 flex items-center justify-center login-register-message-bar"
-            style={{ height: '114px', textAlign: 'center' }}
+            className="fixed bottom-0 left-0 right-0 border-t p-4 z-50 flex items-center justify-center login-register-message-bar"
+            style={{ 
+              height: '114px', 
+              textAlign: 'center',
+              backgroundColor: 'hsl(var(--header-bg))',
+              backdropFilter: 'blur(12px)'
+            }}
           >
             <span className="text-base font-medium text-muted-foreground">Please Login or Register to use this Agent.</span>
           </div>

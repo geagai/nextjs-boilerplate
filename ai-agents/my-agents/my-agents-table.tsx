@@ -4,7 +4,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Bot, Brain } from 'lucide-react';
-import { useAdminSettings } from '@/components/admin-settings-provider';
 
 function renderAgentIcon(icon: any) {
   if (!icon) return <Bot className="w-6 h-6 text-muted-foreground" />;
@@ -19,11 +18,10 @@ function renderAgentIcon(icon: any) {
 
 interface MyAgentsTableProps {
   agents: any[];
+  adminSettings?: any;
 }
 
-export default function MyAgentsTable({ agents }: MyAgentsTableProps) {
-  const { adminSettings, loading: adminSettingsLoading } = useAdminSettings();
-
+export default function MyAgentsTable({ agents, adminSettings }: MyAgentsTableProps) {
   if (!agents || agents.length === 0) {
     return <div className="bg-muted/50 p-8 rounded-lg text-center text-muted-foreground">No agents found.</div>;
   }

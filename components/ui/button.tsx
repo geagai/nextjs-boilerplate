@@ -6,7 +6,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
-import { useAdminSettings } from "@/components/admin-settings-provider"
+import { useButtonContext } from "./button-provider-client"
 import { useTheme } from 'next-themes';
 
 const buttonVariants = cva(
@@ -47,13 +47,47 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size, asChild = false, style, onMouseEnter, onMouseLeave, ...props }, ref) => {
-    const { getButtonStyles, getButtonHoverStyles, adminSettings, loading: adminSettingsLoading } = useAdminSettings();
     const { theme } = useTheme();
-    // Get custom styles based on variant
+    
+    // Try to get button context, but provide fallbacks if not available
+    let buttonContext = null;
+    try {
+      buttonContext = useButtonContext();
+    } catch (error) {
+      // Context not available, use default styles
+    }
+    
+    const { getButtonStyles, getButtonHoverStyles, adminSettings } = buttonContext || {
+      getButtonStyles: () => ({
+        backgroundColor: '#000000',
+        color: '#ffffff',
+        borderColor: '#000000'
+      }),
+      getButtonHoverStyles: () => ({
+        backgroundColor: '#333333',
+        color: '#ffffff'
+      }),
+      adminSettings: null
+    };
+    
+    // Get custom styles based on variant and theme
     const customStyles = getButtonStyles(variant || "default");
     const customHoverStyles = getButtonHoverStyles(variant || "default");
+    
+    // Override with dark mode colors if available
+    if (adminSettings && theme === 'dark') {
+      if (variant === 'link') {
+        customStyles.color = adminSettings.dark_link_color || customStyles.color;
+      } else {
+        customStyles.backgroundColor = adminSettings.dark_button_color || customStyles.backgroundColor;
+        customStyles.color = adminSettings.dark_button_text_color || customStyles.color;
+        customStyles.borderColor = adminSettings.dark_button_color || customStyles.borderColor;
+      }
+    }
+    
     // Combine custom styles with any provided inline styles
     const combinedStyles = { ...customStyles, ...style };
+    
     // Enhanced mouse event handlers for dynamic hover effects
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (variant === 'link' && adminSettings) {
@@ -63,18 +97,26 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           e.currentTarget.style.color = linkHoverColor;
         }
       } else if (customHoverStyles && typeof customHoverStyles === 'object') {
-        if ('backgroundColor' in customHoverStyles && typeof customHoverStyles.backgroundColor === 'string') {
-          e.currentTarget.style.backgroundColor = customHoverStyles.backgroundColor;
+        // Override hover styles with dark mode colors if available
+        let hoverStyles = { ...customHoverStyles };
+        if (adminSettings && theme === 'dark') {
+          hoverStyles.backgroundColor = adminSettings.dark_button_hover_color || hoverStyles.backgroundColor;
+          hoverStyles.color = adminSettings.dark_button_text_color || hoverStyles.color;
         }
-        if ('borderColor' in customHoverStyles && typeof customHoverStyles.borderColor === 'string') {
-          e.currentTarget.style.borderColor = customHoverStyles.borderColor;
+        
+        if ('backgroundColor' in hoverStyles && typeof hoverStyles.backgroundColor === 'string') {
+          e.currentTarget.style.backgroundColor = hoverStyles.backgroundColor;
         }
-        if ('color' in customHoverStyles && typeof customHoverStyles.color === 'string') {
-          e.currentTarget.style.color = customHoverStyles.color;
+        if ('borderColor' in hoverStyles && typeof hoverStyles.borderColor === 'string') {
+          e.currentTarget.style.borderColor = hoverStyles.borderColor;
+        }
+        if ('color' in hoverStyles && typeof hoverStyles.color === 'string') {
+          e.currentTarget.style.color = hoverStyles.color;
         }
       }
       onMouseEnter?.(e);
     };
+    
     const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (variant === 'link' && adminSettings) {
         const isDark = theme === 'dark';

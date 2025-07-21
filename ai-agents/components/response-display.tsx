@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useAdminSettings } from '@/components/admin-settings-provider'
 import { formatMessageContent } from '@/lib/ai-agent-utils'
 import { 
   Bot, 
@@ -53,6 +52,7 @@ interface ResponseDisplayProps {
    * Receives the deleted message id.
    */
   onDeleteMessage?: (id: string) => void
+  adminSettings?: any
 }
 
 export function ResponseDisplay({
@@ -111,21 +111,33 @@ export function ResponseDisplay({
       }
     }
     
-    // Check if it contains HTML tags
-    if (/<[^>]*>/g.test(trimmed)) {
-      return 'html'
-    }
-    
-    // Improved markdown detection: match **bold**, __bold__, `inline code`, # headers, -/+/* lists, [links](url)
-    if (
+    // Improved markdown detection: prioritize markdown over HTML
+    const hasMarkdownFeatures = (
       /\*\*.*?\*\*/.test(trimmed) ||      // **bold**
       /__.*?__/.test(trimmed) ||            // __bold__
       /`.*?`/.test(trimmed) ||              // `inline code`
-      /#+\s.*$/.test(trimmed) ||            // # Header
+      /#+\s.*$/m.test(trimmed) ||           // # Header (multiline)
       /^[-+*]\s+/m.test(trimmed) ||         // - list, + list, * list (at line start)
-      /\[.*?\]\(.*?\)/.test(trimmed)      // [link](url)
-    ) {
+      /\[.*?\]\(.*?\)/.test(trimmed) ||     // [link](url)
+      /^\|.*\|$/m.test(trimmed) ||          // | table | rows |
+      /^>\s+/m.test(trimmed) ||             // > blockquote
+      /```[\s\S]*```/.test(trimmed) ||      // ``` code blocks ```
+      /^\d+\.\s+/m.test(trimmed)            // 1. numbered lists
+    )
+    
+    // Check if it contains HTML tags (but be more specific)
+    const hasHtmlTags = /<[a-zA-Z][^>]*>.*?<\/[a-zA-Z][^>]*>/.test(trimmed) || 
+                       /<[a-zA-Z][^>]*\/>/.test(trimmed) ||
+                       /<[a-zA-Z][^>]*>/.test(trimmed)
+    
+    // If it has markdown features, prioritize markdown
+    if (hasMarkdownFeatures) {
       return 'markdown'
+    }
+    
+    // If it has HTML tags, it's HTML
+    if (hasHtmlTags) {
+      return 'html'
     }
     
     return 'text'
@@ -158,7 +170,61 @@ export function ResponseDisplay({
       case 'markdown':
         return (
           <div className="prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown>{formattedContent}</ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                // Custom table styling
+                table: ({ children }) => (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                th: ({ children }) => (
+                  <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-100 dark:bg-gray-800 font-semibold text-left">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+                    {children}
+                  </td>
+                ),
+                // Preserve line breaks in code blocks
+                code: ({ children, className }) => {
+                  const isInline = !className;
+                  if (isInline) {
+                    return <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">{children}</code>;
+                  }
+                  return (
+                    <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-x-auto">
+                      <code className={className}>{children}</code>
+                    </pre>
+                  );
+                },
+                // Better list styling
+                ul: ({ children }) => <ul className="list-disc list-inside space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside space-y-1">{children}</ol>,
+                li: ({ children }) => <li className="ml-2">{children}</li>,
+                // Better heading styling
+                h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>,
+                h4: ({ children }) => <h4 className="text-base font-bold mt-3 mb-2">{children}</h4>,
+                h5: ({ children }) => <h5 className="text-sm font-bold mt-2 mb-1">{children}</h5>,
+                h6: ({ children }) => <h6 className="text-xs font-bold mt-2 mb-1">{children}</h6>,
+                // Better paragraph spacing
+                p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                // Better blockquote styling
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic bg-gray-50 dark:bg-gray-900 py-2">
+                    {children}
+                  </blockquote>
+                ),
+              }}
+            >
+              {formattedContent}
+            </ReactMarkdown>
           </div>
         )
       

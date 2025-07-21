@@ -11,6 +11,7 @@ import { hexToHsl } from '@/lib/utils'
 import { getServerSession } from '@/lib/auth'
 import { missingEnvVars } from '@/lib/checkEnv'
 import { headers } from 'next/headers'
+import { ButtonProvider } from '@/components/ui/button-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -139,21 +140,23 @@ export default async function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers initialUser={sessionData?.user} initialSession={sessionData?.session}>
-          <div className="min-h-screen bg-background text-foreground">
-            {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
-            <main>{children}</main>
-            <ConditionalFooter
-              siteName={siteName}
-              bgColor={footerBgLight}
-              textColor={footerTextLight}
-              linkColor={footerLinkLight}
-              bgColorDark={footerBgDark}
-              textColorDark={footerTextDark}
-              linkColorDark={footerLinkDark}
-              htmlOne={footerHtmlOne}
-              htmlTwo={footerHtmlTwo}
-            />
-          </div>
+          <ButtonProvider>
+            <div className="min-h-screen bg-background text-foreground">
+              {showHeader && <Navigation sticky={stickyHeader} siteName={siteName} />}
+              <main>{children}</main>
+              <ConditionalFooter
+                siteName={siteName}
+                bgColor={footerBgLight}
+                textColor={footerTextLight}
+                linkColor={footerLinkLight}
+                bgColorDark={footerBgDark}
+                textColorDark={footerTextDark}
+                linkColorDark={footerLinkDark}
+                htmlOne={footerHtmlOne}
+                htmlTwo={footerHtmlTwo}
+              />
+            </div>
+          </ButtonProvider>
         </Providers>
       </body>
     </html>
