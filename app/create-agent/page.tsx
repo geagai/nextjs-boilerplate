@@ -5,7 +5,6 @@ import AddonMissing from '../agents/AddonMissing';
 const CreateAgentPage = dynamic(
   async () => {
     try {
-      // @ts-expect-error: optional addon
       const mod = await import('@/ai-agents/create-agent/page');
       return mod.default;
     } catch {
