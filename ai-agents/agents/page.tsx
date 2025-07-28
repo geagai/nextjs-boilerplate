@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
-import { requireAuth } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth'
 
 import { Button } from '@/components/ui/button'
 
@@ -14,8 +14,8 @@ export default async function AgentsPage() {
   let isAdmin = false;
   
   try {
-    const authResult = await requireAuth();
-    user = authResult.user;
+    const authResult = await getServerSession();
+    user = authResult?.user || null;
     isAdmin = user?.role?.toLowerCase() === 'admin';
   } catch (error) {
     // User is not logged in, continue without authentication

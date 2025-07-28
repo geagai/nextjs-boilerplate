@@ -16,7 +16,7 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
+         <section className="relative min-h-[40vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
       {/* Background Pattern */}
       <div className="absolute inset-0 hero-pattern opacity-50" />
       
@@ -75,104 +75,37 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
           transition={{ duration: 0.8 }}
           className="space-y-8"
         >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary"
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            Enterprise-Grade Next.js 15 Boilerplate
-          </motion.div>
 
-          {/* Main Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight"
-          >
-            The <span className="gradient-text">Ultimate</span>
-            <br />
-            Next.js Boilerplate
-            <br />
-            for <span className="gradient-text">Vibe Coding</span>
-          </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
-          >
-            Ship faster with authentication, payments, mobile support, and enterprise-grade features. 
-            Built with Next.js 15, React 19, TypeScript, Supabase, and Stripe.
-          </motion.p>
+                                {/* Main Headline */}
+                                                                                               <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
+              >
+                Advanced <span className="gradient-text">AI Agents</span> for
+                <br />
+                Business Automation and <span className="gradient-text">Growth</span>
+              </motion.h1>
 
-          {/* Key Features */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground"
-          >
-            <div className="flex items-center">
-              <Shield className="w-4 h-4 mr-2 text-primary" />
-              Enterprise Security
-            </div>
-            <div className="flex items-center">
-              <Smartphone className="w-4 h-4 mr-2 text-primary" />
-              Mobile Ready
-            </div>
-            <div className="flex items-center">
-              <Zap className="w-4 h-4 mr-2 text-primary" />
-              Production Ready
-            </div>
-          </motion.div>
+                        {/* Subtitle */}
+             <motion.p
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, delay: 0.4 }}
+               className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+             >
+               Create, customize, and deploy AI agents that understand your needs.
+               <br className="hidden lg:block" />
+               Automate tasks, find information, and boost your productivity.
+             </motion.p>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          >
-            <Link href="/deploy-guide">
-              <Button size="lg" className="text-lg px-8 py-3 btn-glow group" style={getStartedButtonStyle}>
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="https://github.com/geagai/nextjs-boilerplate" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
-                <Github className="mr-2 h-5 w-5" />
-                View on GitHub
-              </Button>
-            </Link>
-          </motion.div>
+          
 
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="grid grid-cols-3 gap-8 max-w-md mx-auto pt-8 border-t border-border/50"
-          >
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">50+</div>
-              <div className="text-sm text-muted-foreground">Components</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">15+</div>
-              <div className="text-sm text-muted-foreground">Integrations</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">100%</div>
-              <div className="text-sm text-muted-foreground">TypeScript</div>
-            </div>
-          </motion.div>
+          
+
+          
         </motion.div>
       </div>
     </section>
