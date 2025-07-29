@@ -148,9 +148,7 @@ export function SessionSidebar({
 
   const handleNewSession = () => {
     onNewSession()
-    if (isMobile) {
-      onClose()
-    }
+    onClose()
   }
 
   const handleDeleteSession = async (sessionId: string) => {

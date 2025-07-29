@@ -203,9 +203,9 @@ export function ResponseDisplay({
                   );
                 },
                 // Better list styling
-                ul: ({ children }) => <ul className="list-disc list-inside space-y-1">{children}</ul>,
-                ol: ({ children }) => <ol className="list-decimal list-inside space-y-1">{children}</ol>,
-                li: ({ children }) => <li className="ml-2">{children}</li>,
+                ul: ({ children }) => <ul className="list-disc space-y-1 pl-5 !list-disc">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal space-y-1 pl-5 !list-decimal">{children}</ol>,
+                li: ({ children }) => <li className="mb-1 !list-item">{children}</li>,
                 // Better heading styling
                 h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-4">{children}</h1>,
                 h2: ({ children }) => <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>,
@@ -425,6 +425,22 @@ export function ResponseDisplay({
       <style>{`
         @media (max-width: 640px) {
           .mobile-spacer { height: 75px !important; }
+        }
+        .prose ul {
+          list-style: disc !important;
+          margin: 0 !important;
+          margin-top: 20px !important;
+          padding-left: 1.25rem !important;
+        }
+        .prose ol {
+          list-style: decimal !important;
+          margin: 0 !important;
+          margin-top: 20px !important;
+          padding-left: 1.25rem !important;
+        }
+        .prose li {
+          display: list-item !important;
+          margin-bottom: 0.25rem !important;
         }
       `}</style>
       <ScrollArea className="max-h-[60vh]">

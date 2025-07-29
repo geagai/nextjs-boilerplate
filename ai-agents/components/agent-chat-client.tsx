@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { generateSessionId } from '@/lib/ai-agent-utils'
 import { Button } from '@/components/ui/button'
 import { ChatInterface } from '@/ai-agents/components/chat-interface'
 import { ArrowLeft, Bot, Loader2, Settings } from 'lucide-react'
@@ -37,7 +38,7 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
         agentId={agentId}
         currentSessionId={selectedSessionId}
         onSessionSelect={setSelectedSessionId}
-        onNewSession={() => setSelectedSessionId(null)}
+        onNewSession={() => setSelectedSessionId(generateSessionId())}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isMobile={false}
