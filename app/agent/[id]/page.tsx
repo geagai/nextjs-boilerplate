@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
-import { requireAuth } from '@/lib/auth'
+import { getServerSession } from '@/lib/auth'
 import AgentPageWrapper from '@/components/ai-agents/AgentPageWrapper'
 
 export default async function AgentRoute({ params }: { params: Promise<{ id: string }> }) {
@@ -11,15 +11,12 @@ export default async function AgentRoute({ params }: { params: Promise<{ id: str
     notFound()
   }
 
-  // Optional server-side auth check - don't redirect if not logged in
+  // Get user session
+  const sessionData = await getServerSession();
   let user = null;
   
-  try {
-    const authResult = await requireAuth();
-    user = authResult.user;
-  } catch (error) {
-    // User is not logged in, continue without authentication
-    user = null;
+  if (sessionData && sessionData.user) {
+    user = sessionData.user;
   }
 
   // Fetch agent data server-side

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Settings, X } from 'lucide-react'
 import { DynamicFormFields } from './dynamic-form-fields'
+import { UserCredits } from './user-credits'
 import type { Agent } from '@/lib/types'
+import { createClient } from '@/lib/supabase'
 
 interface AgentConfigSidebarProps {
   agent: Agent
@@ -18,6 +20,7 @@ interface AgentConfigSidebarProps {
   onClose: () => void
   isMobile: boolean
   adminSettings?: any
+  user?: any
 }
 
 export function AgentConfigSidebar({
@@ -29,8 +32,48 @@ export function AgentConfigSidebar({
   isOpen,
   onClose,
   isMobile,
-  adminSettings
+  adminSettings,
+  user
 }: AgentConfigSidebarProps) {
+  const [userCredits, setUserCredits] = useState(0);
+  const [loadingCredits, setLoadingCredits] = useState(true);
+
+  // Fetch user credits from database
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!user?.id) {
+        setUserCredits(0);
+        setLoadingCredits(false);
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        const { data: userData, error } = await supabase
+          .from('user_data')
+          .select('credits')
+          .eq('UID', user.id)
+          .single();
+
+        if (!error && userData) {
+          if (userData.credits === null || userData.credits === undefined) {
+            setUserCredits(0);
+          } else {
+            setUserCredits(userData.credits);
+          }
+        } else {
+          setUserCredits(0);
+        }
+      } catch (error) {
+        console.error('Error fetching credits:', error);
+        setUserCredits(0);
+      } finally {
+        setLoadingCredits(false);
+      }
+    };
+
+    fetchCredits();
+  }, [user?.id]);
   // Helper functions for button styling
   const getButtonStyles = (variant: string = 'default') => {
     if (!adminSettings) {
@@ -67,16 +110,21 @@ export function AgentConfigSidebar({
       <div className="p-4 border-b">
         <div className={`flex items-center justify-between ${isMobile ? 'mb-0' : 'm-0'}`}>
           {!isMobile && <h2 className="text-lg font-semibold mt-0">Agent Configuration</h2>}
-          {isMobile && (
+          {isMobile &&
             <Button variant="ghost" size="icon" onClick={onClose} className="ml-auto">
               <X className="w-4 h-4" />
             </Button>
-          )}
+          }
         </div>
       </div>
 
       <ScrollArea className="flex-1">
         <div className="p-4">
+          {/* User Credits Component */}
+          <div className="mb-4">
+            {!loadingCredits && <UserCredits credits={userCredits} />}
+          </div>
+
           {agent.config?.body && agent.config.body.length > 0 ? (
             <DynamicFormFields
               agent={agent}

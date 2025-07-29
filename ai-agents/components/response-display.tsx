@@ -111,7 +111,17 @@ export function ResponseDisplay({
       }
     }
     
-    // Improved markdown detection: prioritize markdown over HTML
+    // Check if it contains HTML tags first (prioritize HTML over markdown)
+    const hasHtmlTags = /<[a-zA-Z][^>]*>.*?<\/[a-zA-Z][^>]*>/.test(trimmed) || 
+                       /<[a-zA-Z][^>]*\/>/.test(trimmed) ||
+                       /<[a-zA-Z][^>]*>/.test(trimmed)
+    
+    // If it has HTML tags, it's HTML (regardless of markdown features)
+    if (hasHtmlTags) {
+      return 'html'
+    }
+    
+    // Improved markdown detection: only if no HTML tags found
     const hasMarkdownFeatures = (
       /\*\*.*?\*\*/.test(trimmed) ||      // **bold**
       /__.*?__/.test(trimmed) ||            // __bold__
@@ -125,19 +135,9 @@ export function ResponseDisplay({
       /^\d+\.\s+/m.test(trimmed)            // 1. numbered lists
     )
     
-    // Check if it contains HTML tags (but be more specific)
-    const hasHtmlTags = /<[a-zA-Z][^>]*>.*?<\/[a-zA-Z][^>]*>/.test(trimmed) || 
-                       /<[a-zA-Z][^>]*\/>/.test(trimmed) ||
-                       /<[a-zA-Z][^>]*>/.test(trimmed)
-    
-    // If it has markdown features, prioritize markdown
+    // If it has markdown features and no HTML, it's markdown
     if (hasMarkdownFeatures) {
       return 'markdown'
-    }
-    
-    // If it has HTML tags, it's HTML
-    if (hasHtmlTags) {
-      return 'html'
     }
     
     return 'text'

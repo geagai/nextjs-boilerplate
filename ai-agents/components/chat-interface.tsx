@@ -220,7 +220,7 @@ export function ChatInterface({
     <div className={`flex flex-col h-full ${className}`}>
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-6 max-w-4xl mx-auto pb-56 mb-24">
+        <div className="space-y-6 max-w-4xl mx-auto pb-56 mb-24 md:pb-56 md:mb-24 pb-80 mb-32">
           {/* Agent Header - Only show if not hidden */}
           {!hideAgentHeader && (
             <Card className="hidden sm:block">

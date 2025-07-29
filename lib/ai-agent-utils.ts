@@ -26,11 +26,24 @@ export function processFormFields(bodyFields: BodyField[]): FormField[] {
         !['type', 'input', 'label', 'input_label', 'required', 'placeholder', 'options', 'default_value'].includes(key)
       )
       || 'field';
+    
+    // Extract the default value - this is the key parameter that should always be sent
     let value = field.default_value;
     if (value === undefined && fieldName in field) {
       const v = ((field as unknown) as Record<string, unknown>)[fieldName];
       value = typeof v === 'string' ? v : '';
     }
+    
+    // For dropdown fields, if no default value is set but options exist, use the first option value
+    if (!value && field.options && Array.isArray(field.options) && field.options.length > 0) {
+      const firstOption = field.options[0];
+      if (typeof firstOption === 'object' && firstOption !== null && 'value' in firstOption) {
+        value = (firstOption as { value: string }).value;
+      } else if (typeof firstOption === 'string') {
+        value = firstOption;
+      }
+    }
+    
     return {
       name: fieldName,
       type: fieldType,
@@ -82,14 +95,29 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
       throw new Error('Agent API URL is not configured')
     }
     
+    // Extract default values from agent config to ensure they're always sent
+    const defaultValues: Record<string, unknown> = {}
+    if (agent.config?.body && Array.isArray(agent.config.body)) {
+      const processedFields = processFormFields(agent.config.body)
+      processedFields.forEach(field => {
+        if (field.value) {
+          defaultValues[field.name] = field.value
+        }
+      })
+    }
+    
     // Build request body following AI Agents repository pattern
+    // Merge default values with form data, with form data taking precedence
     const requestBody: Record<string, unknown> = {
       query: userMessage,
       agent_role: agent.agent_role || '',
       prompt: agent.prompt || '',
       UID: userId, // Include user ID parameter
-      ...formData // Include all form field values
+      ...defaultValues, // Include default values first
+      ...formData // Include form field values (overrides defaults if changed)
     }
+    
+
     
     // Include session context if available
     if (sessionId) {
@@ -156,13 +184,7 @@ export async function saveAgentMessages(
     const agent_id = String(agentId)
     const session_id = String(sessionId)
 
-    console.log('[saveAgentMessages] Inserting with converted values:', {
-      session_id,
-      UID,
-      agent_id,
-      prompt: userPrompt,
-      message: assistantResponse
-    });
+
 
     // Save one row with both prompt and message
     const { error } = await supabase
@@ -175,7 +197,7 @@ export async function saveAgentMessages(
         message: assistantResponse
       })
     
-    console.log('[saveAgentMessages] Insert result:', { error });
+
     
     if (error) {
       throw new Error(`Failed to save conversation: ${error.message}`)
@@ -184,7 +206,6 @@ export async function saveAgentMessages(
     return { success: true }
 
   } catch (error) {
-    console.error('[saveAgentMessages] Error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'

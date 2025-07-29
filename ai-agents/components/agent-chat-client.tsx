@@ -64,7 +64,7 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
                   </div>
                   <div>
                     <h1 className="text-lg font-semibold" style={{ marginTop: 0 }}>{agent.name}</h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground hidden md:block">
                       {agent.description || 'Interact with your AI agent'}
                     </p>
                   </div>
@@ -97,6 +97,7 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
           isOpen={isConfigSidebarOpen}
           onClose={() => setIsConfigSidebarOpen(false)}
           isMobile={false}
+          user={user}
         />
       )}
       

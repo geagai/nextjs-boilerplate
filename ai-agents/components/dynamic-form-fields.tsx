@@ -41,8 +41,9 @@ export function DynamicFormFields({
       // Always set all fields in formData, ensuring default values are present
       const initialData: Record<string, any> = {}
       processedFields.forEach(field => {
-        // Use value from formData if present, otherwise default
-        initialData[field.name] = (formData && field.name in formData)
+        // Always use the default value from the field, unless user has explicitly changed it
+        // This ensures default values are always sent in API calls
+        initialData[field.name] = (formData && field.name in formData && formData[field.name] !== field.value)
           ? formData[field.name]
           : (typeof field.value === 'string' ? field.value : '')
       })
