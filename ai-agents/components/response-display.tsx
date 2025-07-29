@@ -424,7 +424,7 @@ export function ResponseDisplay({
     <div className={`space-y-4 ${className}`}>
       <style>{`
         @media (max-width: 640px) {
-          .mobile-spacer { height: 50px !important; }
+          .mobile-spacer { height: 75px !important; }
         }
       `}</style>
       <ScrollArea className="max-h-[60vh]">
