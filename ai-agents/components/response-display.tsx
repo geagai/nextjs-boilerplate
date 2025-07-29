@@ -422,6 +422,11 @@ export function ResponseDisplay({
 
   return (
     <div className={`space-y-4 ${className}`}>
+      <style>{`
+        @media (max-width: 640px) {
+          .mobile-spacer { height: 50px !important; }
+        }
+      `}</style>
       <ScrollArea className="max-h-[60vh]">
         <div className="space-y-4 p-1">
           {messages.length === 0 && !isLoading ? (
@@ -438,7 +443,7 @@ export function ResponseDisplay({
             ))
           )}
           {/* Spacer to prevent overlap with bottom bar */}
-          <div style={{ height: '25px' }} />
+          <div style={{ height: '25px' }} className="mobile-spacer" />
         </div>
       </ScrollArea>
     </div>
