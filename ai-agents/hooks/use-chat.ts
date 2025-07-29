@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { 
   callAgentApi, 
-  saveAgentMessages, 
   loadSessionMessages,
   generateSessionId,
   generateMessageId,
@@ -162,23 +161,26 @@ export function useChat({
           rawData: response.data
         })
         
-        // Save messages to database
-        const supabase = createClient()
-        if (supabase) {
-          const saveResult = await saveAgentMessages(
-            supabase,
-            agent.id,
+        // Save messages to database via server-side API
+        const saveResult = await fetch('/api/agents/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agentId: agent.id,
             sessionId,
-            content,
-            response.message,
-            userId
-          )
-          if (!saveResult.success) {
-            console.warn('Failed to save messages to database:', saveResult.error)
-            // Don't show error to user since the main functionality worked
-          }
+            userPrompt: content,
+            assistantResponse: response.message
+          })
+        });
+
+        if (!saveResult.ok) {
+          const errorData = await saveResult.json();
+          console.warn('Failed to save messages to database:', errorData.error);
+          // Don't show error to user since the main functionality worked
         } else {
-          console.warn('Supabase client not available, skipping message save.')
+          console.log('[useChat] Message saved successfully');
         }
         
         onSuccess?.(response.message)

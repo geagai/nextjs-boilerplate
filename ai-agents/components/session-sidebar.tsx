@@ -1,6 +1,5 @@
 "use client"
 
-import { createClient } from '@/lib/supabase'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -81,91 +80,64 @@ export function SessionSidebar({
   }
 
   useEffect(() => {
-    if (isOpen) {
-      console.log('Sidebar opened, loading sessions');
-      // Defensive: always load sessions when sidebar is opened
-      (async () => {
-        setIsLoading(true);
-        try {
-          const supabase = createClient();
-          if (!supabase) throw new Error('Supabase client is not initialized');
-          const UID = (user as any)?.id;
-          if (!UID) {
-            setSessions([]);
-            setIsLoading(false);
-            return;
-          }
-          const { data, error } = await supabase
-            .from('agent_messages')
-            .select('session_id, prompt, created_at')
-            .eq('UID', UID)
-            .eq('agent_id', agentId)
-            .order('created_at', { ascending: true });
-          if (error) throw error;
-          setSessions(data || []);
-        } catch (error) {
-          console.error('Error loading sessions:', error);
-          setSessions([]);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
-    }
-  }, [isOpen, agentId, user]);
-
-  useEffect(() => {
     console.log('Main useEffect running for agentId:', agentId, 'isOpen:', isOpen);
-    if (!supaReady || authLoading) return;
-    // Load sessions from Supabase agent_messages table
+    if (!supaReady || authLoading || !isOpen) {
+      setIsLoading(false); // Force loading to false if conditions not met
+      return;
+    }
+    
+    // Safety timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('[SessionSidebar] Safety timeout triggered, setting loading to false');
+      setIsLoading(false);
+    }, 10000); // 10 second timeout
+    
+    // Load sessions from server-side API - same code as refresh button
     const loadSessions = async () => {
       setIsLoading(true)
       console.log('[loadSessions] Entered');
       try {
-        const supabase = createClient()
-        if (!supabase) {
-          console.error('[loadSessions] Supabase client is not initialized');
-          throw new Error('Supabase client is not initialized');
-        }
-        console.log('[SessionSidebar] user:', user);
-        const UID = (user as any)?.id;
-        console.log('[SessionSidebar] UID:', UID, 'agentId:', agentId);
-        if (!UID) {
-          setSessions([])
-          setIsLoading(false)
-          console.warn('[SessionSidebar] No UID, aborting session load.');
-          return
-        }
-        // Query all agent_messages for this user and agent, no grouping by session_id
-        const { data, error } = await supabase
-          .from('agent_messages')
-          .select('session_id, prompt, created_at')
-          .eq('UID', UID)
-          .eq('agent_id', agentId)
-          .order('created_at', { ascending: true })
+        console.log('[SessionSidebar] Fetching sessions for agentId:', agentId);
+        
+        const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
 
-        if (error) {
-          console.error('[loadSessions] Supabase error:', error)
-          setSessions([])
-          setIsLoading(false)
-          return
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('[SessionSidebar] Error fetching sessions:', errorData.error);
+          throw new Error(errorData.error || 'Failed to fetch sessions');
         }
-        console.log('[loadSessions] Query result:', data)
-        setSessions(data || [])
-        setIsLoading(false)
-        console.log('[loadSessions] Exiting normally');
+
+        const data = await response.json();
+        console.log('[SessionSidebar] API response:', data);
+        
+        if (data.sessions) {
+          console.log('[SessionSidebar] Setting sessions:', data.sessions);
+          setSessions(data.sessions);
+        } else {
+          console.log('[SessionSidebar] No sessions found, setting empty array');
+          setSessions([]);
+        }
       } catch (error) {
-        console.error('[loadSessions] Error loading sessions:', error)
-        setSessions([])
-        setIsLoading(false)
-        console.log('[loadSessions] Exiting with error');
+        console.error('[SessionSidebar] Error in loadSessions:', error);
+        setSessions([]);
+      } finally {
+        console.log('[SessionSidebar] Setting loading to false');
+        setIsLoading(false);
+        clearTimeout(timeoutId);
       }
-    }
-    if (agentId && isOpen) {
-      loadSessions()
-    }
-    // Realtime subscription removed
-    return () => {};
-  }, [agentId, isOpen, supaReady, user, authLoading]);
+    };
+    
+    loadSessions();
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [supaReady, authLoading, isOpen, agentId, user]);
 
   const handleSessionClick = (sessionId: string) => {
     onSessionSelect(sessionId)
@@ -183,35 +155,40 @@ export function SessionSidebar({
 
   const handleDeleteSession = async (sessionId: string) => {
     try {
-      const supabase = createClient();
-      if (!supabase) {
-        throw new Error('Supabase client is not initialized');
-      }
-      const UID = (user as any)?.id;
-      if (!UID) {
+      if (!user) {
         setSessions([]);
         setIsLoading(false);
         return;
       }
-      // Delete all messages for this session, agent, and user
-      if (!supabase) {
-        throw new Error('Supabase client is not initialized');
+      
+      console.log('[SessionSidebar] Deleting session:', sessionId, 'for agentId:', agentId);
+      
+      const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}&sessionId=${encodeURIComponent(sessionId)}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[SessionSidebar] Error deleting session:', errorData.error);
+        throw new Error(errorData.error || 'Failed to delete session');
       }
-      const { error } = await supabase
-        .from('agent_messages')
-        .delete()
-        .eq('UID', UID)
-        .eq('agent_id', agentId)
-        .eq('session_id', sessionId);
-      if (error) throw error;
+
+      console.log('[SessionSidebar] Session deleted successfully');
       setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
-      toast({ title: 'Session deleted', description: 'Chat session and messages successfully deleted.' });
-      // Optionally, if the deleted session was active, trigger onSessionSelect with empty string
-      if (currentSessionId === sessionId) {
-        onSessionSelect(''); // '' means no session selected
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to delete session.' });
+      toast({
+        title: "Session deleted",
+        description: "The session has been deleted successfully.",
+      });
+    } catch (error) {
+      console.error('[SessionSidebar] Error deleting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete session. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -228,36 +205,47 @@ export function SessionSidebar({
   };
   const handleRenameSession = async () => {
     if (!renameSessionId || !renameValue.trim()) return;
+    
     setRenameLoading(true);
     try {
-      const supabase = createClient();
-      if (!supabase) {
-        throw new Error('Supabase client is not initialized');
-      }
-      const UID = (user as any)?.id;
-      if (!UID) {
+      if (!user) {
         setSessions([]);
         setRenameLoading(false);
         return;
       }
-      // Update prompt for all messages in this session
-      if (!supabase) {
-        throw new Error('Supabase client is not initialized');
+      
+      console.log('[SessionSidebar] Renaming session:', renameSessionId, 'to:', renameValue, 'for agentId:', agentId);
+      
+      const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}&sessionId=${encodeURIComponent(renameSessionId)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: renameValue })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[SessionSidebar] Error renaming session:', errorData.error);
+        throw new Error(errorData.error || 'Failed to rename session');
       }
-      const { error } = await supabase
-        .from('agent_messages')
-        .update({ prompt: renameValue })
-        .eq('UID', UID)
-        .eq('agent_id', agentId)
-        .eq('session_id', renameSessionId);
-      if (error) throw error;
+
+      console.log('[SessionSidebar] Session renamed successfully');
       setSessions((prev) => prev.map((s) =>
         s.session_id === renameSessionId ? { ...s, prompt: renameValue } : s
       ));
-      toast({ title: 'Session renamed', description: 'Session name updated.' });
+      toast({
+        title: "Session renamed",
+        description: "The session has been renamed successfully.",
+      });
       closeRenameModal();
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to rename session.' });
+    } catch (error) {
+      console.error('[SessionSidebar] Error renaming session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to rename session. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setRenameLoading(false);
     }
@@ -273,28 +261,45 @@ export function SessionSidebar({
           onClick={() => {
             (async () => {
               setIsLoading(true);
+              
+              // Safety timeout for refresh button
+              const timeoutId = setTimeout(() => {
+                console.log('[SessionSidebar] Refresh safety timeout triggered');
+                setIsLoading(false);
+              }, 5000); // 5 second timeout for refresh
+              
               try {
-                const supabase = createClient();
-                if (!supabase) throw new Error('Supabase client is not initialized');
-                const UID = (user as any)?.id;
-                if (!UID) {
-                  setSessions([]);
-                  setIsLoading(false);
-                  return;
+                console.log('[SessionSidebar] Refreshing sessions for agentId:', agentId);
+                
+                const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                });
+
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  console.error('[SessionSidebar] Error refreshing sessions:', errorData.error);
+                  throw new Error(errorData.error || 'Failed to refresh sessions');
                 }
-                const { data, error } = await supabase
-                  .from('agent_messages')
-                  .select('session_id, prompt, created_at')
-                  .eq('UID', UID)
-                  .eq('agent_id', agentId)
-                  .order('created_at', { ascending: true });
-                if (error) throw error;
-                setSessions(data || []);
+
+                const data = await response.json();
+                console.log('[SessionSidebar] Refresh API response:', data);
+                
+                if (data.sessions) {
+                  console.log('[SessionSidebar] Setting refreshed sessions:', data.sessions);
+                  setSessions(data.sessions);
+                } else {
+                  console.log('[SessionSidebar] No sessions found on refresh, setting empty array');
+                  setSessions([]);
+                }
               } catch (error) {
-                console.error('Error loading sessions:', error);
+                console.error('[SessionSidebar] Refresh error:', error);
                 setSessions([]);
               } finally {
                 setIsLoading(false);
+                clearTimeout(timeoutId);
               }
             })();
           }}
@@ -350,7 +355,7 @@ export function SessionSidebar({
                     <div className="truncate font-medium">
                       {session.prompt ? session.prompt.slice(0, 50) : 'New Chat'}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="text-xs font-medium truncate">
                       {session.created_at ? new Date(session.created_at).toLocaleDateString() : ''}
                     </div>
                   </div>

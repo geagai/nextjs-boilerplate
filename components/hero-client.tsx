@@ -82,7 +82,7 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
+                className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
               >
                 Advanced <span className="gradient-text">AI Agents</span> for
                 <br />

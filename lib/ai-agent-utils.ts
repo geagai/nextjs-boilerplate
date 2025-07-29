@@ -151,27 +151,40 @@ export async function saveAgentMessages(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Use the original userId value for UID
-    const UID = userId
-    
+    // Convert UUID values to strings to match the text columns in the database
+    const UID = String(userId)
+    const agent_id = String(agentId)
+    const session_id = String(sessionId)
+
+    console.log('[saveAgentMessages] Inserting with converted values:', {
+      session_id,
+      UID,
+      agent_id,
+      prompt: userPrompt,
+      message: assistantResponse
+    });
+
     // Save one row with both prompt and message
     const { error } = await supabase
       .from('agent_messages')
       .insert({
-        session_id: sessionId,
-        UID,
-        agent_id: agentId,
+        session_id: session_id,
+        "UID": UID,
+        agent_id: agent_id,
         prompt: userPrompt,
         message: assistantResponse
       })
     
+    console.log('[saveAgentMessages] Insert result:', { error });
+    
     if (error) {
       throw new Error(`Failed to save conversation: ${error.message}`)
     }
-    
+
     return { success: true }
-    
+
   } catch (error) {
+    console.error('[saveAgentMessages] Error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'

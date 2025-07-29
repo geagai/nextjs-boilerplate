@@ -290,7 +290,7 @@ export function ResponseDisplay({
             message.role === 'user' ? 'ml-auto' : ''
           }`}
         >
-          <Card className={message.role === 'user' ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60' : ''}>
+          <Card className={`${message.role === 'user' ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60' : ''} ${message.role === 'assistant' ? 'md:px-6' : ''}`}>
             <CardContent className="p-4">
               {/* Message Header */}
               <div className="flex items-center justify-between mb-2">
@@ -347,7 +347,7 @@ export function ResponseDisplay({
                   </div>
                   
                   {/* Content Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50 md:pt-2.5">
                     <div className="flex items-center gap-2">
                       {needsExpansion && (
                         <Button

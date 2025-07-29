@@ -40,13 +40,16 @@ function DropdownOptionsSection({ form, bodyIndex, field }: any) {
     return null
   }
 
+  // Get current dropdown options using form.watch()
+  const dropdownOptions = form.watch(`body.${bodyIndex}.dropdownOptions`) || []
+
   return (
     <div className="space-y-3">
       <FormLabel>Dropdown Options</FormLabel>
       <FormDescription>
         Define the options users can select from
       </FormDescription>
-      {field.dropdownOptions?.map((option: any, optionIndex: number) => (
+      {dropdownOptions.map((option: any, optionIndex: number) => (
         <div key={option.id} className="flex gap-2 items-end">
           <FormField
             control={form.control}
@@ -200,11 +203,11 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
           !['input', 'input_label', 'dropdown_options'].includes(key)
         ) || ''
 
-        const dropdownOptions = field.dropdown_options ? 
-          Object.entries(field.dropdown_options).map(([value, label], idx) => ({
+        const dropdownOptions = field.options ? 
+          field.options.map((option: any, idx: number) => ({
             id: `dropdown-${index}-${idx}`,
-            label: label as string,
-            value
+            label: option.label,
+            value: option.value
           })) : []
 
         return {
@@ -261,10 +264,10 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
         }
 
         if (field.dropdownOptions.length > 0) {
-          bodyField.dropdown_options = field.dropdownOptions.reduce((acc, option) => {
-            acc[option.value] = option.label
-            return acc
-          }, {} as Record<string, string>)
+          bodyField.options = field.dropdownOptions.map(option => ({
+            label: option.label,
+            value: option.value
+          }))
         }
 
         return bodyField
