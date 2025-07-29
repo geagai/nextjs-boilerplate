@@ -8,8 +8,6 @@ import { AgentChatClient } from '@/ai-agents/components/agent-chat-client'
 export const dynamic = 'force-dynamic'
 
 export default async function AgentChatPage({ params }: { params: Promise<{ id: string }> }) {
-  console.log('=== AGENT PAGE LOADING ===');
-  console.error('=== AGENT PAGE ERROR LOG ===');
   const { id: agentId } = await params;
   
   if (!agentId) {
@@ -24,41 +22,12 @@ export default async function AgentChatPage({ params }: { params: Promise<{ id: 
     throw new Error('Unable to initialize Supabase client');
   }
 
-  // Get user session - same pattern as dashboard
+  // Get user session
   const sessionData = await getServerSession();
-  console.log('Session data:', sessionData);
   let user = null;
-  let userCredits = 0;
   
   if (sessionData && sessionData.user) {
     user = sessionData.user;
-    console.log('User found:', user.id);
-    
-    // Fetch user credits - same pattern as dashboard
-    try {
-      const { data: userData, error: userDataError } = await supabase
-        .from('user_data')
-        .select('credits')
-        .eq('UID', user.id)
-        .single();
-      
-      console.log('User data fetch result:', { userData, userDataError });
-      
-      if (!userDataError && userData) {
-        if (userData.credits === null || userData.credits === undefined) {
-          userCredits = 0;
-        } else {
-          userCredits = userData.credits;
-        }
-        console.log('Final userCredits:', userCredits);
-      }
-    } catch (e) {
-      console.log('Error fetching credits:', e);
-      // fallback to 0 credits
-      userCredits = 0;
-    }
-  } else {
-    console.log('No session data or user');
   }
   
   const { data: agent, error } = await supabase
@@ -85,7 +54,6 @@ export default async function AgentChatPage({ params }: { params: Promise<{ id: 
       agentId={agentId}
       agent={processedAgent}
       user={user}
-      userCredits={userCredits}
     />
   );
 } 
