@@ -16,6 +16,14 @@ import { useAuth } from '@/components/auth-provider'
 import type { Agent } from '@/lib/types'
 import { toast } from '@/hooks/use-toast'
 
+interface Message {
+  id: string
+  content: string
+  role: 'user' | 'assistant'
+  timestamp: string
+  rawData?: any
+}
+
 interface ChatInterfaceProps {
   agentId: string
   agent?: Agent
