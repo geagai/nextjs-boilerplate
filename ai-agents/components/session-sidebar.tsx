@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogD
 import { Input } from '@/components/ui/input'
 import { useSupabaseReady } from '@/hooks/use-supabase-ready'
 import { useAuth } from '@/components/auth-provider'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Session {
   session_id: string
@@ -47,6 +48,8 @@ export function SessionSidebar({
 
   const supaReady = useSupabaseReady();
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Helper functions for button styling
   const getButtonStyles = (variant: string = 'default') => {
@@ -140,6 +143,12 @@ export function SessionSidebar({
   }, [supaReady, authLoading, isOpen, agentId, user]);
 
   const handleSessionClick = (sessionId: string) => {
+    // Navigate to the URL with sessionId for server-side loading
+    const params = new URLSearchParams(searchParams)
+    params.set('sessionId', sessionId)
+    router.push(`?${params.toString()}`)
+    
+    // Also update the client state for immediate UI feedback
     onSessionSelect(sessionId)
     if (isMobile) {
       onClose()
@@ -147,6 +156,12 @@ export function SessionSidebar({
   }
 
   const handleNewSession = () => {
+    // Clear sessionId from URL for new chat
+    const params = new URLSearchParams(searchParams)
+    params.delete('sessionId')
+    router.push(`?${params.toString()}`)
+    
+    // Also update the client state
     onNewSession()
     onClose()
   }

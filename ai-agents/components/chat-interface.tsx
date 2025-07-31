@@ -23,6 +23,7 @@ interface ChatInterfaceProps {
   className?: string
   hideAgentHeader?: boolean
   sessionId?: string | null
+  initialMessages?: Message[]
   // Optional form state props (if not provided, component manages its own)
   formData?: Record<string, any>
   onFormDataChange?: (data: Record<string, any>) => void
@@ -37,6 +38,7 @@ export function ChatInterface({
   className = "", 
   hideAgentHeader = false, 
   sessionId,
+  initialMessages,
   formData: externalFormData,
   onFormDataChange: externalOnFormDataChange,
   isFormValid: externalIsFormValid,
@@ -84,6 +86,7 @@ export function ChatInterface({
     agent: agent || { id: '', name: '', description: '', config: null, is_public: false, UID: '' },
     userId: currentUser?.id || '',
     sessionId: sessionId || undefined,
+    initialMessages: initialMessages || [],
     onError: (error) => {
       toast({
         title: "Error",

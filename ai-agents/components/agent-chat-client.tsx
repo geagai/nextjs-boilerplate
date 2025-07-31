@@ -10,16 +10,32 @@ import { SessionSidebar } from '@/ai-agents/components/session-sidebar'
 import { AgentConfigSidebar } from '@/ai-agents/components/agent-config-sidebar'
 import type { Agent } from '@/lib/types'
 
+interface Message {
+  id: string
+  content: string
+  role: 'user' | 'assistant'
+  timestamp: string
+  rawData?: any
+}
+
 interface AgentChatClientProps {
   agentId: string
   agent: Agent
   user: any
+  sessionId?: string | null
+  initialMessages?: Message[]
 }
 
-export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) {
+export function AgentChatClient({ 
+  agentId, 
+  agent, 
+  user, 
+  sessionId: serverSessionId,
+  initialMessages 
+}: AgentChatClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isConfigSidebarOpen, setIsConfigSidebarOpen] = useState(false)
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(serverSessionId || null)
   
   // Form state for agent config
   const [formData, setFormData] = useState<Record<string, any>>({})
@@ -30,6 +46,13 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
     setIsFormValid(valid)
     setFormErrors(errors)
   }
+
+  // Update selectedSessionId when serverSessionId changes
+  useEffect(() => {
+    if (serverSessionId) {
+      setSelectedSessionId(serverSessionId)
+    }
+  }, [serverSessionId])
 
   return (
     <div className="flex bg-background" style={{ height: 'calc(100vh - 100px)' }}>
@@ -79,6 +102,7 @@ export function AgentChatClient({ agentId, agent, user }: AgentChatClientProps) 
             user={user}
             hideAgentHeader={true}
             sessionId={selectedSessionId}
+            initialMessages={initialMessages}
             formData={formData}
             onFormDataChange={setFormData}
             isFormValid={isFormValid}

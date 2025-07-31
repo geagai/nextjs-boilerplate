@@ -25,6 +25,7 @@ interface UseChatOptions {
   agent: Agent
   userId: string
   sessionId?: string
+  initialMessages?: Message[]
   onError?: (error: string) => void
   onSuccess?: (message: string) => void
 }
@@ -44,16 +45,24 @@ export function useChat({
   agent,
   userId,
   sessionId: providedSessionId,
+  initialMessages,
   onError,
   onSuccess
 }: UseChatOptions): UseChatReturn {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(initialMessages || [])
   const [isLoading, setIsLoading] = useState(false)
   const sessionId = useMemo(() => validateSessionId(providedSessionId), [providedSessionId])
-  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false)
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(!!initialMessages)
   const [retryData, setRetryData] = useState<Map<string, { content: string; formData?: Record<string, any> }>>(new Map())
 
   const loadHistory = useCallback(async () => {
+    // If we have initialMessages, use them instead of loading from client
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(initialMessages)
+      setIsHistoryLoaded(true)
+      return
+    }
+    
     try {
       const result = await loadSessionMessages(sessionId, userId)
       if (result.success && result.messages) {
@@ -74,7 +83,7 @@ export function useChat({
       console.error('Failed to load chat history:', error)
       setIsHistoryLoaded(true)
     }
-  }, [sessionId, userId])
+  }, [sessionId, userId, initialMessages])
 
   useEffect(() => {
     // Always clear messages when sessionId changes

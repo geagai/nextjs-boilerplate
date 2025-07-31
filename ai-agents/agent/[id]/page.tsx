@@ -7,8 +7,15 @@ import { AgentChatClient } from '@/ai-agents/components/agent-chat-client'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AgentChatPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AgentChatPage({ 
+  params,
+  searchParams 
+}: { 
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ sessionId?: string }>
+}) {
   const { id: agentId } = await params;
+  const { sessionId } = await searchParams;
   
   if (!agentId) {
     throw new Error('Agent ID is required');
@@ -47,13 +54,41 @@ export default async function AgentChatPage({ params }: { params: Promise<{ id: 
     icon: agent.config?.options?.icon || null
   };
 
+  // Fetch messages server-side if sessionId is provided
+  let initialMessages = [];
+  if (sessionId && user?.id) {
+    try {
+      const { data: messages, error: messagesError } = await supabase
+        .from('agent_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('UID', user.id)
+        .eq('agent_id', agentId)
+        .order('created_at', { ascending: true });
 
+      if (!messagesError && messages) {
+        initialMessages = messages
+          .filter(msg => msg.message && msg.message.trim() !== '')
+          .map(msg => ({
+            id: msg.id || `msg-${Date.now()}-${Math.random()}`,
+            content: msg.message || '',
+            role: 'assistant' as const,
+            timestamp: msg.created_at || new Date().toISOString(),
+            rawData: msg
+          }));
+      }
+    } catch (error) {
+      console.error('Failed to load messages server-side:', error);
+    }
+  }
 
   return (
     <AgentChatClient 
       agentId={agentId}
       agent={processedAgent}
       user={user}
+      sessionId={sessionId || null}
+      initialMessages={initialMessages}
     />
   );
 } 
