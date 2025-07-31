@@ -35,8 +35,7 @@ export default async function PricingPage() {
 
   // Use only .env variables for Stripe config
   const publishableKey = process.env.NEXT_PUBLIC_STRIPE_KEY;
-  const secretKey = process.env.NEXT_PUBLIC_STRIPE_SECRET;
-  const hasStripeConfig = publishableKey && secretKey;
+  const hasStripeConfig = publishableKey;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 pt-5">
@@ -52,7 +51,7 @@ export default async function PricingPage() {
               <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Stripe Configuration Required</h3>
               <p className="text-muted-foreground mb-6">
-                Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> and <code>NEXT_PUBLIC_STRIPE_SECRET</code> as environment variables in your hosting provider's dashboard or in your local <code>.env</code> file to enable Stripe pricing.
+                Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> as an environment variable in your hosting provider's dashboard or in your local <code>.env</code> file to enable Stripe pricing.
               </p>
             </div>
           </div>

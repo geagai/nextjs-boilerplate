@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
-import Stripe from 'stripe'
+import { stripe } from '@/lib/stripe'
 import MyProductsClient from './my-products-client'
 import { AlertTriangle } from 'lucide-react'
 
@@ -42,8 +42,7 @@ export default async function MyProductsPage() {
 
   // Use only .env variables for Stripe config
   const publishableKey = process.env.NEXT_PUBLIC_STRIPE_KEY;
-  const secretKey = process.env.NEXT_PUBLIC_STRIPE_SECRET;
-  const hasStripeConfig = publishableKey && secretKey;
+  const hasStripeConfig = publishableKey;
 
   if (!hasStripeConfig) {
     return (
@@ -51,18 +50,30 @@ export default async function MyProductsPage() {
         <div className="max-w-md mx-auto text-center py-16">
           <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Stripe Configuration Required</h3>
+                        <p className="text-muted-foreground mb-6">
+                Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> as an environment variable in your hosting provider's dashboard or in your local <code>.env</code> file to enable Stripe product management.
+              </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!stripe) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">
+        <div className="max-w-md mx-auto text-center py-16">
+          <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Stripe Configuration Required</h3>
           <p className="text-muted-foreground mb-6">
-            Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> and <code>NEXT_PUBLIC_STRIPE_SECRET</code> as environment variables in your hosting provider's dashboard or in your local <code>.env</code> file to enable Stripe product management.
+            Please set <code>STRIPE_SECRET_KEY</code> as an environment variable to enable Stripe product management.
           </p>
         </div>
       </div>
     )
   }
 
-  const stripe = new Stripe(secretKey, { apiVersion: '2025-06-30.basil' as any })
-
   // Fetch products
-  const productsResp = await stripe.products.list({ limit: 100 })
+  const productsResp = await stripe.products.list({ limit: 100, active: true })
 
   // Fetch prices for each product
   const productData = await Promise.all(

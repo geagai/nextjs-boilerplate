@@ -40,10 +40,10 @@ export async function POST(request: Request) {
     // --- Admin check logic removed for brevity, add back if needed ---
 
     // Get Stripe configuration from environment variable
-    const stripeSecret = process.env.NEXT_PUBLIC_STRIPE_SECRET
+    const stripeSecret = process.env.STRIPE_SECRET_KEY
     if (!stripeSecret) {
       return NextResponse.json({
-        error: 'Stripe configuration not found. Please set NEXT_PUBLIC_STRIPE_SECRET in your environment.'
+        error: 'Stripe configuration not found. Please set STRIPE_SECRET_KEY in your environment.'
       }, { status: 400 })
     }
 

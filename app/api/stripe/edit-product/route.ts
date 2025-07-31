@@ -60,10 +60,10 @@ export async function POST(request: Request) {
     }
 
     // Get Stripe configuration from environment variable
-    const stripeSecret = process.env.NEXT_PUBLIC_STRIPE_SECRET;
+    const stripeSecret = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecret) {
       return NextResponse.json({
-        error: 'Stripe configuration not found. Please set NEXT_PUBLIC_STRIPE_KEY and NEXT_PUBLIC_STRIPE_SECRET as environment variables in your hosting provider\'s dashboard or in your local .env file to enable Stripe product editing.'
+        error: 'Stripe configuration not found. Please set NEXT_PUBLIC_STRIPE_KEY and STRIPE_SECRET_KEY as environment variables in your hosting provider\'s dashboard or in your local .env file to enable Stripe product editing.'
       }, { status: 400 });
     }
 

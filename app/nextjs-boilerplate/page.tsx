@@ -17,8 +17,7 @@ export default async function NextjsBoilerplatePage() {
 
   // Use only .env variables for Stripe config (match /pricing)
   const publishableKey = process.env.NEXT_PUBLIC_STRIPE_KEY;
-  const secretKey = process.env.NEXT_PUBLIC_STRIPE_SECRET;
-  const hasStripeConfig = publishableKey && secretKey;
+  const hasStripeConfig = publishableKey;
 
   return (
     <div className="min-h-screen">

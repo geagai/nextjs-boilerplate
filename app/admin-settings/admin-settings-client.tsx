@@ -295,10 +295,10 @@ export function AdminSettingsClient({ initialSettings }: AdminSettingsClientProp
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {(!process.env.NEXT_PUBLIC_STRIPE_KEY || !process.env.NEXT_PUBLIC_STRIPE_SECRET) && (
+              {(!process.env.NEXT_PUBLIC_STRIPE_KEY) && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded mb-4">
                   <strong>Stripe environment variables missing:</strong><br />
-                  Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> and <code>NEXT_PUBLIC_STRIPE_SECRET</code> in your <code>.env</code> file to enable Stripe integration.
+                  Please set <code>NEXT_PUBLIC_STRIPE_KEY</code> in your <code>.env</code> file to enable Stripe integration.
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -2,13 +2,13 @@
 import Stripe from 'stripe'
 
 // Only create Stripe instance if the secret key is available
-export const stripe = process.env.NEXT_PUBLIC_STRIPE_SECRET ? new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET, {
+export const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-06-30.basil' as any,
   typescript: true,
 }) : null
 
 export const getStripeInstance = () => {
-  if (!process.env.NEXT_PUBLIC_STRIPE_SECRET) {
+  if (!process.env.STRIPE_SECRET_KEY) {
     return null
   }
   return stripe
@@ -29,7 +29,7 @@ export const SUBSCRIPTION_PLANS = {
   STARTER: {
     name: 'Starter',
     price: 10,
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_KEY || null,
+    stripePriceId: null, // This should be set to an actual Stripe price ID
     features: [
       'Everything in Free',
       'Payment integration',
@@ -41,7 +41,7 @@ export const SUBSCRIPTION_PLANS = {
   PRO: {
     name: 'Pro',
     price: 20,
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_KEY || null,
+    stripePriceId: null, // This should be set to an actual Stripe price ID
     features: [
       'Everything in Starter',
       'Advanced security features',
@@ -54,7 +54,7 @@ export const SUBSCRIPTION_PLANS = {
   ELITE: {
     name: 'Elite',
     price: 30,
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_KEY || null,
+    stripePriceId: null, // This should be set to an actual Stripe price ID
     features: [
       'Everything in Pro',
       'White-label options',

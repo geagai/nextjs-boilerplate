@@ -45,6 +45,27 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid priceId' }, { status: 400 })
       }
 
+      // Fetch product information to get credits
+      let product: Stripe.Product | undefined
+      let credits = '0'
+      try {
+        product = await stripe.products.retrieve(price.product as string)
+        console.log('📦 Product metadata:', product?.metadata)
+        credits = product?.metadata?.credits || '0'
+        console.log('💳 Credits from product:', credits)
+      } catch (err) {
+        console.log('⚠️ Could not fetch product information:', err)
+        // Try to get credits from the price metadata as fallback
+        try {
+          const priceWithProduct = await stripe.prices.retrieve(priceId, { expand: ['product'] })
+          const productFromPrice = priceWithProduct.product as Stripe.Product
+          credits = productFromPrice?.metadata?.credits || '0'
+          console.log('💳 Credits from price product:', credits)
+        } catch (fallbackErr) {
+          console.log('⚠️ Could not fetch product from price either:', fallbackErr)
+        }
+      }
+
       // Create or get Stripe customer
       let customerId = user.user_metadata?.stripeCustomerId
       if (!customerId) {
@@ -61,6 +82,15 @@ export async function POST(request: Request) {
 
       const mode = price.type === 'recurring' ? 'subscription' : 'payment'
 
+      const sessionMetadata = {
+        userId: user.id,
+        priceId: price.id,
+        productId: price.product as string,
+        credits: credits
+      }
+      
+      console.log('📋 Session metadata:', sessionMetadata)
+
       const checkoutSession = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
@@ -68,11 +98,7 @@ export async function POST(request: Request) {
         mode,
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
-        metadata: {
-          userId: user.id,
-          priceId: price.id,
-          productId: price.product as string
-        }
+        metadata: sessionMetadata
       })
 
       return NextResponse.json({ sessionId: checkoutSession.id })

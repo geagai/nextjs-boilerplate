@@ -6,22 +6,21 @@ alwaysApply: false
 
 ## Agent Creation Prompt
 
-1. I want you to inspect the supabase database table "agents". We are going to create a new agent on the front end of this application by creating a new table row. I want you to inspect the existing table and the way agents are setup. Do not make any changes yet.
+Use the supabasse mcp tool. I want you to inspect the supabase database table "agents". We are going to create a new agent by copying the row with id a390d4ef-dd23-41a5-ab7b-574bcee20b75.
 
-2. I want you to create the following agent. Do not make any changes to the code in the applciation or modify any other tables or table records.
+the column name is case-sensitive. Make sure you have the exact column names in the agents table for the query. In the new row I want you to make the following changes and keep all other columns the same, especially the "config column. You need to copy the json into the new row. Make sure you get the UID column name correct, the column name is all uppercase is all. The column value is not and needs to be the same value.
 
 UID: 7bed2e3d-8146-4be2-a98d-6b9c41c16764
-Name: Landing Page Analyzer
-Description: This AI Agent will help you analyze your web pages for things like usability and improving search engine optimization. Input your URL in the Agent config options and inform the agent of any things you would like to specifically focus on.
-Category: Websites
-API URL: https://api.geag.ai/webhook/webpage-analysis
-Agent Role: You are a professional expert in Conversion Rate Optimization who helps business founders & CMOs improve their landing pages. You are a world-class expert in analyzing landing pages, roasting them, and providing valuable Conversion Rate Optimization Ideas to help businesses increase conversions.
+Name: Content Idea Agent
+Description: This AI Agent will help you come up with content ideas for blog posts on any subject for any industry. Use this agant to generate ideas and then use the Blog Post Generation AI Agent.
+Category: Websites,Content
+API URL: https://api.geag.ai/webhook/content-ideas
+Agent Role: You are an expert at coming up with ideas for blog posts for business websites.
 is_public: true
-icon: Bot
-top_p: 0.9
-max_tokens: 6000
-placeholder: Please describe anything in specific you would like to focus on or just say, general report.
-temperature: 0.7
+placeholder: Please change any options by clicking on the Agent Config button and tell me about the types of posts you would like ideas for.
+
+
+## Create Agent 2
 
 I want you to create the agent with the following additional fields in the config. All fields are text and I have provided the defauls. Make sure you get the config correctly based on the authentication I have provided and the existing examples in the database.
 
