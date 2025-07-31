@@ -5,6 +5,14 @@ import { getServerSession } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { AgentChatClient } from '@/ai-agents/components/agent-chat-client'
 
+interface Message {
+  id: string
+  content: string
+  role: 'user' | 'assistant'
+  timestamp: string
+  rawData?: any
+}
+
 export const dynamic = 'force-dynamic'
 
 export default async function AgentChatPage({ 
@@ -55,7 +63,7 @@ export default async function AgentChatPage({
   };
 
   // Fetch messages server-side if sessionId is provided
-  let initialMessages = [];
+  let initialMessages: Message[] = [];
   if (sessionId && user?.id) {
     try {
       const { data: messages, error: messagesError } = await supabase
