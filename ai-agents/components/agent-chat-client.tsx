@@ -49,9 +49,7 @@ export function AgentChatClient({
 
   // Update selectedSessionId when serverSessionId changes
   useEffect(() => {
-    if (serverSessionId) {
-      setSelectedSessionId(serverSessionId)
-    }
+    setSelectedSessionId(serverSessionId || null)
   }, [serverSessionId])
 
   return (

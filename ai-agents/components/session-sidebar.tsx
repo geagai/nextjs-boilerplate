@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogD
 import { Input } from '@/components/ui/input'
 import { useSupabaseReady } from '@/hooks/use-supabase-ready'
 import { useAuth } from '@/components/auth-provider'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 interface Session {
   session_id: string
@@ -50,6 +51,7 @@ export function SessionSidebar({
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   // Helper functions for button styling
   const getButtonStyles = (variant: string = 'default') => {
@@ -143,10 +145,13 @@ export function SessionSidebar({
   }, [supaReady, authLoading, isOpen, agentId, user]);
 
   const handleSessionClick = (sessionId: string) => {
-    // Navigate to the URL with sessionId for server-side loading
+    // Use server-side navigation by updating URL parameters
     const params = new URLSearchParams(searchParams)
     params.set('sessionId', sessionId)
-    router.push(`?${params.toString()}`)
+    const newUrl = `${pathname}?${params.toString()}`
+    
+    // Navigate using router.push for immediate feedback
+    router.push(newUrl)
     
     // Also update the client state for immediate UI feedback
     onSessionSelect(sessionId)
@@ -156,10 +161,13 @@ export function SessionSidebar({
   }
 
   const handleNewSession = () => {
-    // Clear sessionId from URL for new chat
+    // Clear sessionId from URL for new chat using server-side navigation
     const params = new URLSearchParams(searchParams)
     params.delete('sessionId')
-    router.push(`?${params.toString()}`)
+    const newUrl = `${pathname}?${params.toString()}`
+    
+    // Navigate using router.push for immediate feedback
+    router.push(newUrl)
     
     // Also update the client state
     onNewSession()
@@ -356,47 +364,56 @@ export function SessionSidebar({
               <p className="text-sm">No chat history yet</p>
             </div>
           ) : (
-            sessions.map((session) => (
-              <div key={`${session.session_id}-${session.created_at}`} className="relative group bg-card text-card-foreground" style={{ border: '1px solid #d8d8d8', borderRadius: '6px', background: '#ffffff' }}>
-                <Button
-                  variant={currentSessionId === session.session_id ? 'secondary' : 'ghost'}
-                  className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.session_id ? ' active-session' : ''}`}
-                  style={currentSessionId === session.session_id ? { backgroundColor: '#fafafa' } : {}}
-                  onClick={() => handleSessionClick(session.session_id)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="truncate font-medium">
-                      {session.prompt ? session.prompt.slice(0, 50) : 'New Chat'}
-                    </div>
-                    <div className="text-xs font-medium truncate">
-                      {session.created_at ? new Date(session.created_at).toLocaleDateString() : ''}
-                    </div>
+            sessions.map((session) => {
+              // Create URL for this session
+              const params = new URLSearchParams(searchParams)
+              params.set('sessionId', session.session_id)
+              const sessionUrl = `${pathname}?${params.toString()}`
+              
+              return (
+                <div key={`${session.session_id}-${session.created_at}`} className="relative group bg-card text-card-foreground" style={{ border: '1px solid #d8d8d8', borderRadius: '6px', background: '#ffffff' }}>
+                  <Link href={sessionUrl} className="block">
+                    <Button
+                      variant={currentSessionId === session.session_id ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.session_id ? ' active-session' : ''}`}
+                      style={currentSessionId === session.session_id ? { backgroundColor: '#fafafa' } : {}}
+                      onClick={() => handleSessionClick(session.session_id)}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate font-medium">
+                          {session.prompt ? session.prompt.slice(0, 50) : 'New Chat'}
+                        </div>
+                        <div className="text-xs font-medium truncate">
+                          {session.created_at ? new Date(session.created_at).toLocaleDateString() : ''}
+                        </div>
+                      </div>
+                    </Button>
+                  </Link>
+                  {/* RENAME and DELETE BUTTONS */}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2" style={{ marginTop: '15px' }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-600 font-medium"
+                      style={{ padding: '0 6px' }}
+                      onClick={e => { e.stopPropagation(); openRenameModal(session); }}
+                      aria-label="Rename session"
+                    >
+                      Rename
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive font-medium"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.session_id); }}
+                      aria-label="Delete session"
+                    >
+                      Delete
+                    </Button>
                   </div>
-                </Button>
-                {/* RENAME and DELETE BUTTONS */}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2" style={{ marginTop: '15px' }}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-blue-600 font-medium"
-                    style={{ padding: '0 6px' }}
-                    onClick={e => { e.stopPropagation(); openRenameModal(session); }}
-                    aria-label="Rename session"
-                  >
-                    Rename
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive font-medium"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.session_id); }}
-                    aria-label="Delete session"
-                  >
-                    Delete
-                  </Button>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </ScrollArea>
