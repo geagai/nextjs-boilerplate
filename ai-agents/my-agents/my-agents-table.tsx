@@ -4,6 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Bot, Brain } from 'lucide-react';
+import { CopyAgentModal } from '../components/copy-agent-modal';
 
 function renderAgentIcon(icon: any) {
   if (!icon) return <Bot className="w-6 h-6 text-muted-foreground" />;
@@ -62,6 +63,7 @@ export default function MyAgentsTable({ agents, adminSettings }: MyAgentsTablePr
                 <Link href={`/agent/${agent.id}`} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" variant="default" className="min-w-[90px]">View</Button>
                 </Link>
+                <CopyAgentModal agent={agent} />
               </div>
             </TableCell>
           </TableRow>

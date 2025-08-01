@@ -24,6 +24,7 @@ interface AgentChatClientProps {
   user: any
   sessionId?: string | null
   initialMessages?: Message[]
+  initialSessions?: any[]
 }
 
 export function AgentChatClient({ 
@@ -31,7 +32,8 @@ export function AgentChatClient({
   agent, 
   user, 
   sessionId: serverSessionId,
-  initialMessages 
+  initialMessages,
+  initialSessions
 }: AgentChatClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isConfigSidebarOpen, setIsConfigSidebarOpen] = useState(false)
@@ -63,6 +65,7 @@ export function AgentChatClient({
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isMobile={false}
+        initialSessions={initialSessions}
       />
       
       {/* Main Chat Area */}

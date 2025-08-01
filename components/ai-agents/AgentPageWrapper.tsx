@@ -25,9 +25,10 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
 interface AgentPageWrapperProps {
   agent: any;
   user: any;
+  initialSessions?: any[];
 }
 
-export default function AgentPageWrapper({ agent, user }: AgentPageWrapperProps) {
+export default function AgentPageWrapper({ agent, user, initialSessions }: AgentPageWrapperProps) {
   const params = useParams();
   const agentId = params?.id as string;
 
@@ -35,5 +36,5 @@ export default function AgentPageWrapper({ agent, user }: AgentPageWrapperProps)
     return <AddonMissing addonName="AI Agents" purchaseUrl="https://www.geag.ai/ai-agents-addon" />;
   }
 
-  return <AgentChatClient agentId={agentId} agent={agent} user={user} />;
+  return <AgentChatClient agentId={agentId} agent={agent} user={user} initialSessions={initialSessions} />;
 } 

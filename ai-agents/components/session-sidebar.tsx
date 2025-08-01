@@ -28,6 +28,7 @@ interface SessionSidebarProps {
   onClose: () => void
   isMobile: boolean
   adminSettings?: any
+  initialSessions?: any[]
 }
 
 export function SessionSidebar({
@@ -38,10 +39,11 @@ export function SessionSidebar({
   isOpen,
   onClose,
   isMobile,
-  adminSettings
+  adminSettings,
+  initialSessions
 }: SessionSidebarProps) {
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [sessions, setSessions] = useState<Session[]>(initialSessions || [])
+  const [isLoading, setIsLoading] = useState(false)
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [renameSessionId, setRenameSessionId] = useState<string | null>(null);
@@ -84,65 +86,53 @@ export function SessionSidebar({
     }
   }
 
-  useEffect(() => {
-    console.log('Main useEffect running for agentId:', agentId, 'isOpen:', isOpen);
-    if (!supaReady || authLoading || !isOpen) {
-      setIsLoading(false); // Force loading to false if conditions not met
-      return;
-    }
+  // Function to load sessions
+  const loadSessions = async () => {
+    setIsLoading(true);
+    console.log('[SessionSidebar] Loading sessions for agentId:', agentId);
     
-    // Safety timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.log('[SessionSidebar] Safety timeout triggered, setting loading to false');
-      setIsLoading(false);
-    }, 10000); // 10 second timeout
-    
-    // Load sessions from server-side API - same code as refresh button
-    const loadSessions = async () => {
-      setIsLoading(true)
-      console.log('[loadSessions] Entered');
-      try {
-        console.log('[SessionSidebar] Fetching sessions for agentId:', agentId);
-        
-        const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('[SessionSidebar] Error fetching sessions:', errorData.error);
-          throw new Error(errorData.error || 'Failed to fetch sessions');
+    try {
+      const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
         }
+      });
 
-        const data = await response.json();
-        console.log('[SessionSidebar] API response:', data);
-        
-        if (data.sessions) {
-          console.log('[SessionSidebar] Setting sessions:', data.sessions);
-          setSessions(data.sessions);
-        } else {
-          console.log('[SessionSidebar] No sessions found, setting empty array');
-          setSessions([]);
-        }
-      } catch (error) {
-        console.error('[SessionSidebar] Error in loadSessions:', error);
-        setSessions([]);
-      } finally {
-        console.log('[SessionSidebar] Setting loading to false');
-        setIsLoading(false);
-        clearTimeout(timeoutId);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[SessionSidebar] Error fetching sessions:', errorData.error);
+        throw new Error(errorData.error || 'Failed to fetch sessions');
       }
-    };
+
+      const data = await response.json();
+      console.log('[SessionSidebar] API response:', data);
+      
+      if (data.sessions) {
+        console.log('[SessionSidebar] Setting sessions:', data.sessions);
+        setSessions(data.sessions);
+      } else {
+        console.log('[SessionSidebar] No sessions found, setting empty array');
+        setSessions([]);
+      }
+    } catch (error) {
+      console.error('[SessionSidebar] Error in loadSessions:', error);
+      setSessions([]);
+    } finally {
+      console.log('[SessionSidebar] Setting loading to false');
+      setIsLoading(false);
+    }
+  };
+
+  // Load sessions when sidebar opens
+  useEffect(() => {
+    console.log('[SessionSidebar] useEffect triggered - isOpen:', isOpen, 'supaReady:', supaReady, 'authLoading:', authLoading);
     
-    loadSessions();
-    
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [supaReady, authLoading, isOpen, agentId, user]);
+    if (isOpen && supaReady && !authLoading) {
+      console.log('[SessionSidebar] Loading sessions because sidebar opened');
+      loadSessions();
+    }
+  }, [isOpen, supaReady, authLoading, agentId]);
 
   const handleSessionClick = (sessionId: string) => {
     // Use server-side navigation by updating URL parameters
@@ -279,51 +269,7 @@ export function SessionSidebar({
         <button
           className="flex items-center gap-1 p-2 rounded hover:bg-muted transition"
           title="Refresh"
-          onClick={() => {
-            (async () => {
-              setIsLoading(true);
-              
-              // Safety timeout for refresh button
-              const timeoutId = setTimeout(() => {
-                console.log('[SessionSidebar] Refresh safety timeout triggered');
-                setIsLoading(false);
-              }, 5000); // 5 second timeout for refresh
-              
-              try {
-                console.log('[SessionSidebar] Refreshing sessions for agentId:', agentId);
-                
-                const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  }
-                });
-
-                if (!response.ok) {
-                  const errorData = await response.json();
-                  console.error('[SessionSidebar] Error refreshing sessions:', errorData.error);
-                  throw new Error(errorData.error || 'Failed to refresh sessions');
-                }
-
-                const data = await response.json();
-                console.log('[SessionSidebar] Refresh API response:', data);
-                
-                if (data.sessions) {
-                  console.log('[SessionSidebar] Setting refreshed sessions:', data.sessions);
-                  setSessions(data.sessions);
-                } else {
-                  console.log('[SessionSidebar] No sessions found on refresh, setting empty array');
-                  setSessions([]);
-                }
-              } catch (error) {
-                console.error('[SessionSidebar] Refresh error:', error);
-                setSessions([]);
-              } finally {
-                setIsLoading(false);
-                clearTimeout(timeoutId);
-              }
-            })();
-          }}
+          onClick={loadSessions}
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           <span className="ml-1 select-none">Refresh</span>
