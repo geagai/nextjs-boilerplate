@@ -104,6 +104,23 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'one_time'>('monthly')
   const { toast } = useToast()
 
+  // Determine which tabs to show based on available products
+  const availableTabs = useMemo(() => {
+    const tabs = [
+      { key: 'monthly' as const, label: 'Monthly' },
+      { key: 'yearly' as const, label: 'Yearly' },
+      { key: 'one_time' as const, label: 'One Time' },
+    ]
+
+    return tabs.filter(tab => {
+      // Check if any product has a price for this tab
+      return products.some(product => getPriceForTab(product.prices, tab.key))
+    })
+  }, [products])
+
+  // Update active tab if current tab is not available
+  const currentActiveTab = availableTabs.find(tab => tab.key === activeTab)?.key || availableTabs[0]?.key || 'monthly'
+
   const filteredProducts = useMemo(() => {
     // First filter by category if specified
     let categoryFiltered = products
@@ -113,20 +130,20 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
       )
     }
     
-    // Then filter by active tab (pricing type)
-    const filtered = categoryFiltered.filter((p) => getPriceForTab(p.prices, activeTab))
+    // Then filter by current active tab (pricing type)
+    const filtered = categoryFiltered.filter((p) => getPriceForTab(p.prices, currentActiveTab))
     
     // Sort by price from low to high
     return filtered.sort((a, b) => {
-      const priceA = getPriceForTab(a.prices, activeTab)
-      const priceB = getPriceForTab(b.prices, activeTab)
+      const priceA = getPriceForTab(a.prices, currentActiveTab)
+      const priceB = getPriceForTab(b.prices, currentActiveTab)
       
       if (!priceA || !priceB) return 0
       
       // Sort from low to high price
       return (priceA.unit_amount || 0) - (priceB.unit_amount || 0)
     })
-  }, [products, activeTab, categoryFilter])
+  }, [products, currentActiveTab, categoryFilter])
 
   const handleSelectPrice = async (priceId: string) => {
     if (!session) {
@@ -182,15 +199,11 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
     <div className="mb-16 max-w-[1200px] mx-auto">
       {/* Tabs (full width, centered) */}
       <div className="flex justify-center gap-4 mb-12 pt-5">
-        {([
-          { key: 'monthly', label: 'Monthly' },
-          { key: 'yearly', label: 'Yearly' },
-          { key: 'one_time', label: 'One Time' },
-        ] as const).map((tab) => (
+        {availableTabs.map((tab) => (
           <button
             key={tab.key}
             className={`px-4 py-2 rounded-md text-sm font-medium border ${
-              activeTab === tab.key
+              currentActiveTab === tab.key
                 ? 'border-primary text-primary bg-transparent'
                 : 'border-[#d8d8d8] bg-[--header-bg] text-muted-foreground'
             }`}
@@ -232,8 +245,8 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
            </Card>
          </motion.div>
 
-         {filteredProducts.map((product, index) => {
-          const price = getPriceForTab(product.prices, activeTab)
+                   {filteredProducts.map((product, index) => {
+            const price = getPriceForTab(product.prices, currentActiveTab)
           if (!price) return null
           const popular = product.metadata?.most_popular === 'true'
           const marketingFeatures = getMarketingFeatures(product)
@@ -260,10 +273,10 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
                   <CardTitle className="text-2xl">{product.name}</CardTitle>
                   <CardDescription className="text-base">{product.description}</CardDescription>
                   <div className="pt-4">
-                    <span className="text-4xl font-bold">${formatAmount(price.unit_amount)}</span>
-                    {activeTab !== 'one_time' && (
-                      <span className="text-muted-foreground">/{activeTab === 'monthly' ? 'month' : 'year'}</span>
-                    )}
+                                         <span className="text-4xl font-bold">${formatAmount(price.unit_amount)}</span>
+                     {currentActiveTab !== 'one_time' && (
+                       <span className="text-muted-foreground">/{currentActiveTab === 'monthly' ? 'month' : 'year'}</span>
+                     )}
                   </div>
                 </CardHeader>
 
@@ -273,9 +286,9 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
                     variant={popular ? 'default' : 'outline'}
                     onClick={() => handleSelectPrice(price.id)}
                     disabled={loadingPriceId === price.id}
-                  >
-                    {loadingPriceId === price.id ? 'Processing...' : getButtonLabel(price, activeTab)}
-                  </Button>
+                                     >
+                     {loadingPriceId === price.id ? 'Processing...' : getButtonLabel(price, currentActiveTab)}
+                   </Button>
 
                   {showNoCardText(price) && (
                     <p className="text-center text-sm text-muted-foreground">No Credit Card Required</p>
