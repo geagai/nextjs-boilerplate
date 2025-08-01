@@ -72,13 +72,16 @@ export default async function MyProductsPage() {
     )
   }
 
+  // At this point, stripe is guaranteed to be non-null
+  const stripeClient = stripe!
+
   // Fetch products
-  const productsResp = await stripe.products.list({ limit: 100, active: true })
+  const productsResp = await stripeClient.products.list({ limit: 100, active: true })
 
   // Fetch prices for each product
   const productData = await Promise.all(
     productsResp.data.map(async (product) => {
-      const prices = await stripe.prices.list({ product: product.id, active: true, limit: 100 })
+      const prices = await stripeClient.prices.list({ product: product.id, active: true, limit: 100 })
       return {
         id: product.id,
         name: product.name,
