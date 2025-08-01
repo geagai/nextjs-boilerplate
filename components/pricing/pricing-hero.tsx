@@ -8,7 +8,7 @@ interface PricingHeroProps {
 
 export function PricingHero({ headline, description }: PricingHeroProps) {
   return (
-    <div className="text-center mb-16">
+    <div className="text-center mb-4">
       <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-headline">
         {headline || 'Choose Your Perfect Plan'}
       </h1>

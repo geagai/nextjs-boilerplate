@@ -114,7 +114,18 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
     }
     
     // Then filter by active tab (pricing type)
-    return categoryFiltered.filter((p) => getPriceForTab(p.prices, activeTab))
+    const filtered = categoryFiltered.filter((p) => getPriceForTab(p.prices, activeTab))
+    
+    // Sort by price from low to high
+    return filtered.sort((a, b) => {
+      const priceA = getPriceForTab(a.prices, activeTab)
+      const priceB = getPriceForTab(b.prices, activeTab)
+      
+      if (!priceA || !priceB) return 0
+      
+      // Sort from low to high price
+      return (priceA.unit_amount || 0) - (priceB.unit_amount || 0)
+    })
   }, [products, activeTab, categoryFilter])
 
   const handleSelectPrice = async (priceId: string) => {
@@ -170,7 +181,7 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
   return (
     <div className="mb-16 max-w-[1200px] mx-auto">
       {/* Tabs (full width, centered) */}
-      <div className="flex justify-center gap-4 mb-5 pt-5">
+      <div className="flex justify-center gap-4 mb-12 pt-5">
         {([
           { key: 'monthly', label: 'Monthly' },
           { key: 'yearly', label: 'Yearly' },
@@ -189,9 +200,39 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
           </button>
         ))}
       </div>
-      {/* Only the cards are in a grid */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-8`}>
-        {filteredProducts.map((product, index) => {
+             {/* Only the cards are in a grid */}
+       <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-8`}>
+         {/* Free Trial Block */}
+         <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.6, delay: 0 }}
+           className="relative"
+         >
+           <Card className="h-full card-hover">
+             <CardHeader className="text-center pb-8">
+               <CardTitle className="text-2xl">Free Trial</CardTitle>
+               <CardDescription className="text-base">Create a Free Account and Get 100 Credits to Try Our Agents.</CardDescription>
+               <div className="pt-4">
+                 <span className="text-4xl font-bold">$0</span>
+               </div>
+             </CardHeader>
+
+             <CardContent className="space-y-6 pt-0">
+               <Button
+                 className="w-full"
+                 variant="outline"
+                 onClick={() => window.location.href = '/signup'}
+               >
+                 Sign Up
+               </Button>
+
+               <p className="text-center text-sm text-muted-foreground">No Credit Card Required</p>
+             </CardContent>
+           </Card>
+         </motion.div>
+
+         {filteredProducts.map((product, index) => {
           const price = getPriceForTab(product.prices, activeTab)
           if (!price) return null
           const popular = product.metadata?.most_popular === 'true'
@@ -205,8 +246,8 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="relative"
             >
-              {popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                             {popular && (
+                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
                   <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center">
                     <Star className="w-3 h-3 mr-1" />
                     Most Popular
