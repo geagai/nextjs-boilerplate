@@ -319,21 +319,20 @@ export function SessionSidebar({
               return (
                 <div key={`${session.session_id}-${session.created_at}`} className="relative group bg-card text-card-foreground" style={{ border: '1px solid #d8d8d8', borderRadius: '6px', background: '#ffffff' }}>
                   <Link href={sessionUrl} className="block">
-                    <Button
-                      variant={currentSessionId === session.session_id ? 'secondary' : 'ghost'}
-                      className={`w-full justify-start text-left h-auto p-3${currentSessionId === session.session_id ? ' active-session' : ''}`}
-                      style={currentSessionId === session.session_id ? { backgroundColor: '#fafafa' } : {}}
-                      onClick={() => handleSessionClick(session.session_id)}
-                    >
+                                         <div
+                       className={`w-full justify-start text-left h-auto p-4 bg-secondary text-white rounded-md cursor-pointer hover:bg-secondary/80 transition-colors${currentSessionId === session.session_id ? ' active-session' : ''}`}
+                       style={{ minHeight: '80px' }}
+                       onClick={() => handleSessionClick(session.session_id)}
+                     >
                       <div className="flex-1 min-w-0">
                         <div className="truncate font-medium">
                           {session.prompt ? session.prompt.slice(0, 50) : 'New Chat'}
                         </div>
-                        <div className="text-xs font-medium truncate">
+                        <div className="text-xs font-medium truncate mt-1">
                           {session.created_at ? new Date(session.created_at).toLocaleDateString() : ''}
                         </div>
                       </div>
-                    </Button>
+                    </div>
                   </Link>
                   {/* RENAME and DELETE BUTTONS */}
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2" style={{ marginTop: '15px' }}>
