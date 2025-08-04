@@ -192,46 +192,51 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-4">
-            {user?.role === 'admin' && (
-              <Link href="/admin-settings" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-                Admin
-              </Link>
-            )}
+            <Link href="/" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Home
+            </Link>
             <Link href={aiAgentsHref} onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               AI Agents
             </Link>
             <Link href="/nextjs-boilerplate" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Vibe
             </Link>
+            <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Pricing
+            </Link>
+            <Link href="/settings" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Settings
+            </Link>
+            <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Contact
+            </Link>
+            {user?.role === 'admin' && (
+              <Link href="/admin-settings" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+                Admin
+              </Link>
+            )}
             {user && (
-              <>
-                <Link href="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="w-full"
-                    style={{ 
-                      backgroundColor: 'transparent',
-                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
-                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
-                    }}
-                  >
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/settings" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" variant="outline" className="w-full">
-                    Settings
-                  </Button>
-                </Link>
-              </>
+              <Link href="/dashboard" onClick={() => setIsOpen(false)} className="block pt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="w-full py-2"
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                    color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                  }}
+                >
+                  Dashboard
+                </Button>
+              </Link>
             )}
             {user ? (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSignOut}
-                className="w-full"
+                className="w-full py-2"
                 style={{ 
                   backgroundColor: 'transparent',
                   borderColor: theme === 'dark' ? 'var(--dark-secondary)' : 'var(--secondary)',
@@ -246,7 +251,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full"
+                    className="w-full py-2"
                     style={{ 
                       backgroundColor: 'transparent',
                       borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
@@ -257,7 +262,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                   </Button>
                 </Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90" style={getStartedButtonStyle}>
+                  <Button size="sm" className="w-full py-2 bg-primary hover:bg-primary/90" style={getStartedButtonStyle}>
                     Get Started
                   </Button>
                 </Link>
