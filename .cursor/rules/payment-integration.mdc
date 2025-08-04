@@ -1,0 +1,1044 @@
+# Payment Integration & Stripe System
+
+This document provides comprehensive guidance for understanding and working with the Stripe payment system, subscription management, and payment integration patterns in APP_NAME.
+
+## **Payment System Overview**
+
+APP_NAME implements a robust payment system using Stripe for:
+
+- **Subscription Management** - Monthly/yearly billing cycles
+- **Product Creation** - User-created SaaS products with pricing
+- **Payment Processing** - Secure checkout and billing
+- **Customer Portal** - Self-service billing management
+- **Webhook Handling** - Real-time payment event processing
+- **Revenue Analytics** - Transaction tracking and reporting
+
+## **Stripe Architecture**
+
+### Core Payment Components
+
+```
+Payment System Architecture:
+├── Stripe Products & Prices    # Product catalog management
+├── Customer Management         # User-to-customer mapping
+├── Subscription Lifecycle      # Active/canceled/past_due states
+├── Checkout Sessions          # Payment initiation
+├── Customer Portal            # Self-service billing
+├── Webhooks                   # Event synchronization
+└── Cache Layer               # Performance optimization
+```
+
+### Database Integration
+
+The payment system integrates with these database tables:
+
+- `subscriptions` - User subscription status and metadata
+- `user_data` - Links users to Stripe customers
+- Custom product tables (if implemented)
+
+## **Stripe Configuration**
+
+### Environment Variables
+
+```bash
+# Required Stripe configuration
+STRIPE_SECRET_KEY=STRIPE_SECRET_KEY              # Server-side API key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=STRIPE_PUBLISHABLE_KEY # Client-side key
+STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET            # Webhook signature verification
+
+# Optional configuration
+STRIPE_PRICE_ID=price_...                  # Default subscription price
+NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL=... # Portal return URL
+```
+
+### Stripe Client Initialization
+
+```typescript
+// lib/stripe.ts
+import Stripe from 'stripe';
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+  typescript: true,
+});
+
+// Client-side stripe (for checkout)
+import { loadStripe } from '@stripe/stripe-js';
+
+export const getStripe = () => {
+  return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+};
+```
+
+## **Product Management System**
+
+### Creating Stripe Products
+
+```typescript
+// ✅ DO: Product creation with proper metadata
+export async function createStripeProduct(productData: ProductData) {
+  const session = await auth();
+  
+  try {
+    // 1. Create Stripe product
+    const product = await stripe.products.create({
+      name: productData.name,
+      description: productData.description,
+      images: productData.images,
+      metadata: {
+        user_id: session.user.id,
+        features: JSON.stringify(productData.features),
+        created_at: new Date().toISOString()
+      }
+    });
+    
+    // 2. Create pricing
+    const price = await stripe.prices.create({
+      product: product.id,
+      unit_amount: Math.round(productData.price * 100), // Convert to cents
+      currency: 'usd',
+      recurring: {
+        interval: productData.billingInterval || 'month',
+        interval_count: 1
+      },
+      metadata: {
+        plan_type: productData.planType || 'standard'
+      }
+    });
+    
+    // 3. Store in database with RLS protection
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        stripe_product_id: product.id,
+        stripe_price_id: price.id,
+        user_id: session.user.id,
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        features: productData.features,
+        status: 'active'
+      })
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    // 4. Clear product cache
+    await clearProductCache();
+    
+    return { product, price, dbRecord: data };
+    
+  } catch (error) {
+    console.error('Product creation error:', error);
+    throw new Error('Failed to create product');
+  }
+}
+```
+
+### Product Cache Management
+
+```typescript
+// ✅ DO: Efficient product caching
+import { redis } from '@/lib/redis'; // If using Redis
+
+export class ProductCache {
+  private static readonly CACHE_PREFIX = 'product:';
+  private static readonly CACHE_TTL = 3600; // 1 hour
+  
+  static async get(productId: string) {
+    try {
+      const cached = await redis?.get(`${this.CACHE_PREFIX}${productId}`);
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.error('Cache get error:', error);
+      return null;
+    }
+  }
+  
+  static async set(productId: string, data: any) {
+    try {
+      await redis?.setex(
+        `${this.CACHE_PREFIX}${productId}`,
+        this.CACHE_TTL,
+        JSON.stringify(data)
+      );
+    } catch (error) {
+      console.error('Cache set error:', error);
+    }
+  }
+  
+  static async clear(productId?: string) {
+    try {
+      if (productId) {
+        await redis?.del(`${this.CACHE_PREFIX}${productId}`);
+      } else {
+        // Clear all product cache
+        const keys = await redis?.keys(`${this.CACHE_PREFIX}*`);
+        if (keys?.length) {
+          await redis?.del(...keys);
+        }
+      }
+    } catch (error) {
+      console.error('Cache clear error:', error);
+    }
+  }
+}
+
+// API route for cache management
+export async function POST() {
+  try {
+    await ProductCache.clear();
+    return Response.json({ success: true });
+  } catch (error) {
+    return Response.json({ error: 'Cache clear failed' }, { status: 500 });
+  }
+}
+```
+
+## **Checkout Process**
+
+### Creating Checkout Sessions
+
+```typescript
+// ✅ DO: Secure checkout session creation
+export async function createCheckoutSession(priceId: string, options: CheckoutOptions = {}) {
+  const session = await auth();
+  
+  if (!session?.user?.email) {
+    throw new Error('Authentication required');
+  }
+  
+  try {
+    // Get or create Stripe customer
+    let customerId = await getStripeCustomerId(session.user.id);
+    
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: session.user.email,
+        name: session.user.name,
+        metadata: {
+          user_id: session.user.id
+        }
+      });
+      customerId = customer.id;
+      
+      // Store customer ID in database
+      await supabase
+        .from('user_data')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', session.user.id);
+    }
+    
+    // Create checkout session
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: customerId,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=true`,
+      billing_address_collection: 'required',
+      customer_update: {
+        address: 'auto',
+        name: 'auto'
+      },
+      tax_id_collection: {
+        enabled: true
+      },
+      automatic_tax: {
+        enabled: true
+      },
+      metadata: {
+        user_id: session.user.id,
+        price_id: priceId
+      }
+    });
+    
+    return { url: checkoutSession.url, sessionId: checkoutSession.id };
+    
+  } catch (error) {
+    console.error('Checkout session error:', error);
+    throw new Error('Failed to create checkout session');
+  }
+}
+
+// Helper function to get customer ID
+async function getStripeCustomerId(userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('user_data')
+    .select('stripe_customer_id')
+    .eq('id', userId)
+    .single();
+    
+  return data?.stripe_customer_id || null;
+}
+```
+
+### Client-Side Checkout Integration
+
+```typescript
+// ✅ DO: Client-side checkout handling
+'use client';
+
+import { useState } from 'react';
+import { getStripe } from '@/lib/stripe';
+
+export function CheckoutButton({ priceId, children }: CheckoutButtonProps) {
+  const [loading, setLoading] = useState(false);
+  
+  const handleCheckout = async () => {
+    setLoading(true);
+    
+    try {
+      // Create checkout session
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId })
+      });
+      
+      const { url } = await response.json();
+      
+      if (url) {
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+      
+    } catch (error) {
+      console.error('Checkout error:', error);
+      // Show error to user
+      toast.error('Failed to start checkout process');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <button
+      onClick={handleCheckout}
+      disabled={loading}
+      className="bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
+    >
+      {loading ? 'Processing...' : children}
+    </button>
+  );
+}
+```
+
+## **Customer Portal Integration**
+
+### Portal Session Creation
+
+```typescript
+// ✅ DO: Customer portal for self-service
+export async function createPortalSession(returnUrl?: string) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    throw new Error('Authentication required');
+  }
+  
+  try {
+    const customerId = await getStripeCustomerId(session.user.id);
+    
+    if (!customerId) {
+      throw new Error('No Stripe customer found');
+    }
+    
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl || `${process.env.NEXTAUTH_URL}/settings`,
+      configuration: {
+        features: {
+          payment_method_update: { enabled: true },
+          invoice_history: { enabled: true },
+          subscription_cancel: { enabled: true },
+          subscription_pause: { enabled: false },
+          subscription_update: {
+            enabled: true,
+            default_allowed_updates: ['price'],
+            proration_behavior: 'create_prorations'
+          }
+        }
+      }
+    });
+    
+    return { url: portalSession.url };
+    
+  } catch (error) {
+    console.error('Portal session error:', error);
+    throw new Error('Failed to create portal session');
+  }
+}
+```
+
+### Portal Button Component
+
+```typescript
+// ✅ DO: Customer portal access
+export function ManageBillingButton() {
+  const [loading, setLoading] = useState(false);
+  
+  const handlePortalAccess = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnUrl: window.location.href
+        })
+      });
+      
+      const { url } = await response.json();
+      
+      if (url) {
+        window.location.href = url;
+      }
+      
+    } catch (error) {
+      console.error('Portal access error:', error);
+      toast.error('Failed to access billing portal');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <button
+      onClick={handlePortalAccess}
+      disabled={loading}
+      className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50"
+    >
+      {loading ? 'Loading...' : 'Manage Billing'}
+    </button>
+  );
+}
+```
+
+## **Webhook Handling**
+
+### Webhook Endpoint
+
+```typescript
+// ✅ DO: Secure webhook processing
+import { headers } from 'next/headers';
+import Stripe from 'stripe';
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const headersList = headers();
+  const signature = headersList.get('stripe-signature');
+  
+  if (!signature) {
+    return new Response('No signature', { status: 400 });
+  }
+  
+  try {
+    // Verify webhook signature
+    const event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+    
+    // Process event
+    await processWebhookEvent(event);
+    
+    return new Response('OK');
+    
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return new Response('Webhook error', { status: 400 });
+  }
+}
+
+async function processWebhookEvent(event: Stripe.Event) {
+  switch (event.type) {
+    case 'customer.subscription.created':
+      await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+      break;
+      
+    case 'customer.subscription.updated':
+      await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+      break;
+      
+    case 'customer.subscription.deleted':
+      await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+      break;
+      
+    case 'invoice.payment_succeeded':
+      await handlePaymentSucceeded(event.data.object as Stripe.Invoice);
+      break;
+      
+    case 'invoice.payment_failed':
+      await handlePaymentFailed(event.data.object as Stripe.Invoice);
+      break;
+      
+    case 'checkout.session.completed':
+      await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+      break;
+      
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+}
+```
+
+### Webhook Event Handlers
+
+```typescript
+// ✅ DO: Comprehensive webhook handling
+async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+  
+  try {
+    // Get user ID from customer
+    const { data: userData } = await supabase
+      .from('user_data')
+      .select('id')
+      .eq('stripe_customer_id', customerId)
+      .single();
+      
+    if (!userData) {
+      throw new Error(`User not found for customer: ${customerId}`);
+    }
+    
+    // Create subscription record
+    await supabase
+      .from('subscriptions')
+      .insert({
+        user_id: userData.id,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+        status: subscription.status,
+        current_period_start: new Date(subscription.current_period_start * 1000),
+        current_period_end: new Date(subscription.current_period_end * 1000),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        metadata: subscription.metadata
+      });
+      
+    // Update user role to premium
+    await supabase
+      .from('user_data')
+      .update({ 
+        role: 'premium',
+        subscription_status: subscription.status
+      })
+      .eq('id', userData.id);
+      
+    console.log(`Subscription created for user: ${userData.id}`);
+    
+  } catch (error) {
+    console.error('Subscription creation webhook error:', error);
+  }
+}
+
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  try {
+    // Update subscription record
+    await supabase
+      .from('subscriptions')
+      .update({
+        status: subscription.status,
+        current_period_start: new Date(subscription.current_period_start * 1000),
+        current_period_end: new Date(subscription.current_period_end * 1000),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        canceled_at: subscription.canceled_at 
+          ? new Date(subscription.canceled_at * 1000) 
+          : null
+      })
+      .eq('stripe_subscription_id', subscription.id);
+      
+    // Update user status based on subscription status
+    const newRole = subscription.status === 'active' ? 'premium' : 'user';
+    
+    await supabase
+      .from('user_data')
+      .update({ 
+        role: newRole,
+        subscription_status: subscription.status
+      })
+      .eq('stripe_customer_id', subscription.customer as string);
+      
+    console.log(`Subscription updated: ${subscription.id} - ${subscription.status}`);
+    
+  } catch (error) {
+    console.error('Subscription update webhook error:', error);
+  }
+}
+
+async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
+  try {
+    const customerId = invoice.customer as string;
+    
+    // Log successful payment
+    await supabase
+      .from('payment_history')
+      .insert({
+        stripe_invoice_id: invoice.id,
+        stripe_customer_id: customerId,
+        amount_paid: invoice.amount_paid,
+        currency: invoice.currency,
+        status: 'succeeded',
+        paid_at: new Date(invoice.status_transitions.paid_at! * 1000)
+      });
+      
+    // Send confirmation email (if implemented)
+    // await sendPaymentConfirmationEmail(customerId, invoice);
+    
+    console.log(`Payment succeeded: ${invoice.id}`);
+    
+  } catch (error) {
+    console.error('Payment success webhook error:', error);
+  }
+}
+
+async function handlePaymentFailed(invoice: Stripe.Invoice) {
+  try {
+    const customerId = invoice.customer as string;
+    
+    // Log failed payment
+    await supabase
+      .from('payment_history')
+      .insert({
+        stripe_invoice_id: invoice.id,
+        stripe_customer_id: customerId,
+        amount_due: invoice.amount_due,
+        currency: invoice.currency,
+        status: 'failed',
+        attempted_at: new Date()
+      });
+      
+    // Handle dunning management
+    await handlePaymentFailure(customerId, invoice);
+    
+    console.log(`Payment failed: ${invoice.id}`);
+    
+  } catch (error) {
+    console.error('Payment failure webhook error:', error);
+  }
+}
+```
+
+## **Subscription Management**
+
+### Subscription Status Tracking
+
+```typescript
+// ✅ DO: Subscription status utilities
+export enum SubscriptionStatus {
+  ACTIVE = 'active',
+  CANCELED = 'canceled',
+  INCOMPLETE = 'incomplete',
+  PAST_DUE = 'past_due',
+  TRIALING = 'trialing',
+  UNPAID = 'unpaid'
+}
+
+export class SubscriptionManager {
+  static async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus | null> {
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('status, current_period_end, cancel_at_period_end')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+      
+    return data?.status as SubscriptionStatus || null;
+  }
+  
+  static async isSubscriptionActive(userId: string): Promise<boolean> {
+    const status = await this.getSubscriptionStatus(userId);
+    return status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.TRIALING;
+  }
+  
+  static async getSubscriptionDetails(userId: string) {
+    const { data } = await supabase
+      .from('subscriptions')
+      .select(`
+        *,
+        user_data!inner(
+          stripe_customer_id
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+      
+    if (!data) return null;
+    
+    // Get fresh data from Stripe
+    const subscription = await stripe.subscriptions.retrieve(data.stripe_subscription_id);
+    
+    return {
+      ...data,
+      stripe_data: subscription
+    };
+  }
+  
+  static async cancelSubscription(userId: string, cancelAtPeriodEnd = true) {
+    const details = await this.getSubscriptionDetails(userId);
+    
+    if (!details) {
+      throw new Error('No active subscription found');
+    }
+    
+    // Cancel in Stripe
+    const updated = await stripe.subscriptions.update(
+      details.stripe_subscription_id,
+      { cancel_at_period_end: cancelAtPeriodEnd }
+    );
+    
+    // Update local record
+    await supabase
+      .from('subscriptions')
+      .update({
+        cancel_at_period_end: cancelAtPeriodEnd,
+        canceled_at: cancelAtPeriodEnd ? null : new Date().toISOString()
+      })
+      .eq('stripe_subscription_id', details.stripe_subscription_id);
+      
+    return updated;
+  }
+}
+```
+
+### Subscription Components
+
+```typescript
+// ✅ DO: Subscription status display
+export function SubscriptionCard() {
+  const { data: subscription, isLoading } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const response = await fetch('/api/subscription/status');
+      return response.json();
+    }
+  });
+  
+  if (isLoading) return <SubscriptionSkeleton />;
+  
+  if (!subscription) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold mb-2">No Active Subscription</h3>
+          <p className="text-gray-600 mb-4">
+            Upgrade to access premium features
+          </p>
+          <CheckoutButton priceId="price_premium">
+            Upgrade Now
+          </CheckoutButton>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Premium Subscription</h3>
+            <p className="text-sm text-gray-600">
+              Status: {subscription.status}
+            </p>
+          </div>
+          <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+            {subscription.status}
+          </Badge>
+        </div>
+        
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>Current period ends:</span>
+            <span>{formatDate(subscription.current_period_end)}</span>
+          </div>
+          
+          {subscription.cancel_at_period_end && (
+            <div className="text-orange-600">
+              Will cancel at period end
+            </div>
+          )}
+        </div>
+        
+        <div className="mt-4 space-x-2">
+          <ManageBillingButton />
+          
+          {!subscription.cancel_at_period_end && (
+            <CancelSubscriptionButton subscriptionId={subscription.id} />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## **Payment Analytics**
+
+### Revenue Tracking
+
+```typescript
+// ✅ DO: Payment analytics and reporting
+export class PaymentAnalytics {
+  static async getRevenueStats(userId: string, period: 'month' | 'year' = 'month') {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - (period === 'month' ? 1 : 12));
+    
+    const { data } = await supabase
+      .from('payment_history')
+      .select('amount_paid, currency, paid_at')
+      .eq('user_id', userId)
+      .eq('status', 'succeeded')
+      .gte('paid_at', startDate.toISOString());
+      
+    return {
+      total_revenue: data?.reduce((sum, payment) => sum + payment.amount_paid, 0) || 0,
+      payment_count: data?.length || 0,
+      average_payment: data?.length 
+        ? data.reduce((sum, payment) => sum + payment.amount_paid, 0) / data.length 
+        : 0
+    };
+  }
+  
+  static async getSubscriptionMetrics(userId: string) {
+    // Get current subscription count
+    const { count: activeSubscriptions } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+      
+    // Get churn rate (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const { count: canceledSubscriptions } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .eq('status', 'canceled')
+      .gte('canceled_at', thirtyDaysAgo.toISOString());
+      
+    return {
+      active_subscriptions: activeSubscriptions || 0,
+      churned_subscriptions: canceledSubscriptions || 0,
+      churn_rate: activeSubscriptions 
+        ? (canceledSubscriptions || 0) / (activeSubscriptions || 1) 
+        : 0
+    };
+  }
+}
+```
+
+## **Error Handling & Security**
+
+### Payment Error Patterns
+
+```typescript
+// ✅ DO: Comprehensive error handling
+export class PaymentError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public type: 'card_error' | 'validation_error' | 'api_error' = 'api_error'
+  ) {
+    super(message);
+    this.name = 'PaymentError';
+  }
+}
+
+export function handleStripeError(error: Stripe.StripeError): PaymentError {
+  switch (error.type) {
+    case 'card_error':
+      return new PaymentError(
+        error.message || 'Your card was declined.',
+        error.code || 'card_declined',
+        'card_error'
+      );
+      
+    case 'validation_error':
+      return new PaymentError(
+        'Please check your payment information.',
+        'validation_error',
+        'validation_error'
+      );
+      
+    case 'rate_limit_error':
+      return new PaymentError(
+        'Too many requests. Please try again later.',
+        'rate_limit',
+        'api_error'
+      );
+      
+    default:
+      return new PaymentError(
+        'An unexpected error occurred. Please try again.',
+        'unknown_error',
+        'api_error'
+      );
+  }
+}
+
+// Usage in API routes
+export async function POST(request: Request) {
+  try {
+    // Payment processing logic
+    const result = await processPayment(data);
+    return Response.json(result);
+    
+  } catch (error) {
+    if (error instanceof Stripe.StripeError) {
+      const paymentError = handleStripeError(error);
+      return Response.json(
+        { error: paymentError.message, code: paymentError.code },
+        { status: 400 }
+      );
+    }
+    
+    console.error('Payment processing error:', error);
+    return Response.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## **Payment Security Best Practices**
+
+```typescript
+// ✅ DO: Security patterns
+export class PaymentSecurity {
+  // Validate webhook signatures
+  static validateWebhook(body: string, signature: string): boolean {
+    try {
+      stripe.webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET!
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  // Sanitize customer data
+  static sanitizeCustomerData(data: any) {
+    return {
+      email: data.email?.toLowerCase().trim(),
+      name: data.name?.trim(),
+      phone: data.phone?.replace(/[^\d+\-\s]/g, '')
+    };
+  }
+  
+  // Validate price amounts
+  static validateAmount(amount: number): boolean {
+    return amount > 0 && amount < 100000000; // Max $1M
+  }
+  
+  // Check user permissions
+  static async canCreateProduct(userId: string): Promise<boolean> {
+    const { data } = await supabase
+      .from('user_data')
+      .select('role, subscription_status')
+      .eq('id', userId)
+      .single();
+      
+    return data?.role === 'premium' && data?.subscription_status === 'active';
+  }
+}
+```
+
+## **Anti-Patterns**
+
+```typescript
+// ❌ DON'T: Security anti-patterns
+export function BadPaymentPractices() {
+  // Don't store card details
+  const cardNumber = '4242424242424242'; // Never store this
+  
+  // Don't skip webhook verification
+  const event = JSON.parse(webhookBody); // Missing signature check
+  
+  // Don't expose secret keys
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!); // Should be server-side only
+  
+  // Don't trust client-side amounts
+  const amount = request.body.amount; // Should validate server-side
+  
+  // Don't bypass authentication
+  await stripe.subscriptions.create(); // Missing user verification
+}
+```
+
+## **Testing Payment Integration**
+
+```typescript
+// ✅ DO: Payment testing patterns
+describe('Payment Integration', () => {
+  const mockStripe = {
+    checkout: {
+      sessions: {
+        create: jest.fn()
+      }
+    },
+    customers: {
+      create: jest.fn()
+    }
+  };
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  it('should create checkout session', async () => {
+    mockStripe.checkout.sessions.create.mockResolvedValue({
+      id: 'TEST_CHECKOUT_SESSION',
+      url: 'https://checkout.stripe.com/pay/TEST_CHECKOUT_SESSION'
+    });
+    
+    const result = await createCheckoutSession('TEST_STRIPE_PRICE_ID');
+    
+    expect(result.url).toContain('checkout.stripe.com');
+    expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'subscription',
+        line_items: [{ price: 'TEST_STRIPE_PRICE_ID', quantity: 1 }]
+      })
+    );
+  });
+});
+```
+
+## **Best Practices Summary**
+
+- **Always verify webhook signatures** for security
+- **Use RLS policies** to protect payment data
+- **Handle all error scenarios** gracefully
+- **Cache product data** for performance
+- **Test with Stripe test mode** extensively
+- **Monitor subscription lifecycles** proactively
+- **Implement proper logging** for debugging
+- **Follow PCI compliance** guidelines
+- **Use environment variables** for sensitive keys
+- **Validate all inputs** server-side
+
+Reference related documentation: [@1-supabase-database-setup.mdc](mdc:.cursor/rules/1-supabase-database-setup.mdc), [@2-authentication.mdc](mdc:.cursor/rules/2-authentication.mdc)
+description:
+globs:
+alwaysApply: false
+---

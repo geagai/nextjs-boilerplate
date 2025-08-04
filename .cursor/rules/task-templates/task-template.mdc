@@ -1,0 +1,58 @@
+# Agent Page Functionality Enhancement Task
+
+## Overview
+Create a comprehensive task called "Agent Edit Page" with subtasks to implement the /create-agent page from the AI Agents repository.
+
+## Project Context
+- **Reference Repository**: [AI Agents Repository](https://github.com/geviai/ai-agent)
+- **Supabase Project**: NextGeag BP
+- **Supabase Project ID**: `kohdrgbrjfhomkvbyopu`
+
+## Core Requirements
+
+### 1. Repository Analysis
+- Use the GitHub MCP server to inspect the functionality of the [AI Agents repository](https://github.com/geviai/ai-agent)
+- Analyze the existing implementation patterns and component structure for the /edit-agent page
+
+### 2. API Integration
+- Match the functionality for creating agents in the `agents` Supabase table
+- Ensure identical parameter utilization as the reference implementation
+
+### 3. Dynamic Form Fields
+- Implement the same fuctionality for creating and saving header and body parameters that will be configured in the json data saved to the "config" column in the "agents" table
+- Base field configuration on the JSON data in the `config` column of the `agents` table
+- Use Supabase MCP server to inspect the table structure and examples
+- Replicate all functionality found in the AI Agents repository for this page
+
+### 4. Response Display
+- Ensure proper formatting and user experience
+
+## Development Guidelines
+
+### General Principles
+- **Error Handling**: If any issues arise while achieving task goals, stop and ask for guidance with options for proceeding
+- **Authentication**: Do not modify authentication files unless specifically instructed
+- **Code Patterns**: Follow the existing application's coding patterns and conventions
+- **Component Reuse**: Utilize existing application components before creating new ones
+
+### UI/UX Requirements
+- **Theme Integration**: For any new frontend components, integrate color theme options from the `admin_settings` table
+- **Theme Support**: Ensure compatibility with both light and dark mode themes
+- **New Components and Styling**: Check the application for existing components we can use before creating any new ones. For any newly created components that are front end facing we need to integrated the color options from the admin_settings page for both light and dark mode. A full breakdown of these options can be found in ../3-styling.mdc 
+
+### Database Considerations
+- **RLS Policies**: Create any additional Row Level Security policies needed, but verify they don't already exist first
+- **Table Management**: Do not create new tables - use existing `agents` and `agent_messages` tables
+
+## Technical Stack Integration
+- Leverage existing Supabase, Taskmaster, and GitHub MCP server tools
+- Maintain consistency with current application architecture
+- Follow established component and styling patterns
+
+## Success Criteria
+- Full functional parity with the AI Agents repository
+- Seamless integration with existing application architecture
+- Proper theme support and responsive design
+- Secure data handling with appropriate RLS policies
+- Clean, maintainable code following project conventions
+- Fix any lint errors in the application

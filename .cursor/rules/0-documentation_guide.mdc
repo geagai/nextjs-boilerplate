@@ -1,0 +1,283 @@
+---
+description: This file is a guide for the rest of the documentation files for this application. It should be used when make major modifications or adding features to the appliication.
+alwaysApply: false
+---
+# 📚 Documentation Guide for LLM Development
+
+This guide helps AI assistants understand **which documentation files to reference** for different development scenarios in this Next.js boilerplate application. Each scenario includes **required** and **optional** documentation with clear explanations of why each file is needed.
+
+## 🎯 Quick Reference Matrix
+
+| Development Task | Primary Documentation | Secondary Documentation |
+|------------------|----------------------|------------------------|
+| **New Pages/Routes** | `authentication-patterns.mdc` | `component-patterns.mdc`, `api-routes.mdc` |
+| **UI Components** | `component-patterns.mdc`, `styling.mdc` | `authentication-patterns.mdc` |
+| **API Endpoints** | `api-routes.mdc`, `authentication-patterns.mdc` | `database-schema.mdc`, `payment-integration.mdc` |
+| **Database Changes** | `database-schema.mdc`, `authentication-patterns.mdc` | `api-routes.mdc` |
+| **Payment Features** | `payment-integration.mdc`, `api-routes.mdc` | `authentication-patterns.mdc`, `database-schema.mdc` |
+| **Mobile Features** | `mobile-deployment.mdc`, `component-patterns.mdc` | `styling.mdc` |
+| **AI Agent Features** | `ai-agents-platform.mdc`, `api-routes.mdc` | `database-schema.mdc`, `authentication-patterns.mdc` |
+| **Styling/Theming** | `styling.mdc`, `component-patterns.mdc` | `application-overview.mdc` |
+| **Authentication** | `authentication-patterns.mdc` | `database-schema.mdc`, `api-routes.mdc` |
+| **Admin Features** | `authentication-patterns.mdc`, `styling.mdc` | `component-patterns.mdc`, `database-schema.mdc` |
+| **Performance** | `development-workflow.mdc`, `database-schema.mdc` | `mobile-deployment.mdc`, `api-routes.mdc` |
+| **Testing** | `development-workflow.mdc`, `authentication-patterns.mdc` | `api-routes.mdc` |
+
+---
+
+## 📖 Detailed Development Scenarios
+
+### **1. Creating New Pages and Routes**
+
+**Scenario**: Adding new pages or modifying existing routes (e.g., `/analytics`, `/team-management`, `/reports`)
+
+**Required Documentation**:
+- **`authentication-patterns.mdc`** - **WHY**: **CRITICAL** - Every page must implement proper authentication checks, user role validation, and secure data access patterns.
+- **`component-patterns.mdc`** - **WHY**: Follow established page structure, layout patterns, navigation integration, and component architecture.
+
+**Optional Documentation**:
+- **`api-routes.mdc`** - **WHY**: If the page needs to fetch data or interact with backend services, understand the API patterns and authentication middleware.
+- **`styling.mdc`** - **WHY**: Ensure the page integrates with the admin-controlled theming system and follows design consistency.
+
+**Example Workflow**:
+1. **Always** start with authentication patterns to understand security requirements
+2. Review component patterns for page structure and layout
+3. Check API routes if backend data is needed
+4. Reference styling guide for theme integration
+
+---
+
+### **2. Building New UI Components**
+
+**Scenario**: Creating reusable components (e.g., data tables, form components, cards, modals)
+
+**Required Documentation**:
+- **`component-patterns.mdc`** - **WHY**: Follow established component architecture, prop patterns, accessibility guidelines, and integration with the existing design system.
+- **`styling.mdc`** - **WHY**: **CRITICAL** - Understand how to integrate admin-controlled theme colors, use CSS variables correctly, and maintain consistency with the dynamic theming system.
+
+**Optional Documentation**:
+- **`authentication-patterns.mdc`** - **WHY**: If the component needs to access user data or show different content based on user roles, understand the proper authentication context usage.
+
+**Example Workflow**:
+1. Review component patterns for architecture and props design
+2. **Always** check styling guide for theme integration and CSS variable usage
+3. Reference authentication patterns if user-specific content is needed
+
+---
+
+### **3. Creating API Endpoints**
+
+**Scenario**: Adding new backend functionality (e.g., `/api/reports`, `/api/team-invites`, `/api/analytics`)
+
+**Required Documentation**:
+- **`api-routes.mdc`** - **WHY**: Follow established patterns for route structure, authentication middleware, error handling, input validation, and response formatting.
+- **`authentication-patterns.mdc`** - **WHY**: Implement proper server-side authentication checks, role validation, and secure access to user data.
+
+**Optional Documentation**:
+- **`database-schema.mdc`** - **WHY**: Understand table relationships, RLS policies, and proper database access patterns for data operations.
+- **`payment-integration.mdc`** - **WHY**: If the endpoint involves payment or subscription features, understand Stripe integration patterns and webhook handling.
+
+**Example Workflow**:
+1. Review API route patterns for structure and authentication
+2. Check authentication patterns for proper security implementation
+3. Reference database schema for data access requirements
+4. Check payment integration if financial operations are involved
+
+---
+
+### **4. Database Schema Changes**
+
+**Scenario**: Adding new tables, columns, or modifying existing database structure
+
+**Required Documentation**:
+- **`database-schema.mdc`** - **WHY**: Understand existing table relationships, naming conventions, RLS policies, and migration patterns to maintain consistency and security.
+- **`authentication-patterns.mdc`** - **WHY**: Ensure new database changes properly integrate with user authentication and role-based access control.
+
+**Optional Documentation**:
+- **`api-routes.mdc`** - **WHY**: If database changes require new API endpoints, understand how to implement them with proper authentication and validation.
+
+**Example Workflow**:
+1. Review database schema for existing patterns and relationships
+2. Check authentication patterns for RLS policy implementation
+3. Reference API routes if new endpoints are needed for the data
+
+---
+
+### **5. Payment and Subscription Features**
+
+**Scenario**: Adding payment functionality, subscription tiers, or billing features
+
+**Required Documentation**:
+- **`payment-integration.mdc`** - **WHY**: Understand Stripe integration, webhook handling, subscription management, and payment security patterns.
+- **`api-routes.mdc`** - **WHY**: Learn how to create secure payment endpoints with proper authentication and validation.
+
+**Optional Documentation**:
+- **`authentication-patterns.mdc`** - **WHY**: Understand role-based access for payment features and user permission validation.
+- **`database-schema.mdc`** - **WHY**: If new payment data needs to be stored, understand the existing payment table structures and relationships.
+
+**Example Workflow**:
+1. Review payment integration for Stripe patterns and webhook handling
+2. Check API routes for secure payment endpoint implementation
+3. Reference authentication for role-based payment access
+4. Check database schema for payment data storage patterns
+
+---
+
+### **6. Mobile Application Features**
+
+**Scenario**: Adding mobile-specific functionality or native capabilities
+
+**Required Documentation**:
+- **`mobile-deployment.mdc`** - **WHY**: Understand Capacitor integration, native features access, platform-specific adaptations, and mobile optimization patterns.
+- **`component-patterns.mdc`** - **WHY**: Learn mobile-responsive design patterns and touch-friendly component implementations.
+
+**Optional Documentation**:
+- **`styling.mdc`** - **WHY**: Ensure mobile styling follows the dynamic theming system and responsive design principles.
+
+**Example Workflow**:
+1. Review mobile deployment for Capacitor and native features
+2. Check component patterns for mobile-responsive design
+3. Reference styling guide for mobile-specific theme considerations
+
+---
+
+### **7. AI Agents Platform Features**
+
+**Scenario**: Adding AI agent functionality, conversation features, or agent management
+
+**Required Documentation**:
+- **`ai-agents-platform.mdc`** - **WHY**: Understand the agent creation system, conversation management, tool integration, and platform architecture.
+- **`api-routes.mdc`** - **WHY**: Learn how to create secure endpoints for agent operations with proper authentication and validation.
+
+**Optional Documentation**:
+- **`database-schema.mdc`** - **WHY**: Understand the agents and agent_messages table structures for proper data operations.
+- **`authentication-patterns.mdc`** - **WHY**: Ensure agent features properly respect user permissions and role-based access control.
+
+**Example Workflow**:
+1. Review AI agents platform for architecture and patterns
+2. Check API routes for secure agent endpoint implementation
+3. Reference database schema for agent data structures
+4. Check authentication for user-based agent access control
+
+---
+
+### **8. Styling and Theming Changes**
+
+**Scenario**: Modifying visual design, adding new theme options, or updating styling systems
+
+**Required Documentation**:
+- **`styling.mdc`** - **WHY**: **CRITICAL** - Understand the admin-controlled theming system, CSS variable usage, color scheme management, and dynamic theme injection.
+- **`component-patterns.mdc`** - **WHY**: Understand how styling integrates with component architecture and design system patterns.
+
+**Optional Documentation**:
+- **`application-overview.mdc`** - **WHY**: Understand the overall design philosophy and user experience goals of the application.
+
+**Example Workflow**:
+1. **Always** review styling guide for theme system understanding
+2. Check component patterns for consistent styling integration
+3. Reference application overview for design philosophy context
+
+---
+
+### **9. Authentication and User Management**
+
+**Scenario**: Modifying login flow, adding new user roles, or changing permission systems
+
+**Required Documentation**:
+- **`authentication-patterns.mdc`** - **WHY**: **CRITICAL** - Understand the existing authentication system that should NOT be modified, and learn proper patterns for accessing user data and implementing role-based features.
+- **`database-schema.mdc`** - **WHY**: Understand the user_data table structure, role definitions, and user-related data relationships.
+
+**Optional Documentation**:
+- **`api-routes.mdc`** - **WHY**: If new user-related endpoints are needed, understand the authentication middleware and validation patterns.
+
+**Example Workflow**:
+1. **Always** review authentication patterns to understand existing system (DO NOT MODIFY)
+2. Check database schema for user data structures and relationships
+3. Reference API routes for user-related endpoint patterns
+
+---
+
+### **10. Admin Panel and Settings Features**
+
+**Scenario**: Adding admin-only functionality, system settings, or administrative controls
+
+**Required Documentation**:
+- **`authentication-patterns.mdc`** - **WHY**: Understand admin role validation and how to properly restrict access to admin-only features.
+- **`styling.mdc`** - **WHY**: If adding theme/styling controls, understand the admin_settings table integration and dynamic theme system.
+- **`component-patterns.mdc`** - **WHY**: Follow established patterns for admin interfaces and form components.
+
+**Optional Documentation**:
+- **`database-schema.mdc`** - **WHY**: Understand the admin_settings table structure and other admin-related data schemas.
+
+**Example Workflow**:
+1. Review authentication patterns for admin role validation
+2. Check styling guide if theme controls are involved
+3. Reference component patterns for admin interface design
+4. Check database schema for admin settings structure
+
+---
+
+### **11. Performance Optimization**
+
+**Scenario**: Improving application performance, adding caching, or optimizing queries
+
+**Required Documentation**:
+- **`development-workflow.mdc`** - **WHY**: Understand performance optimization patterns, caching strategies, and development best practices.
+- **`database-schema.mdc`** - **WHY**: If optimizing database queries, understand table relationships and indexing patterns.
+
+**Optional Documentation**:
+- **`mobile-deployment.mdc`** - **WHY**: If optimizing for mobile performance, understand mobile-specific optimization patterns.
+- **`api-routes.mdc`** - **WHY**: If optimizing API performance, understand caching and response optimization patterns.
+
+---
+
+### **12. Testing Implementation**
+
+**Scenario**: Adding tests for new features or improving test coverage
+
+**Required Documentation**:
+- **`development-workflow.mdc`** - **WHY**: Understand testing strategies, test patterns, and the testing pyramid approach used in the application.
+- **`authentication-patterns.mdc`** - **WHY**: If testing authentication-related features, understand how to mock authentication and test role-based functionality.
+
+**Optional Documentation**:
+- **`api-routes.mdc`** - **WHY**: If testing API endpoints, understand testing patterns for authenticated routes and validation.
+
+---
+
+## ⚠️ **Critical Reminders**
+
+### **Always Reference for Any Development**:
+1. **`authentication-patterns.mdc`** - For ANY feature that interacts with users or data
+2. **`styling.mdc`** - For ANY UI component or visual element
+3. **`component-patterns.mdc`** - For ANY React component or page
+
+### **Never Skip These Checks**:
+- **Authentication**: Always verify user permissions and access controls
+- **Theming**: Always ensure admin theme settings integration
+- **Database**: Always follow RLS patterns and existing schema conventions
+- **API Security**: Always implement proper authentication and validation
+
+### **File Priority Order**:
+1. **Authentication & Security** → `authentication-patterns.mdc`
+2. **UI & Styling** → `styling.mdc`, `component-patterns.mdc`
+3. **Data & Backend** → `database-schema.mdc`, `api-routes.mdc`
+4. **Feature-Specific** → `payment-integration.mdc`, `ai-agents-platform.mdc`, `mobile-deployment.mdc`
+5. **Process & Standards** → `development-workflow.mdc`, `application-overview.mdc`
+
+---
+
+## 📚 **Documentation Files Summary**
+
+- **`application-overview.mdc`** - High-level app architecture and features overview
+- **`authentication-patterns.mdc`** - Authentication system and security patterns (DO NOT MODIFY)
+- **`component-patterns.mdc`** - React component architecture and UI patterns
+- **`styling.mdc`** - Dynamic theming system and admin-controlled colors (CRITICAL)
+- **`database-schema.mdc`** - Database structure, tables, and RLS policies
+- **`api-routes.mdc`** - Backend API patterns and authentication middleware
+- **`payment-integration.mdc`** - Stripe payment system and subscription management
+- **`ai-agents-platform.mdc`** - AI agents system architecture and patterns
+- **`mobile-deployment.mdc`** - Capacitor mobile deployment and native features
+- **`development-workflow.mdc`** - Development processes and testing strategies
+- **`technology-stack.mdc`** - Technical specifications and configurations
+
+**Remember**: When in doubt, always reference `authentication-patterns.mdc` and `styling.mdc` as they contain critical system information that affects most development scenarios.

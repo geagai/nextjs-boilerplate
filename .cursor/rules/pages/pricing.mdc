@@ -1,0 +1,54 @@
+# /pricing Page – Functionality & Stripe Integration
+
+## When to Use This File
+- When creating, updating, or refactoring the `/pricing` page or its components.
+- When implementing or modifying Stripe payment, subscription, or pricing logic that affects the user experience on the pricing page.
+- When ensuring UI/UX consistency for plan selection, checkout, or pricing display.
+- When troubleshooting or enhancing the Stripe integration for pricing, checkout, or plan management.
+- When adding new pricing tiers, discounts, or payment options.
+
+## Overview
+The `/pricing` page is the main entry point for users to view available subscription plans, compare features, and initiate the checkout process via Stripe. It is a public, client-facing page designed to:
+- Display all available plans (free, paid, trial, etc.)
+- Highlight key features and differences between plans
+- Allow users to select a plan and proceed to payment
+- Integrate seamlessly with Stripe for secure checkout and subscription management
+
+## UI Structure
+- **Pricing Cards**: Each plan is presented as a card with plan name, price, features, and a call-to-action (CTA) button (e.g., "Get Started", "Upgrade").
+- **Feature Comparison**: A section or table comparing features across plans.
+- **FAQ/Support**: Frequently asked questions and support links related to billing.
+- **Responsive Design**: The page is fully responsive and accessible.
+
+## Stripe Integration
+- **Checkout Flow**: When a user selects a paid plan, the page triggers a call to the backend API (`/api/stripe/create-checkout-session`) to create a Stripe Checkout Session.
+- **Redirect**: The user is redirected to Stripe's hosted checkout page for secure payment.
+- **Webhooks**: Stripe webhooks update the user's subscription status in the database after successful payment or cancellation.
+- **Portal Access**: Users can access the Stripe Customer Portal to manage their subscription via a link/button (calls `/api/stripe/create-portal-session`).
+- **Plan Metadata**: Plan details (name, price, features, Stripe product/price IDs) are managed in the database and/or Stripe dashboard, and fetched dynamically for display.
+
+## Key Implementation Details
+- **API Endpoints**: Use the provided backend endpoints for all Stripe operations. Never expose secret keys or sensitive logic in the client.
+- **Session Handling**: After checkout, users are redirected back to the app with their subscription status updated.
+- **Error Handling**: Display user-friendly errors for failed payments or API issues.
+- **Security**: All payment and subscription logic must be handled server-side; the client only initiates requests and handles redirects.
+
+## Best Practices
+- Keep pricing and plan data in sync between the app and Stripe.
+- Use environment variables for Stripe public keys in the client.
+- Test all flows (upgrade, downgrade, cancel, renew) in both test and live modes.
+- Ensure accessibility and mobile usability for all pricing and payment UI.
+
+## Anti-Patterns
+- ❌ Never handle Stripe secret keys or sensitive logic in client-side code.
+- ❌ Do not hardcode plan details; always fetch from the backend or Stripe.
+- ❌ Avoid duplicating plan logic between client and server.
+
+## Example Usage
+- When adding a new plan, update both Stripe and the backend plan metadata, then ensure the `/pricing` page reflects the change.
+- When updating the checkout flow, ensure the API endpoints and redirect logic are correct and secure.
+- When troubleshooting payment issues, check both the frontend logic and backend Stripe integration.
+description:
+globs:
+alwaysApply: false
+---

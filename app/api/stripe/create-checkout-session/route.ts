@@ -1,0 +1,207 @@
+
+import { NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase'
+import { stripe, SUBSCRIPTION_PLANS } from '@/lib/stripe'
+import { cookies } from 'next/headers'
+import { requireAuth } from '@/lib/auth'
+import type Stripe from 'stripe';
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: Request) {
+  await requireAuth()
+  try {
+    console.log('🔄 Creating checkout session...')
+    
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+    
+    const cookieStore = await cookies()
+    const supabase = createServerClient(cookieStore)
+    
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      console.log('❌ No authenticated user found')
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { plan, priceId } = body
+    if (priceId) {
+      // Fetch price information
+      let price: Stripe.Price | undefined
+      try {
+        price = await stripe.prices.retrieve(priceId)
+      } catch (err) {
+        return NextResponse.json({ error: 'Invalid priceId' }, { status: 400 })
+      }
+
+      // Fetch product information to get credits
+      let product: Stripe.Product | undefined
+      let credits = '0'
+      try {
+        product = await stripe.products.retrieve(price.product as string)
+        console.log('📦 Product metadata:', product?.metadata)
+        credits = product?.metadata?.credits || '0'
+        console.log('💳 Credits from product:', credits)
+      } catch (err) {
+        console.log('⚠️ Could not fetch product information:', err)
+        // Try to get credits from the price metadata as fallback
+        try {
+          const priceWithProduct = await stripe.prices.retrieve(priceId, { expand: ['product'] })
+          const productFromPrice = priceWithProduct.product as Stripe.Product
+          credits = productFromPrice?.metadata?.credits || '0'
+          console.log('💳 Credits from price product:', credits)
+        } catch (fallbackErr) {
+          console.log('⚠️ Could not fetch product from price either:', fallbackErr)
+        }
+      }
+
+      // Create or get Stripe customer
+      let customerId = user.user_metadata?.stripeCustomerId
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email!,
+          name: user.user_metadata?.name || undefined,
+          metadata: { userId: user.id }
+        })
+        customerId = customer.id
+        await supabase.auth.updateUser({
+          data: { ...user.user_metadata, stripeCustomerId: customerId }
+        })
+      }
+
+      const mode = price.type === 'recurring' ? 'subscription' : 'payment'
+
+      const sessionMetadata = {
+        userId: user.id,
+        priceId: price.id,
+        productId: price.product as string,
+        credits: credits
+      }
+      
+      console.log('📋 Session metadata:', sessionMetadata)
+
+      const checkoutSession = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [{ price: price.id, quantity: 1 }],
+        mode,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+        metadata: sessionMetadata
+      })
+
+      return NextResponse.json({ sessionId: checkoutSession.id })
+    }
+    console.log('📋 Request data:', { plan, userId: user.id })
+
+    if (!plan || !SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS]) {
+      console.log('❌ Invalid plan:', plan)
+      return NextResponse.json(
+        { error: 'Invalid plan' },
+        { status: 400 }
+      )
+    }
+
+    const selectedPlan = SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS]
+    console.log('✅ Selected plan:', selectedPlan.name, 'Price ID:', selectedPlan.stripePriceId)
+
+    if (!selectedPlan.stripePriceId) {
+      console.log('❌ Free plan attempted')
+      return NextResponse.json(
+        { error: 'Free plan does not require checkout' },
+        { status: 400 }
+      )
+    }
+
+    // Validate environment variables
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      console.log('❌ Missing NEXT_PUBLIC_APP_URL')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    // Create or get Stripe customer
+    let customerId = user.user_metadata?.stripeCustomerId
+    console.log('👤 Current customer ID:', customerId)
+
+    if (!customerId) {
+      console.log('🔨 Creating new Stripe customer')
+      const customer = await stripe.customers.create({
+        email: user.email!,
+        name: user.user_metadata?.name || undefined,
+        metadata: {
+          userId: user.id,
+        },
+      })
+      customerId = customer.id
+      console.log('✅ Created customer:', customerId)
+
+      // Update user metadata with customer ID
+      await supabase.auth.updateUser({
+        data: {
+          ...user.user_metadata,
+          stripeCustomerId: customerId
+        }
+      })
+      console.log('✅ Updated user metadata with customer ID')
+    }
+
+    // Create checkout session
+    console.log('🛒 Creating checkout session with:', {
+      customerId,
+      priceId: selectedPlan.stripePriceId,
+      successUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+    })
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: selectedPlan.stripePriceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      metadata: {
+        userId: user.id,
+        plan,
+      },
+    })
+
+    console.log('✅ Checkout session created:', checkoutSession.id)
+    return NextResponse.json({ sessionId: checkoutSession.id })
+  } catch (error) {
+    console.error('❌ Error creating checkout session:', error)
+    
+    // Provide more specific error information
+    let errorMessage = 'Internal server error'
+    if (error instanceof Error) {
+      errorMessage = error.message
+    }
+    
+    return NextResponse.json(
+      { 
+        error: 'Failed to create checkout session',
+        details: errorMessage 
+      },
+      { status: 500 }
+    )
+  }
+}

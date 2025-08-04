@@ -1,0 +1,489 @@
+{
+  "name": "Stripe Subscription",
+  "nodes": [
+    {
+      "parameters": {
+        "events": [
+          "checkout.session.completed"
+        ]
+      },
+      "type": "n8n-nodes-base.stripeTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -240
+      ],
+      "id": "1a7c7b28-6469-4fe1-9878-49bd7962c462",
+      "name": "Stripe",
+      "webhookId": "730ffec1-efd6-40a5-8d38-34dc86e1874c",
+      "credentials": {
+        "stripeApi": {
+          "id": "Zw0HpIaWsRvH4XOf",
+          "name": "Stripe Test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "subscriptions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "subscription_id",
+              "keyValue": "={{ $('Subscription Data').item.json.subscription }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -256
+      ],
+      "id": "4fdbefe5-3657-4302-84c7-e191f369a36e",
+      "name": "Subscription",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "xSeCQtqNZNIJe0PK",
+          "name": "Geag AI - Supabase"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "tableId": "subscriptions",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "subscription_id",
+              "fieldValue": "={{ $('Subscription Data').item.json.subscription }}"
+            },
+            {
+              "fieldId": "UID",
+              "fieldValue": "={{ $('Subscription Data').item.json.userId }}"
+            },
+            {
+              "fieldId": "cost",
+              "fieldValue": "={{ $('Subscription Data').item.json.amount / 100 }}"
+            },
+            {
+              "fieldId": "customer_id",
+              "fieldValue": "={{ $('Subscription Data').item.json.customer }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            },
+            {
+              "fieldId": "billing_term",
+              "fieldValue": "monthly"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -480
+      ],
+      "id": "f4331e38-c52b-4b59-b415-ade5d0e7ffe3",
+      "name": "Create Subscription",
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "xSeCQtqNZNIJe0PK",
+          "name": "Geag AI - Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fa57ca30-c7b0-482e-bd6a-fca2fe230380",
+              "leftValue": "={{ $('Subscription Data').item.json.amount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -240
+      ],
+      "id": "f85fcf4e-d819-4f23-bb93-d478f95bd802",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the first event object from the incoming webhook\nconst event = $('Stripe').first().json;\n\n// Helper function to safely get nested properties or null\nfunction get(obj, path) {\n  return path.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);\n}\n\n// Helper to parse credits as a number, or null if not valid\nfunction parseCredits(val) {\n  const num = Number(val);\n  return isNaN(num) ? null : num;\n}\n\n// Helper to clean userId - convert \"null\" string to null\nfunction cleanUserId(userId) {\n  if (userId === \"null\" || userId === null || userId === undefined) {\n    return null;\n  }\n  return userId;\n}\n\n// Get the checkout session object\nconst session = get(event, ['data', 'object']);\n\n// Extract parameters from checkout session metadata\nconst rawUserId = get(session, ['metadata', 'userId']);\nconst userId = cleanUserId(rawUserId);\nconst creditsRaw = get(session, ['metadata', 'credits']) || null;\nconst credits = parseCredits(creditsRaw);\nconst subscription = get(session, ['subscription']) || null;\nconst amount = get(session, ['amount_total']) || null;\nconst productId = get(session, ['metadata', 'productId']) || null;\nconst customer = get(session, ['customer']) || null;\nconst email = get(session, ['customer_details', 'email']) || null;\n\n// For checkout.session.completed, we don't have interval or billing_reason\nconst interval = null;\nconst billing_reason = null;\nconst description = null;\n\n// Set availableWebsites based on productId\nlet availableWebsitesShared = 0;\nlet availableWebsitesDedicated = 0;\nif (productId === \"prod_SNQJNztdJdfp8S\") {\n  availableWebsitesShared = 1;\n  availableWebsitesDedicated = 0;\n} else if (productId === \"prod_SOHQf1Ts2WvVEW\") {\n  availableWebsitesShared = 0;\n  availableWebsitesDedicated = 1;\n}\n\nconst result = {\n  userId,\n  credits,\n  subscription,\n  amount,\n  product: productId,\n  customer,\n  billing_reason,\n  description,\n  interval,\n  email,\n  productId,\n  availableWebsitesShared,\n  availableWebsitesDedicated\n};\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        -240
+      ],
+      "id": "7a761761-c722-439c-aca9-0e28b9cb964c",
+      "name": "Subscription Data"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "user_data",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "UID",
+              "keyValue": "={{ $json.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -240
+      ],
+      "id": "b977c440-8c32-4c68-9bf7-a36adcb26051",
+      "name": "User Data",
+      "credentials": {
+        "supabaseApi": {
+          "id": "xSeCQtqNZNIJe0PK",
+          "name": "Geag AI - Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ac52c685-fad2-4284-96d6-c91d0a8ccd8b",
+              "leftValue": "={{ $('Subscription').first().json }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -256
+      ],
+      "id": "34857f5d-7b8d-4a79-ac9a-3401658056d0",
+      "name": "If Subscription Exists"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "user_data",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "UID",
+              "condition": "eq",
+              "keyValue": "={{ $('User Data').item.json.UID }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "credits",
+              "fieldValue": "={{ $('User Data').item.json.credits + $('Subscription Data').item.json.credits }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -240
+      ],
+      "id": "f3057507-992d-4047-9e94-64e3c1bfeb3d",
+      "name": "Update Credits",
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "xSeCQtqNZNIJe0PK",
+          "name": "Geag AI - Supabase"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Stripe": [
+      {
+        "json": {
+          "id": "evt_1Rr30XIWYcupiwiIrlq8E1mG",
+          "object": "event",
+          "api_version": "2025-06-30.basil",
+          "created": 1753993401,
+          "data": {
+            "object": {
+              "id": "cs_test_a1UWpBtxiaAFS2CiGE3eT5YB92awvEOzPvVM9jBMvGxoeqLDKoeOF22n1i",
+              "object": "checkout.session",
+              "adaptive_pricing": null,
+              "after_expiration": null,
+              "allow_promotion_codes": null,
+              "amount_subtotal": 1000,
+              "amount_total": 1000,
+              "automatic_tax": {
+                "enabled": false,
+                "liability": null,
+                "provider": null,
+                "status": null
+              },
+              "billing_address_collection": null,
+              "cancel_url": "http://localhost:3000/pricing?canceled=true",
+              "client_reference_id": null,
+              "client_secret": null,
+              "collected_information": {
+                "shipping_details": null
+              },
+              "consent": null,
+              "consent_collection": null,
+              "created": 1753993385,
+              "currency": "usd",
+              "currency_conversion": null,
+              "custom_fields": [],
+              "custom_text": {
+                "after_submit": null,
+                "shipping_address": null,
+                "submit": null,
+                "terms_of_service_acceptance": null
+              },
+              "customer": "cus_SiouZWyEjMu38g",
+              "customer_creation": null,
+              "customer_details": {
+                "address": {
+                  "city": null,
+                  "country": "US",
+                  "line1": null,
+                  "line2": null,
+                  "postal_code": "33701",
+                  "state": null
+                },
+                "email": "emailgeag@gmail.com",
+                "name": "Rob Gelhausen",
+                "phone": null,
+                "tax_exempt": "none",
+                "tax_ids": []
+              },
+              "customer_email": null,
+              "discounts": [],
+              "expires_at": 1754079784,
+              "invoice": "in_1Rr30TIWYcupiwiImgFiVJic",
+              "invoice_creation": null,
+              "livemode": false,
+              "locale": null,
+              "metadata": {
+                "credits": "500",
+                "productId": "prod_SmbYIWZRdELWHE",
+                "priceId": "price_1Rr2LTIWYcupiwiIPo7l8ayk",
+                "userId": "0e5500bc-22a7-419a-bcc7-1f3d5c81223e"
+              },
+              "mode": "subscription",
+              "origin_context": null,
+              "payment_intent": null,
+              "payment_link": null,
+              "payment_method_collection": "always",
+              "payment_method_configuration_details": null,
+              "payment_method_options": {
+                "card": {
+                  "request_three_d_secure": "automatic"
+                }
+              },
+              "payment_method_types": [
+                "card"
+              ],
+              "payment_status": "paid",
+              "permissions": null,
+              "phone_number_collection": {
+                "enabled": false
+              },
+              "recovered_from": null,
+              "saved_payment_method_options": {
+                "allow_redisplay_filters": [
+                  "always"
+                ],
+                "payment_method_remove": "disabled",
+                "payment_method_save": null
+              },
+              "setup_intent": null,
+              "shipping_address_collection": null,
+              "shipping_cost": null,
+              "shipping_options": [],
+              "status": "complete",
+              "submit_type": null,
+              "subscription": "sub_1Rr30VIWYcupiwiI2D8UfxZH",
+              "success_url": "http://localhost:3000/dashboard?success=true",
+              "total_details": {
+                "amount_discount": 0,
+                "amount_shipping": 0,
+                "amount_tax": 0
+              },
+              "ui_mode": "hosted",
+              "url": null,
+              "wallet_options": null
+            }
+          },
+          "livemode": false,
+          "pending_webhooks": 1,
+          "request": {
+            "id": null,
+            "idempotency_key": null
+          },
+          "type": "checkout.session.completed"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Stripe": {
+      "main": [
+        [
+          {
+            "node": "Subscription Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription": {
+      "main": [
+        [
+          {
+            "node": "If Subscription Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Subscription": {
+      "main": [
+        [
+          {
+            "node": "Update Credits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription Data": {
+      "main": [
+        [
+          {
+            "node": "User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Subscription Exists": {
+      "main": [
+        [
+          {
+            "node": "Create Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Credits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f0cf23d8-6bc5-4d4d-b9e9-dd7fd6787e45",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8576fda5c93b0c1690be2669cac2106ee3bb80e3468e954754449821b2a576cc"
+  },
+  "id": "SzD87hYpARDj2sNF",
+  "tags": [
+    {
+      "createdAt": "2025-07-16T22:19:46.384Z",
+      "updatedAt": "2025-07-16T22:19:46.384Z",
+      "id": "aKSD4SgyQOCbitia",
+      "name": "Billing"
+    },
+    {
+      "createdAt": "2025-07-31T19:05:55.310Z",
+      "updatedAt": "2025-07-31T19:05:55.310Z",
+      "id": "oYq6F3Md7AinFXN6",
+      "name": "Stripe"
+    }
+  ]
+}
