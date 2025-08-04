@@ -167,7 +167,7 @@ export function useChat({
     let timeoutId: NodeJS.Timeout | null = null
     timeoutId = setTimeout(() => {
       setIsLoading(false)
-    }, 10000) // 10 seconds
+    }, 180000) // 3 minutes
     // --- End spinner timeout logic ---
     
     try {
