@@ -36,6 +36,7 @@ interface UseChatReturn {
   sessionId: string
   sendMessage: (content: string, formData?: Record<string, any>) => Promise<void>
   retryMessage: (messageId: string) => Promise<void>
+  deleteMessage: (messageId: string) => Promise<void>
   clearMessages: () => void
   loadHistory: () => Promise<void>
   isHistoryLoaded: boolean
@@ -66,16 +67,33 @@ export function useChat({
     try {
       const result = await loadSessionMessages(sessionId, userId)
       if (result.success && result.messages) {
-        // Only show the assistant's response (message column) for each row
-        const formattedMessages: Message[] = result.messages
-          .filter(msg => msg.message && msg.message.trim() !== '')
-          .map(msg => ({
-            id: msg.id || generateMessageId(),
-            content: msg.message ?? '',
-            role: 'assistant',
-            timestamp: msg.created_at || new Date().toISOString(),
-            rawData: msg
-          }))
+        // Create both user prompt and AI response messages for each row
+        const formattedMessages: Message[] = []
+        
+        result.messages.forEach(msg => {
+          // Add user prompt message if it exists
+          if (msg.prompt && msg.prompt.trim() !== '') {
+            formattedMessages.push({
+              id: `${msg.id}-user`,
+              content: msg.prompt,
+              role: 'user',
+              timestamp: msg.created_at || new Date().toISOString(),
+              rawData: { ...msg, isUserMessage: true }
+            })
+          }
+          
+          // Add AI response message if it exists
+          if (msg.message && msg.message.trim() !== '') {
+            formattedMessages.push({
+              id: `${msg.id}-assistant`,
+              content: msg.message,
+              role: 'assistant',
+              timestamp: msg.created_at || new Date().toISOString(),
+              rawData: { ...msg, isAssistantMessage: true }
+            })
+          }
+        })
+        
         setMessages(formattedMessages)
       }
       setIsHistoryLoaded(true)
@@ -190,6 +208,17 @@ export function useChat({
           // Don't show error to user since the main functionality worked
         } else {
           console.log('[useChat] Message saved successfully');
+          
+          // Update the user message with the database row ID for proper deletion
+          const saveResultData = await saveResult.json();
+          if (saveResultData.messageId) {
+            updateMessage(userMessage.id, {
+              rawData: { id: saveResultData.messageId, isUserMessage: true }
+            });
+            updateMessage(assistantMessage.id, {
+              rawData: { ...response.data, id: saveResultData.messageId, isAssistantMessage: true }
+            });
+          }
         }
         
         onSuccess?.(response.message)
@@ -232,17 +261,69 @@ export function useChat({
       return
     }
     
-    // Find and remove the failed assistant message
-    setMessages(prev => prev.filter(msg => {
-      // Remove the assistant message that came after this user message
+    // Find and remove both the user message and the failed assistant message
+    setMessages(prev => {
       const messageIndex = prev.findIndex(m => m.id === messageId)
+      if (messageIndex === -1) return prev
+      
+      // Find the corresponding assistant message (should be the next message)
       const assistantIndex = messageIndex + 1
-      return !(messageIndex >= 0 && assistantIndex < prev.length && prev[assistantIndex].role === 'assistant')
-    }))
+      const assistantMessage = prev[assistantIndex]
+      
+      // Remove both messages if they belong to the same database row
+      if (assistantMessage && assistantMessage.role === 'assistant') {
+        const userDbRowId = prev[messageIndex].rawData?.id || prev[messageIndex].id.split('-')[0]
+        const assistantDbRowId = assistantMessage.rawData?.id || assistantMessage.id.split('-')[0]
+        
+        if (userDbRowId === assistantDbRowId) {
+          return prev.filter((_, index) => index !== messageIndex && index !== assistantIndex)
+        }
+      }
+      
+      // Fallback: just remove the user message
+      return prev.filter((_, index) => index !== messageIndex)
+    })
     
     // Retry sending the message
     await sendMessage(retryInfo.content, retryInfo.formData)
   }, [retryData, sendMessage])
+
+  const deleteMessage = useCallback(async (messageId: string) => {
+    try {
+      // Find the message to be deleted
+      const messageToDelete = messages.find(msg => msg.id === messageId);
+      if (!messageToDelete) {
+        throw new Error('Message not found');
+      }
+
+      // Extract the database row ID from the message
+      const dbRowId = messageToDelete.rawData?.id || messageId;
+      
+      // Call the API route to delete the message from the database
+      const response = await fetch('/api/agents/messages', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageId: dbRowId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete message');
+      }
+
+      // Remove both user prompt and AI response messages for this database row
+      setMessages(prev => prev.filter(msg => {
+        const msgDbRowId = msg.rawData?.id || msg.id;
+        return msgDbRowId !== dbRowId;
+      }));
+      
+    } catch (error) {
+      console.error('Delete message error:', error);
+      throw error;
+    }
+  }, [messages])
 
   return {
     messages,
@@ -250,6 +331,7 @@ export function useChat({
     sessionId,
     sendMessage,
     retryMessage,
+    deleteMessage,
     clearMessages,
     loadHistory,
     isHistoryLoaded

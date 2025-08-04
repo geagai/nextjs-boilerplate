@@ -8,7 +8,7 @@ interface UserCreditsProps {
 }
 
 export function UserCredits({ credits }: UserCreditsProps) {
-  const displayCredits = credits ?? 0;
+  const displayCredits = Math.round(credits ?? 0);
   
   return (
     <Card>

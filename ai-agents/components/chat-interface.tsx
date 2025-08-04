@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Send, AlertCircle, Bot } from 'lucide-react'
+import { Loader2, Send, AlertCircle, Bot, GripVertical } from 'lucide-react'
 import { DynamicFormFields } from './dynamic-form-fields'
 import { ResponseDisplay } from './response-display'
 import { useChat } from '../hooks/use-chat'
@@ -57,6 +57,13 @@ export function ChatInterface({
   const [agentError, setAgentError] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<any>(externalUser || null)
   
+  // Draggable input state
+  const [inputHeight, setInputHeight] = useState(114) // Default height in pixels
+  const [isDragging, setIsDragging] = useState(false)
+  const dragRef = useRef<HTMLDivElement>(null)
+  const startYRef = useRef<number>(0)
+  const startHeightRef = useRef<number>(114)
+  
   // Auth context (only used if external data not provided)
   const { user: authUser, loading: authLoading } = useAuth()
   
@@ -88,6 +95,7 @@ export function ChatInterface({
     isLoading: isChatLoading,
     sendMessage,
     retryMessage,
+    deleteMessage,
     sessionId: activeSessionId,
     loadHistory
   } = useChat({
@@ -103,6 +111,47 @@ export function ChatInterface({
       })
     }
   })
+
+  // Draggable input handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only enable on desktop (screen width > 768px)
+    if (window.innerWidth <= 768) return
+    
+    e.preventDefault()
+    setIsDragging(true)
+    startYRef.current = e.clientY
+    startHeightRef.current = inputHeight
+    document.body.style.cursor = 'ns-resize'
+    document.body.style.userSelect = 'none'
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+    
+    const deltaY = startYRef.current - e.clientY
+    const newHeight = Math.max(114, Math.min(400, startHeightRef.current + deltaY))
+    setInputHeight(newHeight)
+  }
+
+  const handleMouseUp = () => {
+    if (!isDragging) return
+    
+    setIsDragging(false)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+  }
+
+  // Add/remove global mouse event listeners
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging])
 
   // Load user and agent data only if not provided externally
   useEffect(() => {
@@ -223,15 +272,23 @@ export function ChatInterface({
   }
 
   const handleDeleteMessage = async (id: string) => {
-    // Fallback: reload history after deletion
-    await loadHistory();
+    try {
+      await deleteMessage(id);
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete the message. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
-      {/* Scrollable Messages Area */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-6 max-w-4xl mx-auto pb-56 mb-24 md:pb-56 md:mb-24 pb-80 mb-32">
+      {/* Scrollable Messages Area - with dynamic bottom padding based on input height */}
+      <ScrollArea className="flex-1 p-4" style={{ paddingBottom: `${inputHeight + 16}px` }}>
+        <div className="space-y-6 max-w-4xl mx-auto">
           {/* Agent Header - Only show if not hidden */}
           {!hideAgentHeader && (
             <Card className="hidden sm:block">
@@ -276,19 +333,30 @@ export function ChatInterface({
         </div>
       </ScrollArea>
 
-      {/* Fixed Input Area - Fixed to bottom of viewport */}
+      {/* Input Area - Now positioned at bottom of container, not viewport */}
       {currentUser ? (
         <div
-          className="fixed bottom-0 left-0 right-0 border-t p-4 z-50"
+          className="absolute bottom-0 left-0 right-0 border-t p-4"
           style={{ 
-            height: '114px',
+            height: `${inputHeight}px`,
             backgroundColor: 'hsl(var(--header-bg))',
-            backdropFilter: 'blur(12px)'
+            backdropFilter: 'blur(12px)',
+            zIndex: 10
           }}
         >
+          {/* Drag handle - only visible on desktop */}
+          <div 
+            ref={dragRef}
+            className="hidden md:flex items-center justify-center cursor-ns-resize mb-2"
+            onMouseDown={handleMouseDown}
+            style={{ height: '20px' }}
+          >
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
+          </div>
+          
           <div
             className="max-w-4xl mx-auto h-full flex items-center"
-            style={{ height: '100%' }}
+            style={{ height: 'calc(100% - 20px)' }}
           >
             <div
               className="flex space-x-2 w-full"
@@ -310,9 +378,14 @@ export function ChatInterface({
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={isChatLoading}
-                    className="flex-1 bg-background rounded-md border border-input px-3 py-2 resize-none min-h-[48px] max-h-[120px] text-base focus:outline-none focus:ring-2 focus:ring-primary"
-                    rows={2}
-                    style={{ minHeight: 48, maxHeight: 120, fontSize: '1rem' }}
+                    className="flex-1 rounded-md border px-3 py-2 resize-none text-base focus:outline-none focus:ring-2 focus:ring-primary"
+                    style={{ 
+                      height: `${Math.max(48, inputHeight - 60)}px`, // Dynamic height based on container
+                      minHeight: 48,
+                      fontSize: '1rem',
+                      backgroundColor: '#fafafa',
+                      borderColor: 'hsl(var(--primary))'
+                    }}
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -352,12 +425,13 @@ export function ChatInterface({
             }
           `}</style>
           <div
-            className="fixed bottom-0 left-0 right-0 border-t p-4 z-50 flex items-center justify-center login-register-message-bar"
+            className="absolute bottom-0 left-0 right-0 border-t p-4 flex items-center justify-center login-register-message-bar"
             style={{ 
               height: '114px', 
               textAlign: 'center',
               backgroundColor: 'hsl(var(--header-bg))',
-              backdropFilter: 'blur(12px)'
+              backdropFilter: 'blur(12px)',
+              zIndex: 10
             }}
           >
             <span className="text-base font-medium text-muted-foreground">Please Login or Register to use this Agent.</span>

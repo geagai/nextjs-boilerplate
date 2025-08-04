@@ -234,36 +234,46 @@ export function ResponseDisplay({
   }
 
   const handleDelete = async (message: Message) => {
-    const supabase = createClient();
-    if (!supabase) {
-      throw new Error('Supabase client is not initialized');
-    }
-    const id = message.rawData?.id || message.id;
-    if (!id) return;
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({ title: 'Error', description: 'You must be logged in to delete messages.', variant: 'destructive' });
+    // Only allow deletion of AI response messages
+    if (message.role !== 'assistant') {
       return;
     }
-    // Delete from Supabase
-    if (!supabase) {
-      throw new Error('Supabase client is not initialized');
+    
+    // Extract the database row ID from the message
+    // For messages loaded from database, use rawData.id
+    // For new messages, the ID should already be the database row ID
+    const dbRowId = message.rawData?.id || message.id;
+    if (!dbRowId) return;
+    
+    try {
+      // Call the API route to delete the message
+      const response = await fetch('/api/agents/messages', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageId: dbRowId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete message');
+      }
+
+      // Notify parent to remove from UI
+      if (typeof onDeleteMessage === 'function') {
+        onDeleteMessage(message.id);
+      }
+      
+      toast({ title: 'Message successfully deleted.' });
+    } catch (error) {
+      console.error('Delete message error:', error);
+      toast({ 
+        title: 'Error', 
+        description: error instanceof Error ? error.message : 'Failed to delete message', 
+        variant: 'destructive' 
+      });
     }
-    const { error } = await supabase
-      .from('agent_messages')
-      .delete()
-      .eq('id', id)
-      .eq('UID', user.id);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      return;
-    }
-    // Notify parent to remove from UI
-    if (typeof onDeleteMessage === 'function') {
-      onDeleteMessage(id);
-    }
-    toast({ title: 'Message successfully deleted.' });
   };
 
   const MessageComponent = ({ message }: { message: Message }) => {
@@ -390,7 +400,7 @@ export function ResponseDisplay({
                           </>
                         )}
                       </Button>
-                      {/* Delete button for user messages */}
+                      {/* Delete button only for AI response messages */}
                       {message.role === 'assistant' && (
                         <Button
                           variant="ghost"

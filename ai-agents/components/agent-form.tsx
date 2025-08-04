@@ -373,16 +373,27 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">
-          {mode === 'create' ? 'Create New Agent' : 'Edit Agent'}
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          {mode === 'create' 
-            ? 'Configure your AI agent with custom settings and behaviors' 
-            : 'Update your agent configuration and settings'
-          }
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {mode === 'create' ? 'Create New Agent' : 'Edit Agent'}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {mode === 'create' 
+              ? 'Configure your AI agent with custom settings and behaviors' 
+              : 'Update your agent configuration and settings'
+            }
+          </p>
+        </div>
+        {mode === 'edit' && initialData?.id && (
+          <Button
+            variant="default"
+            onClick={() => window.open(`/agent/${initialData.id}`, '_blank')}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            View Agent
+          </Button>
+        )}
       </div>
 
       <Form {...form}>
@@ -828,23 +839,34 @@ export function AgentForm({ mode, initialData }: AgentFormProps) {
             </CardContent>
           </Card>
 
-          {/* Form Actions */}
-          <div className="flex gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting 
-                ? `${mode === 'create' ? 'Creating' : 'Updating'}...` 
-                : `${mode === 'create' ? 'Create Agent' : 'Update Agent'}`
-              }
-            </Button>
-          </div>
+                     {/* Form Actions */}
+           <div className="flex justify-between items-center">
+             <div className="flex gap-4">
+               <Button
+                 type="button"
+                 variant="outline"
+                 onClick={() => router.back()}
+                 disabled={isSubmitting}
+               >
+                 Cancel
+               </Button>
+               <Button type="submit" disabled={isSubmitting}>
+                 {isSubmitting 
+                   ? `${mode === 'create' ? 'Creating' : 'Updating'}...` 
+                   : `${mode === 'create' ? 'Create Agent' : 'Update Agent'}`
+                 }
+               </Button>
+             </div>
+             {mode === 'edit' && initialData?.id && (
+               <Button
+                 variant="default"
+                 onClick={() => window.open(`/agent/${initialData.id}`, '_blank')}
+                 className="bg-primary text-primary-foreground hover:bg-primary/90"
+               >
+                 View Agent
+               </Button>
+             )}
+           </div>
         </form>
       </Form>
     </div>
