@@ -216,7 +216,11 @@ export function useChat({
               rawData: { id: saveResultData.messageId, isUserMessage: true }
             });
             updateMessage(assistantMessage.id, {
-              rawData: { ...response.data, id: saveResultData.messageId, isAssistantMessage: true }
+              rawData: { 
+                ...(typeof response.data === 'object' && response.data !== null ? response.data : {}), 
+                id: saveResultData.messageId, 
+                isAssistantMessage: true 
+              }
             });
           }
         }
