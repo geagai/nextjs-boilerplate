@@ -382,8 +382,8 @@ export function ChatInterface({
                     style={{ 
                       height: `${Math.max(48, inputHeight - 60)}px`, // Dynamic height based on container
                       minHeight: 48,
-                      fontSize: '1rem',
-                      backgroundColor: '#fafafa',
+                      fontSize: '0.9rem',
+                      backgroundColor: '#ffffff',
                       borderColor: 'hsl(var(--primary))'
                     }}
                   />

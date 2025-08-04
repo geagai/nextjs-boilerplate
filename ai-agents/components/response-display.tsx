@@ -97,6 +97,15 @@ export function ResponseDisplay({
     return formatted
   }
 
+  const formatModelName = (model: string) => {
+    return model
+      .replace(/-/g, ' ')
+      .replace(/\//g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
   const detectContentType = (content: string) => {
     const trimmed = content.trim()
     
@@ -156,7 +165,7 @@ export function ResponseDisplay({
             </pre>
           )
         } catch {
-          return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.8rem' }}>{formattedContent}</div>
+          return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.9rem' }}>{formattedContent}</div>
         }
       
       case 'html':
@@ -229,7 +238,7 @@ export function ResponseDisplay({
         )
       
       default:
-        return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.8rem' }}>{formattedContent}</div>
+        return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.9rem' }}>{formattedContent}</div>
     }
   }
 
@@ -308,13 +317,18 @@ export function ResponseDisplay({
                   {message.role === 'user' && (
                     <User className="w-3 h-3" />
                   )}
-                  <span className="text-xs font-medium">
+                  <span className="text-xs font-medium pr-1">
                     {message.role === 'user' ? 'You' : agent?.name || 'Assistant'}
                   </span>
                   {contentType !== 'text' && (
                     <Badge variant="outline" className="text-xs">
                       <Code className="w-3 h-3 mr-1" />
                       {contentType.toUpperCase()}
+                    </Badge>
+                  )}
+                  {message.rawData?.model && (
+                    <Badge variant="outline" className="text-xs pr-1">
+                      {formatModelName(message.rawData.model)}
                     </Badge>
                   )}
                 </div>

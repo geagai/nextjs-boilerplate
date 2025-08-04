@@ -215,11 +215,20 @@ export function useChat({
             updateMessage(userMessage.id, {
               rawData: { id: saveResultData.messageId, isUserMessage: true }
             });
+            // Extract model information from API response
+            let modelInfo = null;
+            if (Array.isArray(response.data) && response.data.length > 0) {
+              modelInfo = response.data[0]?.model;
+            } else if (response.data?.model) {
+              modelInfo = response.data.model;
+            }
+            
             updateMessage(assistantMessage.id, {
               rawData: { 
                 ...(typeof response.data === 'object' && response.data !== null ? response.data : {}), 
                 id: saveResultData.messageId, 
-                isAssistantMessage: true 
+                isAssistantMessage: true,
+                model: modelInfo
               }
             });
           }

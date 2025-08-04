@@ -146,7 +146,7 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     // Expected response format: [{ message: "..." }] or { message: "..." }
     let message = ''
     if (Array.isArray(responseData) && responseData.length > 0) {
-      message = responseData[0]?.message || 'No response message'
+      message = responseData[0]?.message || 'We apologize, there was no response generated. Please try your request again. If the problem persists please reach out to support.'
     } else if (responseData?.message) {
       message = responseData.message
     } else {
@@ -290,7 +290,16 @@ export async function loadAgent(
  */
 export function generateSessionId(): string {
   // Generate a proper UUID v4 for consistency
-  return crypto.randomUUID()
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  
+  // Fallback for environments where crypto.randomUUID is not available
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
 }
 
 /**
@@ -310,7 +319,16 @@ export function validateSessionId(sessionId?: string): string {
  */
 export function generateMessageId(): string {
   // Generate a proper UUID v4 for consistency
-  return crypto.randomUUID()
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  
+  // Fallback for environments where crypto.randomUUID is not available
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
 }
 
 /**
