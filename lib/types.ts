@@ -61,6 +61,7 @@ export interface Agent {
   UID: string
   config?: AgentConfig | null
   category?: string | null
+  icon?: string | null
   created_at?: string
   updated_at?: string
 }

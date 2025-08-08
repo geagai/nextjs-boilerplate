@@ -1,6 +1,6 @@
-import next from 'eslint-config-next';
+const next = require('eslint-config-next');
 
-export default [
+module.exports = [
   ...next(),
   {
     rules: {
