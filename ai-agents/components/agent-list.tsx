@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot, Brain, Target, Zap, Code, MessageSquare } from 'lucide-react'
+import { Bot, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 interface Agent {
@@ -32,6 +32,8 @@ function renderAgentIcon(icon: any) {
   if (icon === 'Zap') return <Zap className="w-12 h-12" />;
   if (icon === 'Code') return <Code className="w-12 h-12" />;
   if (icon === 'MessageSquare') return <MessageSquare className="w-12 h-12" />;
+  if (icon === 'PenTool') return <PenTool className="w-12 h-12" />;
+  if (icon === 'TrendingUp') return <TrendingUp className="w-12 h-12" />;
   // Emoji or fallback
   if (typeof icon === 'string' && /\p{Emoji}/u.test(icon)) {
     return <span className="w-12 h-12 inline-block text-3xl">{icon}</span>;

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { generateSessionId } from '@/lib/ai-agent-utils'
 import { Button } from '@/components/ui/button'
 import { ChatInterface } from '@/ai-agents/components/chat-interface'
-import { ArrowLeft, Bot, Loader2, Settings } from 'lucide-react'
+import { ArrowLeft, Bot, Loader2, Settings, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { SessionSidebar } from '@/ai-agents/components/session-sidebar'
 import { AgentConfigSidebar } from '@/ai-agents/components/agent-config-sidebar'
@@ -16,6 +16,23 @@ interface Message {
   role: 'user' | 'assistant'
   timestamp: string
   rawData?: any
+}
+
+function renderAgentIcon(icon: any) {
+  if (!icon) return <Bot className="w-5 h-5 text-primary" />;
+  if (icon === 'Bot') return <Bot className="w-5 h-5 text-primary" />;
+  if (icon === 'Brain') return <Brain className="w-5 h-5 text-primary" />;
+  if (icon === 'Target') return <Target className="w-5 h-5 text-primary" />;
+  if (icon === 'Zap') return <Zap className="w-5 h-5 text-primary" />;
+  if (icon === 'Code') return <Code className="w-5 h-5 text-primary" />;
+  if (icon === 'MessageSquare') return <MessageSquare className="w-5 h-5 text-primary" />;
+  if (icon === 'PenTool') return <PenTool className="w-5 h-5 text-primary" />;
+  if (icon === 'TrendingUp') return <TrendingUp className="w-5 h-5 text-primary" />;
+  // Emoji or fallback
+  if (typeof icon === 'string' && /\p{Emoji}/u.test(icon)) {
+    return <span className="w-5 h-5 inline-block text-lg">{icon}</span>;
+  }
+  return <span className="w-5 h-5 inline-block text-lg">{icon}</span>;
 }
 
 interface AgentChatClientProps {
@@ -85,7 +102,7 @@ export function AgentChatClient({
                 {/* Agent Info */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-primary" />
+                    {renderAgentIcon(agent.icon)}
                   </div>
                   <div>
                     <h1 className="text-lg font-semibold" style={{ marginTop: 0 }}>{agent.name}</h1>

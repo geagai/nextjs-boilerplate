@@ -24,11 +24,16 @@ export function AgentsClientWrapper({ agents, user, isAdmin }: AgentsClientWrapp
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Extract categories from agents
-  const categories = useMemo(() => 
-    Array.from(new Set(agents.map((a) => a.category).filter(Boolean))),
-    [agents]
-  )
+  // Extract categories from agents - split comma-separated categories
+  const categories = useMemo(() => {
+    const allCategories = agents
+      .map((a) => a.category)
+      .filter(Boolean)
+      .flatMap(category => 
+        category.split(',').map(cat => cat.trim()).filter(Boolean)
+      );
+    return Array.from(new Set(allCategories));
+  }, [agents])
 
   // Filter agents based on search and category
   const filteredAgents = useMemo(() => {
@@ -36,7 +41,11 @@ export function AgentsClientWrapper({ agents, user, isAdmin }: AgentsClientWrapp
 
     // Filter by category
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(agent => agent.category === selectedCategory)
+      filtered = filtered.filter(agent => {
+        if (!agent.category) return false;
+        const agentCategories = agent.category.split(',').map(cat => cat.trim());
+        return agentCategories.includes(selectedCategory);
+      });
     }
 
     // Filter by search query

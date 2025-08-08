@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Github, Zap, Shield, Smartphone } from 'lucide-react'
+import { ArrowRight, Github, Zap, Shield, Smartphone, PenTool, TrendingUp } from 'lucide-react'
 
 interface HeroClientProps {
   adminSettings: any
@@ -41,6 +41,20 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
           className="absolute bottom-40 left-20 text-primary/20"
         >
           <Smartphone size={35} />
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, 20, 0], rotate: [0, -3, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+          className="absolute top-60 right-40 text-primary/20"
+        >
+          <PenTool size={45} />
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, -15, 0], rotate: [0, 2, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+          className="absolute bottom-60 right-20 text-primary/20"
+        >
+          <TrendingUp size={40} />
         </motion.div>
       </div>
 
