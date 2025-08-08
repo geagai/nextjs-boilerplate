@@ -317,7 +317,7 @@ export function ResponseDisplay({
                   {message.role === 'user' && (
                     <User className="w-3 h-3" />
                   )}
-                  <span className="text-xs font-medium pr-1">
+                  <span className="text-xs font-medium pr-1" style={{ marginRight: '5px' }}>
                     {message.role === 'user' ? 'You' : agent?.name || 'Assistant'}
                   </span>
                   {contentType !== 'text' && (
@@ -446,27 +446,29 @@ export function ResponseDisplay({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <style>{`
-        @media (max-width: 640px) {
-          .mobile-spacer { height: 75px !important; }
-        }
-        .prose ul {
-          list-style: disc !important;
-          margin: 0 !important;
-          margin-top: 20px !important;
-          padding-left: 1.25rem !important;
-        }
-        .prose ol {
-          list-style: decimal !important;
-          margin: 0 !important;
-          margin-top: 20px !important;
-          padding-left: 1.25rem !important;
-        }
-        .prose li {
-          display: list-item !important;
-          margin-bottom: 0.25rem !important;
-        }
-      `}</style>
+             <style>{`
+         @media (max-width: 640px) {
+           .mobile-spacer { height: 75px !important; }
+         }
+         .prose ul {
+           list-style: disc !important;
+           margin: 0 !important;
+           margin-top: 20px !important;
+           margin-bottom: 20px !important;
+           padding-left: 1.25rem !important;
+         }
+         .prose ol {
+           list-style: decimal !important;
+           margin: 0 !important;
+           margin-top: 20px !important;
+           margin-bottom: 20px !important;
+           padding-left: 1.25rem !important;
+         }
+         .prose li {
+           display: list-item !important;
+           margin-bottom: 0.25rem !important;
+         }
+       `}</style>
       <ScrollArea className="max-h-[60vh]">
         <div className="space-y-4 p-1">
           {messages.length === 0 && !isLoading ? (

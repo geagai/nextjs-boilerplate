@@ -89,8 +89,6 @@ export default async function AgentRoute({
       const UID = String(user.id);
       const agent_id = String(agentId);
 
-      console.log('[Server] Querying for UID:', UID, 'agentId:', agent_id);
-
       const { data, error } = await supabase
         .from('agent_messages')
         .select('*')
@@ -102,8 +100,6 @@ export default async function AgentRoute({
         console.error('[Server] Error fetching sessions:', error);
         sessions = [];
       } else if (data) {
-        console.log('[Server] Raw data:', data);
-        
         // Group messages by session_id and create Session objects
         const sessionMap = new Map();
         data.forEach((message: any) => {
@@ -117,7 +113,6 @@ export default async function AgentRoute({
         });
         
         sessions = Array.from(sessionMap.values());
-        console.log('[Server] Returning sessions:', sessions);
       } else {
         console.log('[Server] No data found');
         sessions = [];

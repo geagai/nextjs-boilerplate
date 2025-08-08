@@ -89,7 +89,6 @@ export function SessionSidebar({
   // Function to load sessions
   const loadSessions = async () => {
     setIsLoading(true);
-    console.log('[SessionSidebar] Loading sessions for agentId:', agentId);
     
     try {
       const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}`, {
@@ -101,35 +100,26 @@ export function SessionSidebar({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('[SessionSidebar] Error fetching sessions:', errorData.error);
         throw new Error(errorData.error || 'Failed to fetch sessions');
       }
 
       const data = await response.json();
-      console.log('[SessionSidebar] API response:', data);
       
       if (data.sessions) {
-        console.log('[SessionSidebar] Setting sessions:', data.sessions);
         setSessions(data.sessions);
       } else {
-        console.log('[SessionSidebar] No sessions found, setting empty array');
         setSessions([]);
       }
     } catch (error) {
-      console.error('[SessionSidebar] Error in loadSessions:', error);
       setSessions([]);
     } finally {
-      console.log('[SessionSidebar] Setting loading to false');
       setIsLoading(false);
     }
   };
 
   // Load sessions when sidebar opens
   useEffect(() => {
-    console.log('[SessionSidebar] useEffect triggered - isOpen:', isOpen, 'supaReady:', supaReady, 'authLoading:', authLoading);
-    
     if (isOpen && supaReady && !authLoading) {
-      console.log('[SessionSidebar] Loading sessions because sidebar opened');
       loadSessions();
     }
   }, [isOpen, supaReady, authLoading, agentId]);
@@ -172,8 +162,6 @@ export function SessionSidebar({
         return;
       }
       
-      console.log('[SessionSidebar] Deleting session:', sessionId, 'for agentId:', agentId);
-      
       const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}&sessionId=${encodeURIComponent(sessionId)}`, {
         method: 'DELETE',
         headers: {
@@ -183,18 +171,15 @@ export function SessionSidebar({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('[SessionSidebar] Error deleting session:', errorData.error);
         throw new Error(errorData.error || 'Failed to delete session');
       }
 
-      console.log('[SessionSidebar] Session deleted successfully');
       setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
       toast({
         title: "Session deleted",
         description: "The session has been deleted successfully.",
       });
     } catch (error) {
-      console.error('[SessionSidebar] Error deleting session:', error);
       toast({
         title: "Error",
         description: "Failed to delete session. Please try again.",
@@ -225,8 +210,6 @@ export function SessionSidebar({
         return;
       }
       
-      console.log('[SessionSidebar] Renaming session:', renameSessionId, 'to:', renameValue, 'for agentId:', agentId);
-      
       const response = await fetch(`/api/agents/sessions?agentId=${encodeURIComponent(agentId)}&sessionId=${encodeURIComponent(renameSessionId)}`, {
         method: 'PUT',
         headers: {
@@ -237,11 +220,9 @@ export function SessionSidebar({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('[SessionSidebar] Error renaming session:', errorData.error);
         throw new Error(errorData.error || 'Failed to rename session');
       }
 
-      console.log('[SessionSidebar] Session renamed successfully');
       setSessions((prev) => prev.map((s) =>
         s.session_id === renameSessionId ? { ...s, prompt: renameValue } : s
       ));
@@ -251,7 +232,6 @@ export function SessionSidebar({
       });
       closeRenameModal();
     } catch (error) {
-      console.error('[SessionSidebar] Error renaming session:', error);
       toast({
         title: "Error",
         description: "Failed to rename session. Please try again.",
