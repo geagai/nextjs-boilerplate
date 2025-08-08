@@ -219,8 +219,8 @@ export function useChat({
             let modelInfo = null;
             if (Array.isArray(response.data) && response.data.length > 0) {
               modelInfo = response.data[0]?.model;
-            } else if (response.data?.model) {
-              modelInfo = response.data.model;
+            } else if (response.data && typeof response.data === 'object' && 'model' in response.data) {
+              modelInfo = (response.data as any).model;
             }
             
             updateMessage(assistantMessage.id, {
