@@ -3,7 +3,7 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Bot, Brain, Target, Zap } from 'lucide-react';
+import { Bot, Brain, Target, Zap, Code, MessageSquare } from 'lucide-react';
 import { CopyAgentModal } from '../components/copy-agent-modal';
 
 function renderAgentIcon(icon: any) {
@@ -12,6 +12,8 @@ function renderAgentIcon(icon: any) {
   if (icon === 'Brain') return <Brain className="w-6 h-6" />;
   if (icon === 'Target') return <Target className="w-6 h-6" />;
   if (icon === 'Zap') return <Zap className="w-6 h-6" />;
+  if (icon === 'Code') return <Code className="w-6 h-6" />;
+  if (icon === 'MessageSquare') return <MessageSquare className="w-6 h-6" />;
   // Emoji or fallback
   if (typeof icon === 'string' && /\p{Emoji}/u.test(icon)) {
     return <span className="w-6 h-6 inline-block text-lg">{icon}</span>;
