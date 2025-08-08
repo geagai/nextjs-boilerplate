@@ -1,5 +1,6 @@
 import { Hero } from '@/components/hero'
 import { FeaturedAgents } from '@/components/featured-agents'
+import { AIPlatformInfo } from '@/components/ai-platform-info'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
@@ -28,6 +29,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <Hero />
+      <AIPlatformInfo />
       <FeaturedAgents agents={agents} />
     </div>
   );
