@@ -13,10 +13,10 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 const platformFeatures = [
-  { icon: Bot, title: 'AI Agent Marketplace', description: 'Curated agents for content, code, research, and operations.' },
-  { icon: Code2, title: 'Developer Optimization', description: 'Code generation, debugging help, docs, task flows.' },
-  { icon: Zap, title: 'Vibe Coding', description: 'Context-aware guidance aligned to your project and patterns.' },
-  { icon: Smartphone, title: 'Templates for Web & Mobile', description: 'NextJS boilerplate + mobile app starters, prewired.' }
+  { icon: Bot, title: 'AI Agent Marketplace', description: 'Discover and deploy specialized AI agents for content creation, code generation, research automation, and business operations—all designed to accelerate your workflow.' },
+  { icon: Code2, title: 'Developer Optimization', description: 'Streamline development with intelligent code generation, automated debugging, comprehensive documentation, and optimized task flows that adapt to your coding style.' },
+  { icon: Zap, title: 'Vibe Coding', description: 'Experience context-aware AI guidance that understands your project architecture, coding patterns, and team preferences for seamless collaboration.' },
+  { icon: Smartphone, title: 'Templates for Web & Mobile', description: 'Jumpstart projects with production-ready NextJS boilerplates and mobile app starters, complete with authentication, payments, and essential integrations.' }
 ]
 
 const howItWorks = [
@@ -48,7 +48,7 @@ export function AIPlatformInfo() {
         >
           <h2 className="text-4xl font-bold mb-4 tracking-tight">Build Smarter with AI Agents + Templates</h2>
           <p className="text-lg text-muted-foreground max-w-4xl mx-auto">
-            We help developers optimize software delivery and vibe-code with purpose-built AI agents and production-grade templates.
+            Accelerate your development workflow with intelligent AI agents that understand your needs and production-ready templates that eliminate boilerplate. Build faster, ship smarter, and focus on what matters most—creating exceptional user experiences.
           </p>
         </motion.div>
 

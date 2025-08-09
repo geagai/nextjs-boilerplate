@@ -30,7 +30,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
   const baseClasses = 'z-50 border-b'
   const positionClass = sticky ? 'sticky top-0' : 'relative'
 
-  const aiAgentsHref = user ? '/agents' : '/ai-agents'
+  const aiAgentsHref = '/agents'
 
   // Custom style for Get Started button - default to white text when no admin setting
   const getStartedButtonStyle = {

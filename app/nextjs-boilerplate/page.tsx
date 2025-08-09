@@ -1,4 +1,4 @@
-import { Hero } from '@/components/hero'
+import { NextJSBoilerplateHero } from '@/components/nextjs-boilerplate-hero'
 import { TechStack } from '@/components/tech-stack'
 import { Features } from '@/components/features'
 import { PricingCards } from '@/components/pricing/pricing-cards'
@@ -21,7 +21,7 @@ export default async function NextjsBoilerplatePage() {
 
   return (
     <div className="min-h-screen">
-      <Hero />
+      <NextJSBoilerplateHero />
       <TechStack />
       <Features />
       {/* Replace PricingSection with PricingCards logic */}
