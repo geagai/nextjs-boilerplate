@@ -75,11 +75,11 @@ export function ChatInterface({
   const [currentUser, setCurrentUser] = useState<any>(externalUser || null)
   
   // Draggable input state
-  const [inputHeight, setInputHeight] = useState(114) // Default height in pixels
+  const [inputHeight, setInputHeight] = useState(140) // Default height in pixels for 4 rows
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
   const startYRef = useRef<number>(0)
-  const startHeightRef = useRef<number>(114)
+  const startHeightRef = useRef<number>(140)
   
   // Auth context (only used if external data not provided)
   const { user: authUser, loading: authLoading } = useAuth()
@@ -146,7 +146,7 @@ export function ChatInterface({
     if (!isDragging) return
     
     const deltaY = startYRef.current - e.clientY
-    const newHeight = Math.max(114, Math.min(400, startHeightRef.current + deltaY))
+    const newHeight = Math.max(140, Math.min(400, startHeightRef.current + deltaY))
     setInputHeight(newHeight)
   }
 
@@ -380,12 +380,12 @@ export function ChatInterface({
               style={{ alignItems: 'flex-end' }}
             >
               {/* On mobile, increase height and align top */}
-              <style>{`
-                @media (max-width: 640px) {
-                  .chat-bar-mobile { height: 164px !important; }
-                  .chat-bar-mobile .chat-bar-align { align-items: flex-start !important; }
-                }
-              `}</style>
+                             <style>{`
+                 @media (max-width: 640px) {
+                   .chat-bar-mobile { height: 100px !important; }
+                   .chat-bar-mobile .chat-bar-align { align-items: flex-start !important; }
+                 }
+               `}</style>
               {/* Add classes for mobile targeting */}
               <div className="chat-bar-mobile" style={{ width: '100%' }}>
                 <div className="chat-bar-align flex space-x-2 w-full" style={{ alignItems: 'flex-end' }}>
@@ -396,13 +396,13 @@ export function ChatInterface({
                     onKeyPress={handleKeyPress}
                     disabled={isChatLoading}
                     className="flex-1 rounded-md border px-3 py-2 resize-none text-base focus:outline-none focus:ring-2 focus:ring-primary"
-                    style={{ 
-                      height: `${Math.max(48, inputHeight - 60)}px`, // Dynamic height based on container
-                      minHeight: 48,
-                      fontSize: '0.9rem',
-                      backgroundColor: '#ffffff',
-                      borderColor: 'hsl(var(--primary))'
-                    }}
+                                         style={{ 
+                       height: `${Math.max(48, inputHeight - 40)}px`, // Dynamic height based on container
+                       minHeight: 48,
+                       fontSize: '0.9rem',
+                       backgroundColor: '#ffffff',
+                       borderColor: 'hsl(var(--primary))'
+                     }}
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -441,16 +441,16 @@ export function ChatInterface({
               .login-register-message-bar { margin-bottom: 20px !important; }
             }
           `}</style>
-          <div
-            className="absolute bottom-0 left-0 right-0 border-t p-4 flex items-center justify-center login-register-message-bar"
-            style={{ 
-              height: '114px', 
-              textAlign: 'center',
-              backgroundColor: 'hsl(var(--header-bg))',
-              backdropFilter: 'blur(12px)',
-              zIndex: 10
-            }}
-          >
+                     <div
+             className="absolute bottom-0 left-0 right-0 border-t p-4 flex items-center justify-center login-register-message-bar"
+             style={{ 
+               height: '140px', 
+               textAlign: 'center',
+               backgroundColor: 'hsl(var(--header-bg))',
+               backdropFilter: 'blur(12px)',
+               zIndex: 10
+             }}
+           >
             <span className="text-base font-medium text-muted-foreground">Please Login or Register to use this Agent.</span>
           </div>
         </>

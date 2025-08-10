@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { getServerSession } from '@/lib/auth'
 import AgentPageWrapper from '@/components/ai-agents/AgentPageWrapper'
+import { Metadata } from 'next'
 
 interface Message {
   id: string
@@ -10,6 +11,63 @@ interface Message {
   role: 'user' | 'assistant'
   timestamp: string
   rawData?: any
+}
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}): Promise<Metadata> {
+  const { id: agentId } = await params
+  
+  if (!agentId) {
+    return {
+      title: 'Agent Not Found - Geag AI',
+      description: 'The requested agent could not be found.'
+    }
+  }
+
+  // Fetch agent data for metadata
+  const cookieStore = await cookies();
+  const supabase = createServerClient(cookieStore);
+  
+  if (!supabase) {
+    return {
+      title: 'Error - Geag AI',
+      description: 'Unable to load agent information.'
+    }
+  }
+  
+  const { data: agent, error } = await supabase
+    .from('agents')
+    .select('name, description')
+    .eq('id', agentId)
+    .eq('is_public', true)
+    .single();
+
+  if (error || !agent) {
+    return {
+      title: 'Agent Not Found - Geag AI',
+      description: 'The requested agent could not be found.'
+    }
+  }
+
+  const title = `${agent.name} - Geag AI`;
+  const description = agent.description ? agent.description.substring(0, 60) + (agent.description.length > 60 ? '...' : '') : 'AI Agent powered by Geag AI';
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  }
 }
 
 export default async function AgentRoute({ 
