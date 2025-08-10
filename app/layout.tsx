@@ -16,21 +16,21 @@ import { ButtonProvider } from '@/components/ui/button-provider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-  description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features. Built with React 19, TypeScript, Supabase, and Stripe.',
-  keywords: 'Next.js, React, TypeScript, Supabase, Stripe, boilerplate, enterprise, mobile, authentication',
-  authors: [{ name: 'NextGeag BP Team' }],
+  title: 'Geag AI - Advanced AI Solutions for Businesses',
+  description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
+  keywords: 'AI, artificial intelligence, business solutions, automation, machine learning, enterprise AI',
+  authors: [{ name: 'Geag AI Team' }],
   openGraph: {
-    title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-    description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features.',
-    url: 'https://nextgeag-bp.com',
-    siteName: 'NextGeag BP',
+    title: 'Geag AI - Advanced AI Solutions for Businesses',
+    description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
+    url: 'https://geag.ai',
+    siteName: 'Geag AI',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NextGeag BP - Enterprise-Grade Next.js Boilerplate',
-    description: 'The ultimate Next.js 15 boilerplate with authentication, payments, mobile support, and enterprise-grade features.',
+    title: 'Geag AI - Advanced AI Solutions for Businesses',
+    description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
   },
   icons: {
     icon: '/favicon.ico',

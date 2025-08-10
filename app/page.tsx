@@ -3,6 +3,23 @@ import { FeaturedAgents } from '@/components/featured-agents'
 import { AIPlatformInfo } from '@/components/ai-platform-info'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Advanced AI Agents & Software Dev Templates',
+  description: 'Create, customize, and utilize advanced AI agents and production ready applications. Start or grow your business with AI.',
+  keywords: 'AI agents, software development, templates, business automation, artificial intelligence',
+  openGraph: {
+    title: 'Advanced AI Agents & Software Dev Templates',
+    description: 'Create, customize, and utilize advanced AI agents and production ready applications. Start or grow your business with AI.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Advanced AI Agents & Software Dev Templates',
+    description: 'Create, customize, and utilize advanced AI agents and production ready applications. Start or grow your business with AI.',
+  },
+}
 
 export default async function HomePage() {
   // Fetch agents server-side

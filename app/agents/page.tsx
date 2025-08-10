@@ -1,4 +1,21 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AI Agents Library – Intelligent Automation & Business Development',
+  description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+  keywords: 'AI agents, automation, business development, software development, intelligent assistants',
+  openGraph: {
+    title: 'AI Agents Library – Intelligent Automation & Business Development',
+    description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Agents Library – Intelligent Automation & Business Development',
+    description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+  },
+}
 
 const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseUrl: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted/20">

@@ -3,10 +3,27 @@ import { Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { getServerSession } from '@/lib/auth'
+import type { Metadata } from 'next'
 
 import { Button } from '@/components/ui/button'
 
 import { AgentsClientWrapper } from '@/ai-agents/components/agents-client-wrapper'
+
+export const metadata: Metadata = {
+  title: 'AI Agents Library – Intelligent Automation & Business Development',
+  description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+  keywords: 'AI agents, automation, business development, software development, intelligent assistants',
+  openGraph: {
+    title: 'AI Agents Library – Intelligent Automation & Business Development',
+    description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Agents Library – Intelligent Automation & Business Development',
+    description: 'Discover a wide range of AI Agents to automate tasks, grow your business and develop production ready applications.',
+  },
+}
 
 export default async function AgentsPage() {
   // Optional server-side auth check - don't redirect if not logged in
@@ -55,9 +72,9 @@ export default async function AgentsPage() {
       <div className="mb-8">
         <div className="relative flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1 pr-32">
-            <h1 className="text-3xl font-bold text-primary mb-2">AI Agents</h1>
+            <h1 className="text-3xl font-bold text-primary mb-2">Advanced AI Agents</h1>
             <p className="text-muted-foreground">
-              Explore our library of intelligent agents to automate tasks and find information.
+              Discover powerful AI agents designed to revolutionize your workflow. From content creation to data analysis, our intelligent assistants help you automate complex tasks and boost productivity. Our software development agents can generate code, debug issues, create documentation, and assist with project planning. Whether you're building web applications, mobile apps, or enterprise solutions, our AI agents provide expert guidance and accelerate your development process.
             </p>
           </div>
           {isAdmin && (

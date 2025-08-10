@@ -135,9 +135,8 @@ export function SessionSidebar({
     
     // Also update the client state for immediate UI feedback
     onSessionSelect(sessionId)
-    if (isMobile) {
-      onClose()
-    }
+    // Close sidebar on all devices when session is clicked
+    onClose()
   }
 
   const handleNewSession = () => {

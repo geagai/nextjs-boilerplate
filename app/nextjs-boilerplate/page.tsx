@@ -11,6 +11,23 @@ import Link from 'next/link'
 import { MobileShowcase } from '@/components/mobile-showcase'
 import { DeveloperExperience } from '@/components/developer-experience'
 import { ContactSection } from '@/components/contact-section'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
+  description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
+  keywords: 'NextJS, boilerplate, authentication, payments, mobile, React, TypeScript, Supabase, Stripe',
+  openGraph: {
+    title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
+    description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
+    description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
+  },
+}
 
 export default async function NextjsBoilerplatePage() {
   const sessionData = await getServerSession();

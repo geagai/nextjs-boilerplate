@@ -7,6 +7,23 @@ import { getStripeProductsCached } from '@/lib/stripe-cache'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { AlertTriangle } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Geag AI Pricing | Templates & AI Agents Solutions Tailored for You',
+  description: 'Transparent pricing for customizable AI templates and intelligent AI agents. Explore cost-effective plans designed for businesses of all sizes.',
+  keywords: 'AI pricing, AI agents pricing, templates pricing, business AI solutions, cost-effective AI',
+  openGraph: {
+    title: 'Geag AI Pricing | Templates & AI Agents Solutions Tailored for You',
+    description: 'Transparent pricing for customizable AI templates and intelligent AI agents. Explore cost-effective plans designed for businesses of all sizes.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Geag AI Pricing | Templates & AI Agents Solutions Tailored for You',
+    description: 'Transparent pricing for customizable AI templates and intelligent AI agents. Explore cost-effective plans designed for businesses of all sizes.',
+  },
+}
 
 export const dynamic = 'force-dynamic'
 

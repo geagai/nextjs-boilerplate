@@ -4,8 +4,19 @@ import { ContactForm } from '@/components/contact-form'
 import { createClient } from '@/lib/supabase'
 
 export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Get in touch with our team'
+  title: 'Contact Geag AI – Reach Out for AI Solutions & Support',
+  description: 'Get in touch with Geag AI to explore advanced AI technologies, request support, or inquire about our innovative artificial intelligence solutions. Contact us today!',
+  keywords: 'contact Geag AI, AI support, artificial intelligence solutions, AI consultation, business AI',
+  openGraph: {
+    title: 'Contact Geag AI – Reach Out for AI Solutions & Support',
+    description: 'Get in touch with Geag AI to explore advanced AI technologies, request support, or inquire about our innovative artificial intelligence solutions. Contact us today!',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact Geag AI – Reach Out for AI Solutions & Support',
+    description: 'Get in touch with Geag AI to explore advanced AI technologies, request support, or inquire about our innovative artificial intelligence solutions. Contact us today!',
+  },
 }
 
 export default async function ContactPage() {
