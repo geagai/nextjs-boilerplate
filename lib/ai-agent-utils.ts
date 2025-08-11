@@ -134,8 +134,9 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
     
+    let response;
     try {
-      const response = await fetch(agent.api_url, {
+      response = await fetch(agent.api_url, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
