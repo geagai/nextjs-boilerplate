@@ -249,7 +249,14 @@ export function useChat({
       }
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      let errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      
+      // Provide more user-friendly error messages for common timeout scenarios
+      if (errorMessage.includes('timeout') || errorMessage.includes('abort')) {
+        errorMessage = 'The request took too long to complete. This might be due to a complex query or high server load. Please try again with a simpler request or contact support if the issue persists.'
+      } else if (errorMessage.includes('fetch')) {
+        errorMessage = 'Unable to connect to the AI service. Please check your internet connection and try again.'
+      }
       
       updateMessage(assistantMessage.id, {
         content: '',

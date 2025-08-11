@@ -130,12 +130,26 @@ export async function callAgentApi(options: ApiCallOptions): Promise<ApiResponse
       ...agent.config?.headers || {}
     }
     
-    // Make API call
-    const response = await fetch(agent.api_url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(requestBody)
-    })
+    // Make API call with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    
+    try {
+      const response = await fetch(agent.api_url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timed out after 5 minutes');
+      }
+      throw error;
+    }
     
     if (!response.ok) {
       throw new Error(`API call failed with status ${response.status}: ${response.statusText}`)

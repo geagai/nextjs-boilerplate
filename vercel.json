@@ -11,5 +11,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "functions": {
+    "app/api/agents/messages/route.ts": {
+      "maxDuration": 300
+    }
+  }
 } 
