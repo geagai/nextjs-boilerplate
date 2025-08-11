@@ -4,7 +4,6 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { getServerSession } from '@/lib/auth'
 import type { Metadata } from 'next'
-import { searchParams } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 
@@ -26,10 +25,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function AgentsPage() {
-  // Get searchParams directly from the URL
-  const params = await searchParams();
-  const resolvedSearchParams = { cat: params.get('cat') || undefined };
+export default async function AgentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cat?: string }>
+}) {
+  const resolvedSearchParams = await searchParams;
   // Optional server-side auth check - don't redirect if not logged in
   let user = null;
   let isAdmin = false;

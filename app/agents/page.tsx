@@ -60,5 +60,5 @@ export default async function AgentsRoute({
     );
   }
 
-  return <AgentsPage />;
+  return <AgentsPage searchParams={resolvedSearchParams} />;
 } 
