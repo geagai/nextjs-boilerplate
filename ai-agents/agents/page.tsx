@@ -28,8 +28,9 @@ export const metadata: Metadata = {
 export default async function AgentsPage({
   searchParams,
 }: {
-  searchParams: { cat?: string }
+  searchParams: Promise<{ cat?: string }>
 }) {
+  const resolvedSearchParams = await searchParams;
   // Optional server-side auth check - don't redirect if not logged in
   let user = null;
   let isAdmin = false;
@@ -82,7 +83,7 @@ export default async function AgentsPage({
       .join(' ');
   };
 
-  const transformedCategory = transformCategory(searchParams.cat);
+  const transformedCategory = transformCategory(resolvedSearchParams.cat);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">

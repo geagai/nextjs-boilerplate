@@ -36,11 +36,12 @@ const AddonMissing = ({ addonName, purchaseUrl }: { addonName: string; purchaseU
   </div>
 );
 
-export default function AgentsRoute({
+export default async function AgentsRoute({
   searchParams,
 }: {
-  searchParams: { cat?: string }
+  searchParams: Promise<{ cat?: string }>
 }) {
+  const resolvedSearchParams = await searchParams;
   let AgentsPage: React.ComponentType | null = null;
   try {
     // eslint-disable-next-line
@@ -59,5 +60,5 @@ export default function AgentsRoute({
     );
   }
 
-  return <AgentsPage searchParams={searchParams} />;
+  return <AgentsPage searchParams={resolvedSearchParams} />;
 } 
