@@ -42,7 +42,7 @@ export default async function AgentsRoute({
   searchParams: Promise<{ cat?: string }>
 }) {
   const resolvedSearchParams = await searchParams;
-  let AgentsPage: React.ComponentType | null = null;
+  let AgentsPage: React.ComponentType<{ searchParams: { cat?: string } }> | null = null;
   try {
     // eslint-disable-next-line
     const mod = require('../../ai-agents/agents/page');
