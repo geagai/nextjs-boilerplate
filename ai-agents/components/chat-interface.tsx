@@ -130,6 +130,13 @@ export function ChatInterface({
     }
   })
 
+  // Force reload messages when sessionId changes
+  useEffect(() => {
+    if (sessionId && currentUser?.id) {
+      loadHistory()
+    }
+  }, [sessionId, currentUser?.id, loadHistory])
+
   // Draggable input handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only enable on desktop (screen width > 768px)

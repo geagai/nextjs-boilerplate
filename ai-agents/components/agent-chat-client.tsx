@@ -72,6 +72,25 @@ export function AgentChatClient({
     setSelectedSessionId(serverSessionId || null)
   }, [serverSessionId])
 
+  // Listen for URL changes to sync with browser navigation
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const sessionIdFromUrl = urlParams.get('sessionId')
+      setSelectedSessionId(sessionIdFromUrl)
+    }
+
+    // Listen for popstate events (back/forward navigation)
+    window.addEventListener('popstate', handleUrlChange)
+    
+    // Also check URL on mount
+    handleUrlChange()
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange)
+    }
+  }, [])
+
   return (
     <div className="flex bg-background" style={{ height: 'calc(100vh - 100px)' }}>
       {/* Chat History Sidebar */}

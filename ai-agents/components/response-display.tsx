@@ -88,12 +88,6 @@ export function ResponseDisplay({
 
   const formatContent = (content: string, isExpanded: boolean = false) => {
     const formatted = formatMessageContent(content)
-    
-    // Truncate long content if not expanded
-    if (!isExpanded && formatted.length > 1000) {
-      return formatted.substring(0, 1000) + '...'
-    }
-    
     return formatted
   }
 
@@ -168,13 +162,15 @@ export function ResponseDisplay({
           return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.9rem' }}>{formattedContent}</div>
         }
       
-      case 'html':
-        return (
-          <div 
-            className="prose prose-sm max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: formattedContent }}
-          />
-        )
+             case 'html':
+         // Convert \n to <br /> tags for proper HTML line breaks
+         const htmlWithLineBreaks = formattedContent.replace(/\\n/g, '<br />')
+         return (
+           <div 
+             className="prose prose-sm max-w-none dark:prose-invert"
+             dangerouslySetInnerHTML={{ __html: htmlWithLineBreaks }}
+           />
+         )
       
       case 'markdown':
         return (
@@ -294,7 +290,7 @@ export function ResponseDisplay({
   const MessageComponent = ({ message }: { message: Message }) => {
     const contentType = detectContentType(message.content)
     const isExpanded = expandedMessages.has(message.id)
-    const needsExpansion = message.content.length > 1000
+    const needsExpansion = false
 
     return (
       <div
