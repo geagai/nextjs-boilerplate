@@ -28,9 +28,9 @@ export const metadata: Metadata = {
 export default async function AgentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string }>
+  searchParams: { cat?: string }
 }) {
-  const resolvedSearchParams = await searchParams;
+  const resolvedSearchParams = searchParams;
   // Optional server-side auth check - don't redirect if not logged in
   let user = null;
   let isAdmin = false;
