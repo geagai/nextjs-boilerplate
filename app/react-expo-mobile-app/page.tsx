@@ -1,6 +1,6 @@
-import { NextJSBoilerplateHero } from '@/components/nextjs-boilerplate-hero'
-import { TechStack } from '@/components/tech-stack'
-import { Features } from '@/components/features'
+import { MobileHero } from '@/components/mobile-hero'
+import { TechStackMobile } from '@/components/tech-stack-mobile'
+import { FeaturesMobile } from '@/components/features-mobile'
 import { PricingCards } from '@/components/pricing/pricing-cards'
 import { getServerSession } from '@/lib/auth'
 import { getStripeProductsCached } from '@/lib/stripe-cache'
@@ -8,28 +8,28 @@ import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import { MobileShowcase } from '@/components/mobile-showcase'
+import { MobileShowcaseMobile } from '@/components/mobile-showcase-mobile'
 import { DeveloperExperience } from '@/components/developer-experience'
 import { ContactSection } from '@/components/contact-section'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
-  description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
-  keywords: 'NextJS, boilerplate, authentication, payments, mobile, React, TypeScript, Supabase, Stripe',
+  title: 'React Expo Mobile App with AI Features & Billing | Ship Faster',
+  description: 'Jumpstart your mobile app development with a battle-tested React Native Expo template featuring AI chat, task management, image analysis, authentication, and integrated billing solutions.',
+  keywords: 'React Native, Expo, mobile app, AI chat, task manager, image analysis, authentication, billing, Supabase, Stripe, RevenueCat',
   openGraph: {
-    title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
-    description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
+    title: 'React Expo Mobile App with AI Features & Billing | Ship Faster',
+    description: 'Jumpstart your mobile app development with a battle-tested React Native Expo template featuring AI chat, task management, image analysis, authentication, and integrated billing solutions.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NextJS Boilerplate with Authentication, Payments & Mobile Support | Ship Faster',
-    description: 'Jumpstart your NextJS projects with a battle-tested boilerplate featuring authentication, payments, mobile compatibility, testing, and essential integrations for rapid build and deployment.',
+    title: 'React Expo Mobile App with AI Features & Billing | Ship Faster',
+    description: 'Jumpstart your mobile app development with a battle-tested React Native Expo template featuring AI chat, task management, image analysis, authentication, and integrated billing solutions.',
   },
 }
 
-export default async function NextjsBoilerplatePage() {
+export default async function ReactExpoMobileAppPage() {
   const sessionData = await getServerSession();
 
   // Use only .env variables for Stripe config (match /pricing)
@@ -38,7 +38,7 @@ export default async function NextjsBoilerplatePage() {
 
   return (
     <div className="min-h-screen">
-      <NextJSBoilerplateHero />
+      <MobileHero />
       
       {/* Membership Description */}
       <section className="py-8">
@@ -51,8 +51,8 @@ export default async function NextjsBoilerplatePage() {
         </div>
       </section>
       
-      <TechStack />
-      <Features />
+      <TechStackMobile />
+      <FeaturesMobile />
       {/* Replace PricingSection with PricingCards logic */}
       {hasStripeConfig ? (
         <PricingCards 
@@ -78,9 +78,9 @@ export default async function NextjsBoilerplatePage() {
           </div>
         </div>
       )}
-      <MobileShowcase />
+      <MobileShowcaseMobile />
       <DeveloperExperience />
       <ContactSection />
     </div>
   );
-} 
+}

@@ -302,7 +302,10 @@ export function PricingCards({ session, products, publishableKey, columns = 4, c
                         {marketingFeatures.slice(0, 8).map((feature, idx) => (
                           <li key={idx} className="flex items-start">
                             <Check className="h-4 w-4 text-primary mt-0.5 mr-3 flex-shrink-0" />
-                            <span className="text-sm">{feature}</span>
+                            <span 
+                              className="text-sm" 
+                              dangerouslySetInnerHTML={{ __html: feature }}
+                            />
                           </li>
                         ))}
                       </ul>

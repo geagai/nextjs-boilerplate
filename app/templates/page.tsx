@@ -53,17 +53,17 @@ export default function TemplatesPage() {
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* NextJS Boilerplate Template */}
-            <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
-              <Link href="/nextjs-boilerplate" className="block">
-                                 <div className="relative h-64 bg-muted">
-                  <Image
-                    src="/nextjs-boilerplate.png"
-                    alt="NextJS Boilerplate Application"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+                         {/* NextJS Boilerplate Template */}
+             <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
+               <Link href="/nextjs-boilerplate" className="block">
+                                  <div className="relative h-80 bg-muted">
+                   <Image
+                     src="/nextjs-boilerplate.png"
+                     alt="NextJS Boilerplate Application"
+                     fill
+                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                   />
+                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                     NextJS Boilerplate Application
@@ -83,24 +83,34 @@ export default function TemplatesPage() {
               </Link>
             </div>
 
-            {/* Placeholder for future template */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden opacity-50">
-                             <div className="h-64 bg-muted flex items-center justify-center">
-                <div className="text-center">
-                  <svg className="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  <p className="text-muted-foreground">More templates coming soon</p>
+                         {/* React Expo Mobile App Template */}
+             <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
+               <Link href="/react-expo-mobile-app" className="block">
+                 <div className="relative h-80 bg-muted">
+                   <Image
+                     src="/mobile-boilerplate.png"
+                     alt="React Expo Mobile App"
+                     fill
+                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                   />
+                 </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+                    React Expo Mobile App
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Complete mobile application template with AI-powered features, user authentication, 
+                    task management, and image analysis. Built with React Native, Expo, Supabase, and 
+                    integrated billing solutions for rapid mobile app development.
+                  </p>
+                  <div className="flex items-center text-primary font-medium group-hover:underline">
+                    Explore Template
+                    <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-3 text-muted-foreground">
-                  Coming Soon
-                </h3>
-                <p className="text-muted-foreground">
-                  We're working on more production-ready templates to help you build faster.
-                </p>
-              </div>
+              </Link>
             </div>
 
           </div>
