@@ -97,7 +97,7 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/nextjs-boilerplate">
+            <Link href="/templates">
               <Button size="lg" variant="outline" className="px-8 py-6">
                 View Templates
               </Button>

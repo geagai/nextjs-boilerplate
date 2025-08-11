@@ -238,7 +238,13 @@ export function ResponseDisplay({
         )
       
       default:
-        return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.9rem' }}>{formattedContent}</div>
+        return <div className="whitespace-pre-wrap break-words" style={{ fontSize: '0.9rem' }}>
+          {formattedContent.split('\n').map((line, index) => (
+            <div key={index} style={{ marginTop: index > 0 ? '10px' : '0', marginBottom: index < formattedContent.split('\n').length - 1 ? '10px' : '0' }}>
+              {line}
+            </div>
+          ))}
+        </div>
     }
   }
 
@@ -464,10 +470,15 @@ export function ResponseDisplay({
            margin-bottom: 20px !important;
            padding-left: 1.25rem !important;
          }
-         .prose li {
-           display: list-item !important;
-           margin-bottom: 0.25rem !important;
-         }
+                   .prose li {
+            display: list-item !important;
+            margin-bottom: 0.25rem !important;
+          }
+          .prose hr {
+            margin-top: 20px !important;
+            margin-bottom: 20px !important;
+            border-color: hsl(var(--border)) !important;
+          }
        `}</style>
       <ScrollArea className="max-h-[60vh]">
         <div className="space-y-4 p-1">

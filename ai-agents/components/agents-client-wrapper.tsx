@@ -17,11 +17,12 @@ interface AgentsClientWrapperProps {
   agents: Agent[]
   user: any
   isAdmin: boolean
+  initialCategory?: string
 }
 
-export function AgentsClientWrapper({ agents, user, isAdmin }: AgentsClientWrapperProps) {
+export function AgentsClientWrapper({ agents, user, isAdmin, initialCategory }: AgentsClientWrapperProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Extract categories from agents - split comma-separated categories

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Send, AlertCircle, Bot, GripVertical, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp } from 'lucide-react'
+import { Loader2, Send, AlertCircle, Bot, GripVertical, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp, Heart } from 'lucide-react'
 import { DynamicFormFields } from './dynamic-form-fields'
 import { ResponseDisplay } from './response-display'
 import { useChat } from '../hooks/use-chat'
@@ -26,6 +26,7 @@ function renderAgentIcon(icon: any) {
   if (icon === 'MessageSquare') return <MessageSquare className="w-5 h-5 text-primary" />;
   if (icon === 'PenTool') return <PenTool className="w-5 h-5 text-primary" />;
   if (icon === 'TrendingUp') return <TrendingUp className="w-5 h-5 text-primary" />;
+  if (icon === 'Heart') return <Heart className="w-5 h-5 text-primary" />;
   // Emoji or fallback
   if (typeof icon === 'string' && /\p{Emoji}/u.test(icon)) {
     return <span className="w-5 h-5 inline-block text-lg">{icon}</span>;

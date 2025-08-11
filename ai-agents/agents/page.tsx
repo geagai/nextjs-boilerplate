@@ -25,7 +25,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function AgentsPage() {
+export default async function AgentsPage({
+  searchParams,
+}: {
+  searchParams: { cat?: string }
+}) {
   // Optional server-side auth check - don't redirect if not logged in
   let user = null;
   let isAdmin = false;
@@ -66,6 +70,20 @@ export default async function AgentsPage() {
   // Extract categories
   const categories = Array.from(new Set(processedAgents.map((a: any) => a.category).filter(Boolean)));
 
+  // Transform category parameter to match database format
+  const transformCategory = (cat: string | undefined): string | undefined => {
+    if (!cat) return undefined;
+    
+    // Replace hyphens with spaces and convert to title case
+    return cat
+      .replace(/-/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  const transformedCategory = transformCategory(searchParams.cat);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
@@ -93,6 +111,7 @@ export default async function AgentsPage() {
         agents={processedAgents}
         user={user}
         isAdmin={isAdmin}
+        initialCategory={transformedCategory}
       />
     </div>
   )

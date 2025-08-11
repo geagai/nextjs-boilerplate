@@ -39,6 +39,18 @@ export default async function NextjsBoilerplatePage() {
   return (
     <div className="min-h-screen">
       <NextJSBoilerplateHero />
+      
+      {/* Membership Description */}
+      <section className="py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white border border-[#d8d8d8] rounded-lg p-6">
+            <p className="text-muted-foreground leading-relaxed">
+              Get access to all templates with the <strong>AI Elite Membership</strong>. This membership comes with instant access to all template, 5,000 monthly AI Credits, vibe coding video tutorials showing you how to launch your AI application idea in a day, access to the AI Business Idea Skool community, professional assistance consultations and much more. See the <Link href="/pricing" className="text-primary hover:underline">Pricing Page</Link> for more information.
+            </p>
+          </div>
+        </div>
+      </section>
+      
       <TechStack />
       <Features />
       {/* Replace PricingSection with PricingCards logic */}

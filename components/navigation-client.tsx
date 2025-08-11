@@ -58,8 +58,8 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href={aiAgentsHref} className="text-link hover:text-link-hover font-medium transition-colors px-4">
               AI Agents
             </Link>
-            <Link href="/nextjs-boilerplate" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              Vibe
+            <Link href="/templates" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Templates
             </Link>
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
@@ -198,8 +198,8 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href={aiAgentsHref} onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               AI Agents
             </Link>
-            <Link href="/nextjs-boilerplate" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-              Vibe
+            <Link href="/templates" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Templates
             </Link>
             <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Pricing

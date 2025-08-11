@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { generateSessionId } from '@/lib/ai-agent-utils'
 import { Button } from '@/components/ui/button'
 import { ChatInterface } from '@/ai-agents/components/chat-interface'
-import { ArrowLeft, Bot, Loader2, Settings, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Bot, Loader2, Settings, Brain, Target, Zap, Code, MessageSquare, PenTool, TrendingUp, Heart } from 'lucide-react'
 import Link from 'next/link'
 import { SessionSidebar } from '@/ai-agents/components/session-sidebar'
 import { AgentConfigSidebar } from '@/ai-agents/components/agent-config-sidebar'
@@ -28,6 +28,7 @@ function renderAgentIcon(icon: any) {
   if (icon === 'MessageSquare') return <MessageSquare className="w-5 h-5 text-primary" />;
   if (icon === 'PenTool') return <PenTool className="w-5 h-5 text-primary" />;
   if (icon === 'TrendingUp') return <TrendingUp className="w-5 h-5 text-primary" />;
+  if (icon === 'Heart') return <Heart className="w-5 h-5 text-primary" />;
   // Emoji or fallback
   if (typeof icon === 'string' && /\p{Emoji}/u.test(icon)) {
     return <span className="w-5 h-5 inline-block text-lg">{icon}</span>;
