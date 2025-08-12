@@ -14,8 +14,31 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
     color: adminSettings?.button_text_color || adminSettings?.dark_button_text_color || '#ffffff'
   }
 
+  const getPrimaryButtonStyle = () => {
+    // Check if we're in dark mode by looking at the document
+    if (typeof window !== 'undefined') {
+      const isDark = document.documentElement.classList.contains('dark')
+      if (isDark) {
+        return {
+          backgroundColor: adminSettings?.dark_primary_color || adminSettings?.dark_button_color || '#3872BB',
+          color: adminSettings?.dark_button_text_color || '#ffffff'
+        }
+      } else {
+        return {
+          backgroundColor: adminSettings?.primary_color || adminSettings?.button_color || '#3872BB',
+          color: adminSettings?.button_text_color || '#ffffff'
+        }
+      }
+    }
+    // Default fallback
+    return {
+      backgroundColor: adminSettings?.primary_color || adminSettings?.button_color || '#3872BB',
+      color: adminSettings?.button_text_color || '#ffffff'
+    }
+  }
+
   return (
-    <section className="relative min-h-[62vh] flex items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(56,114,187,0.10),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(56,114,187,0.08),transparent_45%)]">
+    <section className="relative min-h-[62vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-primary/5 to-primary/10">
       {/* Background Pattern */}
       <div className="absolute inset-0 hero-pattern opacity-40" />
 
@@ -69,11 +92,11 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl sm:text-6xl font-bold tracking-tight"
+            className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight"
           >
             Advanced <span className="gradient-text">AI Agents</span> for
             <br />
-            Developers and <span className="gradient-text">Teams</span>
+            Businesses and <span className="gradient-text">Developers</span>
           </motion.h1>
 
           <motion.p
@@ -94,11 +117,10 @@ export default function HeroClient({ adminSettings }: HeroClientProps) {
             <Link href="/agents">
               <Button size="lg" className="px-8 py-6 btn-glow">
                 Explore Agents
-                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/templates">
-              <Button size="lg" variant="outline" className="px-8 py-6">
+              <Button size="lg" className="px-8 py-6" style={getPrimaryButtonStyle()}>
                 View Templates
               </Button>
             </Link>

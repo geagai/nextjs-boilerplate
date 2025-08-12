@@ -61,6 +61,9 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href="/templates" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Templates
             </Link>
+            <Link href="/development" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+              Development
+            </Link>
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
             </Link>
@@ -201,6 +204,9 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href="/templates" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Templates
             </Link>
+            <Link href="/development" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+              Development
+            </Link>
             <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Pricing
             </Link>
@@ -247,25 +253,36 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
               </Button>
             ) : (
               <>
-                <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full py-2"
-                    style={{ 
-                      backgroundColor: 'transparent',
-                      borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
-                      color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
-                    }}
-                  >
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full py-2 bg-primary hover:bg-primary/90" style={getStartedButtonStyle}>
-                    Get Started
-                  </Button>
-                </Link>
+                <div className="my-2.5">
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full py-2"
+                      style={{ 
+                        backgroundColor: 'transparent',
+                        borderColor: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)',
+                        color: theme === 'dark' ? 'var(--dark-primary)' : 'var(--primary)'
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
+                <div className="my-2.5">
+                  <Link href="/signup" onClick={() => setIsOpen(false)}>
+                    <Button 
+                      size="sm" 
+                      className="w-full py-2" 
+                      style={{
+                        backgroundColor: adminSettings?.primary_color || adminSettings?.button_color || '#3872BB',
+                        color: adminSettings?.button_text_color || '#ffffff'
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
               </>
             )}
           </div>

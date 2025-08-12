@@ -86,34 +86,47 @@ export default async function AgentsPage({
   const transformedCategory = transformCategory(resolvedSearchParams.cat);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="relative flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1 pr-32">
-            <h1 className="text-3xl font-bold text-primary mb-2">Advanced AI Agents</h1>
-            <p className="text-muted-foreground">
+    <>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-primary/5 to-primary/10">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 hero-pattern opacity-40" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-12 pb-16">
+          <div>
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight mb-6">
+              Advanced <span className="gradient-text">AI Agents</span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-[800px] mx-auto leading-relaxed mb-16">
               Discover powerful AI agents designed to revolutionize your workflow. From content creation to data analysis, our intelligent assistants help you automate complex tasks and boost productivity. Our software development agents can generate code, debug issues, create documentation, and assist with project planning. Whether you're building web applications, mobile apps, or enterprise solutions, our AI agents provide expert guidance and accelerate your development process.
             </p>
+
+            {isAdmin && (
+              <div className="flex justify-center">
+                <Link href="/create-agent">
+                  <Button size="lg" className="px-8 py-6 btn-glow">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Agent
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
-          {isAdmin && (
-            <Link href="/create-agent" className="absolute right-0 top-0">
-              <Button className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Create Agent
-              </Button>
-            </Link>
-          )}
         </div>
-      </div>
+
+        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      </section>
 
       {/* Content */}
-      <AgentsClientWrapper
-        agents={processedAgents}
-        user={user}
-        isAdmin={isAdmin}
-        initialCategory={transformedCategory}
-      />
-    </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <AgentsClientWrapper
+          agents={processedAgents}
+          user={user}
+          isAdmin={isAdmin}
+          initialCategory={transformedCategory}
+        />
+      </div>
+    </>
   )
 } 
