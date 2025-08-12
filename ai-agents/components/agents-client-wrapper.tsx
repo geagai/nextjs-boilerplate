@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { AgentList } from '@/ai-agents/components/agent-list'
 import { AgentsControls } from '@/ai-agents/components/agents-controls'
+import { ComingSoonAgents } from '@/ai-agents/components/coming-soon-agents'
 
 interface Agent {
   id: string
@@ -104,6 +105,9 @@ export function AgentsClientWrapper({ agents, user, isAdmin, initialCategory }: 
           {searchQuery && ` matching "${searchQuery}"`}
         </div>
       )}
+
+      {/* Coming Soon Agents */}
+      <ComingSoonAgents />
     </>
   )
 } 

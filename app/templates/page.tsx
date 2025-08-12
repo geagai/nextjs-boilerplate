@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import { TemplatesHero } from '@/components/templates-hero'
 
 export const metadata: Metadata = {
   title: 'Templates & Repos – Production Ready Software Templates',
@@ -21,21 +22,7 @@ export const metadata: Metadata = {
 export default function TemplatesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Hero Section */}
-      <section className="pt-16 pb-24 mb-8 bg-gradient-to-br from-primary to-secondary dark:from-background dark:to-muted/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 text-white dark:text-foreground">
-              Templates & Repos
-            </h1>
-            <p className="text-xl text-white/90 dark:text-muted-foreground leading-relaxed">
-              Jumpstart your next project with our collection of production-ready software templates. 
-              Each template is battle-tested and includes essential features like authentication, payments, 
-              and modern development practices to help you ship faster.
-            </p>
-          </div>
-        </div>
-      </section>
+      <TemplatesHero />
 
              {/* Membership Description */}
        <section className="pb-8">
