@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from '@/lib/auth'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { SubscriptionCard } from '@/components/dashboard/subscription-card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Crown } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
@@ -107,6 +110,22 @@ export default async function DashboardPage() {
     }
   }
 
+  // Fetch software templates
+  let softwareTemplates: Array<{
+    template_name: string
+    description: string
+    link: string
+    version: string
+  }> = []
+  {
+    const { data } = await supabase
+      .from('software_templates')
+      .select('template_name, description, link, version')
+    if (data) {
+      softwareTemplates = data as any
+    }
+  }
+
   // Create user object that matches expected format
   const userWithMetadata = {
     id: dbUID,
@@ -133,6 +152,45 @@ export default async function DashboardPage() {
             <div className="space-y-8">
               <SubscriptionCard subscription={userWithMetadata.subscription} subscriptions={userSubscriptions} className="mt-[20px]" />
               <SubscriptionCard purchases={allPurchases} isPurchasesBlock className="mt-8" />
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Crown className="h-5 w-5 mr-2 text-primary" />
+                    Software Templates
+                  </CardTitle>
+                  <CardDescription>
+                    
+                  </CardDescription>
+                </CardHeader>
+                {softwareTemplates.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Template Name</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Version</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Link</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-100">
+                        {softwareTemplates.map((tpl, idx) => (
+                          <tr key={idx}>
+                            <td className="px-4 py-2 text-xs break-all">{tpl.template_name}</td>
+                            <td className="px-4 py-2 text-xs">{tpl.description}</td>
+                            <td className="px-4 py-2 text-xs">{tpl.version}</td>
+                            <td className="px-4 py-2 text-xs">
+                              <a href={tpl.link} target="_blank" rel="noopener noreferrer">
+                                <Button size="sm">View Repo</Button>
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
             </div>
           </>
         )}

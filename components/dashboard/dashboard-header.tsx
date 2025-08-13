@@ -65,7 +65,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Credits</p>
-                <p className="font-semibold text-green-600">{user.credits ?? 0}</p>
+                <p className="font-semibold text-green-600">{Math.round(user.credits ?? 0)}</p>
               </div>
             </div>
           </CardContent>

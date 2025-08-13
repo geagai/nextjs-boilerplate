@@ -1,11 +1,7 @@
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase'
 import { getServerSession } from '@/lib/auth'
 import type { Metadata } from 'next'
-
-import { Button } from '@/components/ui/button'
 
 import { AgentsClientWrapper } from '@/ai-agents/components/agents-client-wrapper'
 
@@ -101,17 +97,6 @@ export default async function AgentsPage({
             <p className="text-lg sm:text-xl text-muted-foreground max-w-[800px] mx-auto leading-relaxed mb-16">
               Discover powerful AI agents designed to revolutionize your workflow. From content creation to data analysis, our intelligent assistants help you automate complex tasks and boost productivity. Our software development agents can generate code, debug issues, create documentation, and assist with project planning. Whether you're building web applications, mobile apps, or enterprise solutions, our AI agents provide expert guidance and accelerate your development process.
             </p>
-
-            {isAdmin && (
-              <div className="flex justify-center">
-                <Link href="/create-agent">
-                  <Button size="lg" className="px-8 py-6 btn-glow">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Agent
-                  </Button>
-                </Link>
-              </div>
-            )}
           </div>
         </div>
 

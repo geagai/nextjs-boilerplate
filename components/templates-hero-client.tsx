@@ -134,3 +134,4 @@ export default function TemplatesHeroClient({ adminSettings }: TemplatesHeroClie
     </section>
   )
 }
+

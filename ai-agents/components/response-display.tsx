@@ -66,7 +66,10 @@ export function ResponseDisplay({
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set())
 
-  const handleCopy = async (content: string, messageId: string) => {
+  const handleCopy = async (content: string, messageId: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.preventDefault()
+    }
     try {
       await navigator.clipboard.writeText(content)
       setCopiedId(messageId)
@@ -401,7 +404,11 @@ export function ResponseDisplay({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleCopy(message.content, message.id)}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleCopy(message.content, message.id, e)
+                        }}
                         className="text-xs"
                       >
                         {copiedId === message.id ? (

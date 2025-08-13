@@ -8,3 +8,4 @@ export async function TemplatesHero() {
 
   return <TemplatesHeroClient adminSettings={adminSettings} />
 }
+
