@@ -30,7 +30,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
   const baseClasses = 'z-50 border-b'
   const positionClass = sticky ? 'sticky top-0' : 'relative'
 
-  const aiAgentsHref = '/agents'
+
 
   // Custom style for Get Started button - default to white text when no admin setting
   const getStartedButtonStyle = {
@@ -55,15 +55,9 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href="/" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Home
             </Link>
-            <Link href={aiAgentsHref} className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              AI Agents
-            </Link>
-            <Link href="/templates" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              Templates
-            </Link>
-            <Link href="/development" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-              Development
-            </Link>
+
+
+
             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
               Pricing
             </Link>
@@ -91,24 +85,14 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                       <span>My Products</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-agents" className="flex items-center space-x-2">
-                      <Settings className="h-4 w-4" />
-                      <span>My Agents</span>
-                    </Link>
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem asChild>
                     <Link href="/create-product-stripe" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
                       <span>Create Product</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/create-agent" className="flex items-center space-x-2">
-                      <Settings className="h-4 w-4" />
-                      <span>Create Agent</span>
-                    </Link>
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem asChild>
                     <Link href="/admin-submissions" className="flex items-center space-x-2">
                       <Settings className="h-4 w-4" />
@@ -198,15 +182,9 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
             <Link href="/" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Home
             </Link>
-            <Link href={aiAgentsHref} onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-              AI Agents
-            </Link>
-            <Link href="/templates" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-              Templates
-            </Link>
-            <Link href="/development" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-              Development
-            </Link>
+
+
+
             <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
               Pricing
             </Link>

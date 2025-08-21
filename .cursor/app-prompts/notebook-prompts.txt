@@ -1,3 +1,0 @@
-- Do not use enumerated citations in your response. I want you to give me a detailed breakdown of the app discussed in this video in the form of a business plan. I want you to use this format: https://www.ideabrowser.com/idea/ai-hackathon-as-a-service-platform
-
-- Give me the last response but use <h3> tags for headlines, <ul> tags for unordered lists, <ol> tags for ordered lists, html tables and <strong> tags for bold text. Do not use markdown format.

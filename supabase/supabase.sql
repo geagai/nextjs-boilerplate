@@ -51,32 +51,7 @@ CREATE TABLE IF NOT EXISTS admin_settings (
   repo text
 );
 
--- Table: agents
-CREATE TABLE IF NOT EXISTS agents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  "UID" uuid NOT NULL REFERENCES auth.users(id),
-  name text NOT NULL,
-  description text,
-  api_url text,
-  prompt text,
-  agent_role text,
-  is_public boolean DEFAULT false,
-  config jsonb DEFAULT '{}',
-  category text
-);
 
--- Table: agent_messages
-CREATE TABLE IF NOT EXISTS agent_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id text,
-  created_at timestamptz DEFAULT now(),
-  "UID" text,
-  agent_id text,
-  prompt text,
-  message text
-);
 
 -- Table: subscriptions
 CREATE TABLE IF NOT EXISTS subscriptions (
@@ -209,34 +184,7 @@ CREATE POLICY "Allow admins full access to admin settings" ON admin_settings FOR
   )
 );
 
--- Agents
-ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all users to read agents" ON agents FOR SELECT USING (true);
-CREATE POLICY "Allow select public agents" ON agents FOR SELECT USING (is_public = true);
-CREATE POLICY "Allow users to select their own agents" ON agents FOR SELECT USING ("UID" = auth.uid());
-CREATE POLICY "Users and admins can update their own agents" ON agents FOR UPDATE USING (
-  "UID" = auth.uid() OR
-  EXISTS (
-    SELECT 1 FROM user_data WHERE user_data."UID" = auth.uid() AND user_data.user_role = 'admin'
-  )
-);
 
--- Agent Messages
-ALTER TABLE agent_messages ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can insert their own agent messages" ON agent_messages FOR INSERT WITH CHECK (
-  (auth.uid())::text = "UID"
-);
-CREATE POLICY "Users can update their own agent messages" ON agent_messages FOR UPDATE USING (
-  (auth.uid())::text = "UID"
-) WITH CHECK (
-  (auth.uid())::text = "UID"
-);
-CREATE POLICY "Users can delete their own agent messages" ON agent_messages FOR DELETE USING (
-  (auth.uid())::text = "UID"
-);
-CREATE POLICY "Users can view their own agent messages" ON agent_messages FOR SELECT USING (
-  (auth.uid())::text = "UID"
-);
 
 -- Subscriptions
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
