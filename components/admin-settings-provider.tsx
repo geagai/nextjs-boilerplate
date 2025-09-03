@@ -24,6 +24,8 @@ interface AdminSettings {
   link_hover_color?: string | null;
   dark_link_color?: string | null;
   dark_link_hover_color?: string | null;
+  secondary_color?: string | null;
+  dark_secondary_color?: string | null;
 }
 
 interface ButtonStyles {
@@ -74,6 +76,8 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
           link_hover_color: (cachedSettings as AdminSettings).link_hover_color ?? null,
           dark_link_color: (cachedSettings as AdminSettings).dark_link_color ?? null,
           dark_link_hover_color: (cachedSettings as AdminSettings).dark_link_hover_color ?? null,
+          secondary_color: (cachedSettings as AdminSettings).secondary_color ?? null,
+          dark_secondary_color: (cachedSettings as AdminSettings).dark_secondary_color ?? null,
         });
       }
     } catch (error) {
@@ -108,6 +112,8 @@ export function AdminSettingsProvider({ children }: { children: React.ReactNode 
           link_hover_color: (freshSettings as AdminSettings).link_hover_color ?? null,
           dark_link_color: (freshSettings as AdminSettings).dark_link_color ?? null,
           dark_link_hover_color: (freshSettings as AdminSettings).dark_link_hover_color ?? null,
+          secondary_color: (freshSettings as AdminSettings).secondary_color ?? null,
+          dark_secondary_color: (freshSettings as AdminSettings).dark_secondary_color ?? null,
         });
       }
     } catch (error) {

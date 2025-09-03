@@ -15,6 +15,18 @@
   "functions": {
     "app/api/agents/messages/route.ts": {
       "maxDuration": 300
+    },
+    "app/api/leads/get-email/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/leads/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/leads/save/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/leads/[id]/route.ts": {
+      "maxDuration": 300
     }
   }
 } 

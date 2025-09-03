@@ -18,6 +18,29 @@ const nextConfig = {
     unoptimized: true,
     domains: ['i.pinimg.com', 'logospng.org', 'static.vecteezy.com']
   },
+  // Increase timeout for API routes
+  serverRuntimeConfig: {
+    // Will only be available on the server side
+    maxDuration: 300, // 5 minutes
+  },
+  publicRuntimeConfig: {
+    // Will be available on both server and client
+    maxDuration: 300, // 5 minutes
+  },
+  // Configure API route timeouts
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'X-Response-Time',
+            value: '300000', // 5 minutes in milliseconds
+          },
+        ],
+      },
+    ]
+  },
 };
 
 // Monkey-patch console.warn to trace Supabase session warning on the server

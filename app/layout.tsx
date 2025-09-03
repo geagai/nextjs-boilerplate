@@ -16,21 +16,21 @@ import { ButtonProvider } from '@/components/ui/button-provider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Geag AI - Advanced AI Solutions for Businesses',
-  description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
-  keywords: 'AI, artificial intelligence, business solutions, automation, machine learning, enterprise AI',
-  authors: [{ name: 'Geag AI Team' }],
+  title: 'Reach Them - AI-Powered Outreach Platform',
+  description: 'Reach Them gives businesses the tools they need to harness the power of AI for automated outreach, lead generation, and customer engagement.',
+  keywords: 'AI outreach, AI calls, AI SMS, AI email, automation, lead generation, customer engagement',
+  authors: [{ name: 'Reach Them Team' }],
   openGraph: {
-    title: 'Geag AI - Advanced AI Solutions for Businesses',
-    description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
-    url: 'https://geag.ai',
-    siteName: 'Geag AI',
+    title: 'Reach Them - AI-Powered Outreach Platform',
+    description: 'Reach Them gives businesses the tools they need to harness the power of AI for automated outreach, lead generation, and customer engagement.',
+    url: 'https://reachthem.ai',
+    siteName: 'Reach Them',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Geag AI - Advanced AI Solutions for Businesses',
-    description: 'Geag AI gives businesses the tools they need to harness the power of Artificial Intelligence for business growth.',
+    title: 'Reach Them - AI-Powered Outreach Platform',
+    description: 'Reach Them gives businesses the tools they need to harness the power of AI for automated outreach, lead generation, and customer engagement.',
   },
   icons: {
     icon: '/favicon.ico',
@@ -57,7 +57,7 @@ export default async function RootLayout({
   let sessionData = null;
   let showHeader = true;
   let stickyHeader = true;
-  let siteName = 'NextGeag BP';
+  let siteName = 'Reach Them';
   let footerBgLight = '#F7F9FB';
   let footerTextLight = '#33363B';
   let footerLinkLight = '#3A72BB';
@@ -98,7 +98,7 @@ export default async function RootLayout({
       settings = dbSettings.data;
       showHeader = settings?.show_header ?? true;
       stickyHeader = settings?.sticky_header ?? true;
-      siteName = settings?.site_name ?? 'NextGeag BP';
+      siteName = 'Reach Them'; // Force hardcoded name, ignore database
       footerBgLight = settings?.footer_background_color ?? '#F7F9FB';
       footerTextLight = settings?.footer_text_color ?? '#33363B';
       footerLinkLight = settings?.footer_link_color ?? '#3A72BB';

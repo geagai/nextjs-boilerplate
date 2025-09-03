@@ -86,6 +86,17 @@ CREATE TABLE IF NOT EXISTS submissions (
   created_at timestamptz DEFAULT timezone('utc', now())
 );
 
+-- Table: email_templates
+CREATE TABLE IF NOT EXISTS email_templates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id text NOT NULL,
+  subject text NOT NULL,
+  body text NOT NULL,
+  signature text,
+  created_at timestamptz DEFAULT timezone('utc', now()),
+  updated_at timestamptz DEFAULT timezone('utc', now())
+);
+
 -- Table: user_data (full live schema)
 CREATE TABLE IF NOT EXISTS user_data (
   "UID" uuid PRIMARY KEY REFERENCES auth.users(id),
@@ -205,6 +216,10 @@ CREATE POLICY "Allow all select on pages" ON pages FOR SELECT USING (true);
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public insert submissions" ON submissions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admins manage submissions" ON submissions FOR ALL USING (is_admin()) WITH CHECK (is_admin());
+
+-- Email Templates
+ALTER TABLE email_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own email templates" ON email_templates FOR ALL USING (user_id = auth.uid()::text) WITH CHECK (user_id = auth.uid()::text);
 
 -- User Data
 ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;

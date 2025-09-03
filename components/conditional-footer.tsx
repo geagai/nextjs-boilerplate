@@ -28,15 +28,13 @@ export function ConditionalFooter({ siteName, bgColor, textColor, linkColor, bgC
   const footerText = isDark ? (textColorDark || textColor) : textColor;
   const footerLink = isDark ? (linkColorDark || linkColor) : linkColor;
   return (
-    <div className="mt-[100px]">
-      <Footer 
-        siteName={siteName} 
-        bgColor={footerBg} 
-        textColor={footerText} 
-        linkColor={footerLink} 
-        htmlOne={htmlOne} 
-        htmlTwo={htmlTwo} 
-      />
-    </div>
+    <Footer 
+      siteName={siteName} 
+      bgColor={footerBg} 
+      textColor={footerText} 
+      linkColor={footerLink} 
+      htmlOne={htmlOne} 
+      htmlTwo={htmlTwo} 
+    />
   )
 } 

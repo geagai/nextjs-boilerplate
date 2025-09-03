@@ -4,7 +4,9 @@ import NavigationClient from './navigation-client'
 
 export const dynamic = 'force-dynamic'
 
-export default async function Navigation({ sticky = true, siteName = 'NextGeag BP' }: { sticky?: boolean, siteName?: string }) {
+export default async function Navigation({ sticky = true, siteName = 'Reach Them' }: { sticky?: boolean, siteName?: string }) {
+  // Force hardcoded site name, ignore any passed value
+  const forcedSiteName = 'Reach Them';
   const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
   
