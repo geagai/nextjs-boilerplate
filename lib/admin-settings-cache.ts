@@ -167,7 +167,7 @@ class AdminSettingsCacheManager {
         return null;
       }
 
-      const settings = data as AdminSettingsCache;
+      const settings = data as unknown as AdminSettingsCache;
       
       // Update all caches
       this.memoryCache = settings;

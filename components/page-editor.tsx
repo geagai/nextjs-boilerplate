@@ -59,14 +59,14 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
     } else if (existingRows && existingRows.length > 0) {
       // Update the first row
       const rowId = (existingRows as any)[0].id;
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from("pages")
         .update({ [column]: codeView ? html : content })
         .eq("id", rowId);
       error = updateError;
     } else {
       // Insert a new row
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from("pages")
         .insert({ [column]: codeView ? html : content });
       error = insertError;
