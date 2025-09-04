@@ -227,12 +227,12 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                  Leads
                </Link>
              )}
-             <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-               Pricing
-             </Link>
-             <Link href="/settings" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
-               Settings
-             </Link>
+
+             {user && (
+               <Link href="/settings" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+                 Settings
+               </Link>
+             )}
              <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
                Contact
              </Link>

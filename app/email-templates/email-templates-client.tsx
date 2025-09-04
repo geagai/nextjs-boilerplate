@@ -70,7 +70,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
   }
 
   const handleSave = async () => {
-    if (!formData.type || !formData.subject.trim() || !formData.email.trim()) {
+    if (!formData.type || !formData.subject.trim() || !formData.body.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Type, subject, and email content are required.',
