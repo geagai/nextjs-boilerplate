@@ -10,9 +10,10 @@ const emailTemplateUpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabaseClient = await createSupabaseServerClient()
     
     // Get the current user
@@ -38,7 +39,7 @@ export async function PUT(
         signature: validatedData.signature || null,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id) // Ensure user owns the template
       .select()
       .single()
@@ -77,9 +78,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabaseClient = await createSupabaseServerClient()
     
     // Get the current user
@@ -96,7 +98,7 @@ export async function DELETE(
     const { error } = await supabaseClient
       .from('email_templates')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id) // Ensure user owns the template
 
     if (error) {

@@ -64,20 +64,26 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
              <Link href="/ai-email" className="text-link hover:text-link-hover font-medium transition-colors px-4">
                Email
              </Link>
-             <div className="relative group">
-               <button className="text-link hover:text-link-hover font-medium transition-colors px-4 flex items-center space-x-1">
-                 <span>Leads</span>
-                 <ChevronDown className="h-4 w-4" />
-               </button>
-               <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                 <Link href="/leads" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md">
-                   Find Leads
-                 </Link>
-                 <Link href="/my-leads" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md">
-                   My Leads
-                 </Link>
+             {user ? (
+               <div className="relative group">
+                 <button className="text-link hover:text-link-hover font-medium transition-colors px-4 flex items-center space-x-1">
+                   <span>Leads</span>
+                   <ChevronDown className="h-4 w-4" />
+                 </button>
+                 <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                   <Link href="/leads" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md">
+                     Find Leads
+                   </Link>
+                   <Link href="/my-leads" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md">
+                     My Leads
+                   </Link>
+                 </div>
                </div>
-             </div>
+             ) : (
+               <Link href="/ai-leads" className="text-link hover:text-link-hover font-medium transition-colors px-4">
+                 Leads
+               </Link>
+             )}
              <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
                Pricing
              </Link>
@@ -204,17 +210,23 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
              <Link href="/ai-email" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
                Email
              </Link>
-             <div className="px-4 py-2">
-               <div className="text-link font-medium mb-2">Leads</div>
-               <div className="ml-4 space-y-2">
-                 <Link href="/leads" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors py-1">
-                   Find Leads
-                 </Link>
-                 <Link href="/my-leads" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors py-1">
-                   My Leads
-                 </Link>
+             {user ? (
+               <div className="px-4 py-2">
+                 <div className="text-link font-medium mb-2">Leads</div>
+                 <div className="ml-4 space-y-2">
+                   <Link href="/leads" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors py-1">
+                     Find Leads
+                   </Link>
+                   <Link href="/my-leads" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors py-1">
+                     My Leads
+                   </Link>
+                 </div>
                </div>
-             </div>
+             ) : (
+               <Link href="/ai-leads" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
+                 Leads
+               </Link>
+             )}
              <Link href="/pricing" onClick={() => setIsOpen(false)} className="block text-link hover:text-link-hover font-medium transition-colors px-4 py-2">
                Pricing
              </Link>
