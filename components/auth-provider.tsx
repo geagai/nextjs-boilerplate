@@ -51,7 +51,7 @@ export function AuthProvider({ children, initialUser = null, initialSession = nu
       return {
         ...sessionUser,
         subscription: sessionUser.user_metadata?.subscription || null,
-        role: data?.user_role || 'user'
+        role: (data as any)?.user_role || 'user'
       };
     } catch (err) {
       console.error('Error fetching user role:', err);

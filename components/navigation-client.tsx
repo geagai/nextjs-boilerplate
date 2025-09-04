@@ -84,9 +84,7 @@ export default function NavigationClient({ user, adminSettings, sticky = true, s
                  Leads
                </Link>
              )}
-             <Link href="/pricing" className="text-link hover:text-link-hover font-medium transition-colors px-4">
-               Pricing
-             </Link>
+
              <Link href="/contact" className="text-link hover:text-link-hover font-medium transition-colors px-4">
                Contact
              </Link>
