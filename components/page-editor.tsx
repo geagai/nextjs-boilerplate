@@ -58,7 +58,7 @@ export function PageEditor({ column, initialContent, className }: PageEditorProp
       error = fetchError;
     } else if (existingRows && existingRows.length > 0) {
       // Update the first row
-      const rowId = existingRows[0].id;
+      const rowId = (existingRows as any)[0].id;
       const { error: updateError } = await supabase
         .from("pages")
         .update({ [column]: codeView ? html : content })
