@@ -24,7 +24,7 @@ export default async function PrivacyPolicyPage() {
         <h1 className="text-3xl font-bold text-center mb-8">Privacy Policy</h1>
         <PageEditor 
           column="privacy_policy"
-          initialContent={data?.privacy_policy || null}
+          initialContent={(data as any)?.privacy_policy || null}
         />
       </div>
     </div>

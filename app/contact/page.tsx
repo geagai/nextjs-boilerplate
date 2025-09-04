@@ -38,7 +38,7 @@ export default async function ContactPage() {
         <div className="mb-8">
           <PageEditor 
             column="contact_us"
-            initialContent={data?.contact_us || null}
+            initialContent={(data as any)?.contact_us || null}
           />
         </div>
         <div className="mt-8">

@@ -37,7 +37,7 @@ export default async function TermsServicePage() {
         <h1 className="text-3xl font-bold text-center mb-8">Terms of Service</h1>
         <PageEditor 
           column="terms_service"
-          initialContent={data?.terms_service || null}
+          initialContent={(data as any)?.terms_service || null}
         />
       </div>
     </div>
