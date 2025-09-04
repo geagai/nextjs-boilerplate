@@ -17,10 +17,11 @@ interface EmailTemplate {
   id: string
   user_id: string
   subject: string
-  email: string
+  body: string
   signature: string
   type: string
   enable_ai: boolean
+  created_at: string
 }
 
 interface EmailTemplatesClientProps {
@@ -38,7 +39,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
 
   const [formData, setFormData] = useState({
     subject: '',
-    email: '',
+    body: '',
     signature: '',
     type: '',
     enable_ai: false
@@ -48,7 +49,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
     setEditingTemplate(null)
     setFormData({
       subject: '',
-      email: '',
+      body: '',
       signature: '',
       type: '',
       enable_ai: false
@@ -60,7 +61,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
     setEditingTemplate(template)
     setFormData({
       subject: template.subject,
-      email: template.email,
+      body: template.body,
       signature: template.signature || '',
       type: template.type || '',
       enable_ai: template.enable_ai || false
@@ -91,7 +92,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
         },
         body: JSON.stringify({
           subject: formData.subject,
-          email: formData.email,
+          body: formData.body,
           signature: formData.signature,
           type: formData.type,
           enable_ai: formData.enable_ai,
@@ -119,7 +120,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
         
         setIsDialogOpen(false)
         setEditingTemplate(null)
-        setFormData({ subject: '', email: '', signature: '', type: '', enable_ai: false })
+        setFormData({ subject: '', body: '', signature: '', type: '', enable_ai: false })
       } else {
         const error = await response.json()
         toast({
@@ -184,7 +185,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
       return tmp.textContent || tmp.innerText || ''
     }
     
-    const emailContent = `Subject: ${template.subject}\n\n${stripHtml(template.email)}\n\n${template.signature || ''}`
+    const emailContent = `Subject: ${template.subject}\n\n${stripHtml(template.body)}\n\n${template.signature || ''}`
     
     try {
       await navigator.clipboard.writeText(emailContent)
@@ -241,7 +242,7 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
                   <div>
                     <div 
                       className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: template.email }}
+                      dangerouslySetInnerHTML={{ __html: template.body }}
                     />
                   </div>
                   {template.type && (
@@ -347,8 +348,8 @@ export function EmailTemplatesClient({ initialTemplates, userId }: EmailTemplate
             <div>
               <label className="text-sm font-medium">Email Content *</label>
               <RichTextEditor
-                value={formData.email}
-                onChange={(html) => setFormData(prev => ({ ...prev, email: html }))}
+                value={formData.body}
+                onChange={(html) => setFormData(prev => ({ ...prev, body: html }))}
                 placeholder="Enter email content..."
                 className="mt-1"
                 minHeight={200}
